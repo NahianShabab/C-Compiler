@@ -21,6 +21,7 @@ bool ScopeTable::insert(string name,string type){
     {
         if(current->getName()==name)
             return false;
+        current=current->next;
     }
     SymbolInfo * n=new SymbolInfo(name,type);
     n->next=table[idx];
@@ -34,6 +35,7 @@ SymbolInfo* ScopeTable::lookup(string name){
     while(current!=NULL){
         if(current->getName()==name)
             return current;
+        current=current->next;
     }
     return NULL;
 }
@@ -51,6 +53,8 @@ bool ScopeTable::deleteSymbolInfo(string name){
             delete current;
             return true;
         }
+        prev=current;
+        current=current->next;
     }
     return false;
 }
