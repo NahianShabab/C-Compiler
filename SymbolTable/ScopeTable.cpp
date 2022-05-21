@@ -1,13 +1,17 @@
 #include"ScopeTable.h"
 #include"SymbolInfo.h"
 #include<string>
+#include<iostream>
 using std::string;
+using std::cout;
 
-ScopeTable::ScopeTable(int size){
+ScopeTable::ScopeTable(int size,string id,ScopeTable * parent=NULL){
     this->size=size;
     table=new  SymbolInfo*[size];
     for(int i=0;i<size;i++)
         table[i]=NULL;
+    this->parent=parent;
+    this->id=id;
 }
 
 int ScopeTable::hashFunction(string name){
@@ -59,7 +63,38 @@ bool ScopeTable::deleteSymbolInfo(string name){
     return false;
 }
 
+string ScopeTable::getId(){return id;}
+
+void ScopeTable::incrementChildrenCount(){
+    childrenCount++;
+}
+int ScopeTable:: getChildrenCount(){
+    return childrenCount;
+}
+ScopeTable * ScopeTable::getParent(){
+    return parent;
+}
+
+void ScopeTable::print(){
+    cout<<"\n";
+    cout<<"----------------------------------------------------------------\n";
+    cout<<"ScopeTable No: "<<id<<"\n";
+    cout<<"----------------------------------------------------------------\n";
+    for(int i=0;i<size;i++){
+        cout<<"["<<i<<"]: ";
+        SymbolInfo * current=table[i];
+        while (current!=NULL){
+            cout<<"<"<<current->getName()<<","<<current->getType()<<">, ";
+            current=current->next;
+        }
+        cout<<"\n";
+    }
+    cout<<"----------------------------------------------------------------\n";
+    cout<<"\n";
+}
+
 ScopeTable::~ScopeTable(){
+    cout<<"destructor for id: "<<id<<" called\n";
     for(int i=0;i<size;i++){
         SymbolInfo * current=table[i];
         while (current!=NULL){
