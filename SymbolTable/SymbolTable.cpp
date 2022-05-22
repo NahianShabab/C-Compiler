@@ -10,7 +10,7 @@ SymbolTable::SymbolTable(){
 
 void SymbolTable::enterScope(){
     if(currentScope==NULL){
-        currentScope=new ScopeTable(10,std::to_string(++rootScopeID),NULL);
+        currentScope=new ScopeTable(7,std::to_string(++rootScopeID),NULL);
     }
     else{
         currentScope->incrementChildrenCount();

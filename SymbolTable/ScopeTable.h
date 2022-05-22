@@ -14,6 +14,7 @@ class ScopeTable{
         string id;
         // int (*hashFunction)(string name);
         int hashFunction(string name);
+        unsigned long sdbm(string str);
     public:
         ScopeTable(int size,string id,ScopeTable * parent);
         bool insert(string name,string type);

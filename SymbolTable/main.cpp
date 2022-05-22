@@ -39,7 +39,7 @@ int main(){
             cin>>name;
             SymbolInfo * symbol=st.lookup(name);
             if(symbol!=NULL){
-                cout<<"<"<<symbol->getName()<<","<<symbol->getType()<<'>\n';
+                cout<<"<"<<symbol->getName()<<","<<symbol->getType()<<">\n";
             }else
                 cout<<"does not exist\n";
         }else if(cmd=="printCurrentScope"){
