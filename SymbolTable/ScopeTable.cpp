@@ -17,8 +17,8 @@ ScopeTable::ScopeTable(int size,string id,ScopeTable * parent=NULL){
 int ScopeTable::hashFunction(string name){
     return sdbm(name)%size;
 }
-unsigned long int ScopeTable::sdbm(string value){
-    unsigned long hash = 0;
+unsigned long long ScopeTable::sdbm(string value){
+    unsigned long long hash = 0;
     for(int i=0;i<value.length();i++)
         hash=value.at(i)+(hash<<6)+(hash<<16)-hash;
     return hash;

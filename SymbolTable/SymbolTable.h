@@ -1,5 +1,4 @@
-#ifndef SYMBOL_TABLE_H
-#define SYMBOL_TABLE_H
+#pragma once
 #include"ScopeTable.h"
 #include"SymbolInfo.h"
 #include<string>
@@ -9,10 +8,11 @@ class SymbolTable{
     private:
         ScopeTable * currentScope=NULL;
         int rootScopeID=0;
+        int scopeTableSize;
     public:
-        SymbolTable();
+        SymbolTable(int scopeTableSize);
         void enterScope();
-        void exitScope();
+        bool exitScope();
         bool insert(string name,string type);
         bool remove(string name);
         SymbolInfo * lookup(string name);
@@ -20,5 +20,3 @@ class SymbolTable{
         void printAllScopeTable();
         ~SymbolTable();
 };
-
-#endif

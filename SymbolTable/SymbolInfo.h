@@ -1,5 +1,4 @@
-#ifndef SYMBOL_INFO_H
-#define SYMBOL_INFO_H
+#pragma once
 #include<string>
 using std::string;
 
@@ -13,5 +12,3 @@ class SymbolInfo{
         string getName();
         string getType();
 };
-
-#endif

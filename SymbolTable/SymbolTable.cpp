@@ -4,26 +4,30 @@
 #include<string>
 using std::string;
 
-SymbolTable::SymbolTable(){
-
+SymbolTable::SymbolTable(int scopeTableSize){
+    this->scopeTableSize=scopeTableSize;
 }
 
 void SymbolTable::enterScope(){
     if(currentScope==NULL){
-        currentScope=new ScopeTable(7,std::to_string(++rootScopeID),NULL);
+        currentScope=new ScopeTable(scopeTableSize,std::to_string(++rootScopeID),NULL);
     }
     else{
         currentScope->incrementChildrenCount();
         string id=currentScope->getId()+"."+std::to_string(currentScope->getChildrenCount());
-        ScopeTable * newScope=new ScopeTable(10,id,currentScope);
+        ScopeTable * newScope=new ScopeTable(scopeTableSize,id,currentScope);
         currentScope=newScope;
     }
 }
 
-void SymbolTable::exitScope(){
-    ScopeTable * prevScope=currentScope->getParent();
-    delete currentScope;
-    currentScope=prevScope;
+bool SymbolTable::exitScope(){
+    if(currentScope!=NULL){
+        ScopeTable * prevScope=currentScope->getParent();
+        delete currentScope;
+        currentScope=prevScope;
+        return true;
+    }
+    return false;
 }
 
 bool SymbolTable::insert(string name,string type){

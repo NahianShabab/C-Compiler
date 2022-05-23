@@ -1,5 +1,4 @@
-#ifndef SCOPE_TABLE_H
-#define SCOPE_TABLE_H
+#pragma once
 
 #include"SymbolInfo.h"
 #include<string>
@@ -14,7 +13,7 @@ class ScopeTable{
         string id;
         // int (*hashFunction)(string name);
         int hashFunction(string name);
-        unsigned long sdbm(string str);
+        unsigned long long sdbm(string str);
     public:
         ScopeTable(int size,string id,ScopeTable * parent);
         bool insert(string name,string type);
@@ -27,5 +26,3 @@ class ScopeTable{
         ScopeTable * getParent();
         ~ScopeTable();
 };
-
-#endif

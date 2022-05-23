@@ -8,7 +8,7 @@ using std::cin;
 using std::string;
 
 int main(){
-    SymbolTable st;
+    SymbolTable st(7);
     bool running=true;
     while (running){
         string cmd;
@@ -16,25 +16,28 @@ int main(){
         if(cmd=="exit"){
             running=false;
         }
-        else if(cmd=="enterScope"){
+        else if(cmd=="S"){
             st.enterScope();
             cout<<"entered scope\n";
         }
-        else if(cmd=="exitScope"){
-            st.exitScope();
-            cout<<"exited scope\n";
+        else if(cmd=="E"){
+            bool done=st.exitScope();
+            if(done)
+                cout<<"exited scope\n";
+            else
+                cout<<"scope stack is empty\n";
         }
-        else if(cmd=="insert"){
+        else if(cmd=="I"){
             string name,type;
             cin>>name>>type;
             bool success=st.insert(name,type);
             cout<<(success?"inserted":"could not insert")<<"\n";
-        }else if(cmd=="remove"){
+        }else if(cmd=="D"){
             string name;
             cin>>name;
             bool success=st.remove(name);
             cout<<(success?"removed":"could not remove")<<"\n";
-        }else if(cmd=="lookup"){
+        }else if(cmd=="L"){
             string name;
             cin>>name;
             SymbolInfo * symbol=st.lookup(name);
@@ -42,9 +45,9 @@ int main(){
                 cout<<"<"<<symbol->getName()<<","<<symbol->getType()<<">\n";
             }else
                 cout<<"does not exist\n";
-        }else if(cmd=="printCurrentScope"){
+        }else if(cmd=="PC"){
             st.printCurrentScopeTable();
-        }else if(cmd=="printAllScope"){
+        }else if(cmd=="PA"){
             st.printAllScopeTable();
         }
     };
