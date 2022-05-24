@@ -29,23 +29,28 @@ bool ScopeTable::insert(string name,string type){
     SymbolInfo * current=table[idx];
     while (current!=NULL)
     {
-        if(current->getName()==name)
+        if(current->getName()==name){
             return false;
+        }
         current=current->next;
     }
     SymbolInfo * n=new SymbolInfo(name,type);
     n->next=table[idx];
     table[idx]=n;
+    cout<<"Inserted in ScopeTable# "<<id<<" at position: "<<idx<<", 0\n";
     return true;
 }
 
-SymbolInfo* ScopeTable::lookup(string name){
+SymbolInfo* ScopeTable::lookup(string name,int & bucketNo,int & pos){
     int idx=hashFunction(name);
     SymbolInfo * current=table[idx];
+    bucketNo=idx;
+    pos=0;
     while(current!=NULL){
         if(current->getName()==name)
             return current;
         current=current->next;
+        pos++;
     }
     return NULL;
 }
@@ -84,7 +89,7 @@ ScopeTable * ScopeTable::getParent(){
 void ScopeTable::print(){
     cout<<"\n";
     cout<<"----------------------------------------------------------------\n";
-    cout<<"ScopeTable No: "<<id<<"\n";
+    cout<<"ScopeTable # "<<id<<"\n";
     cout<<"----------------------------------------------------------------\n";
     for(int i=0;i<size;i++){
         cout<<"["<<i<<"]: ";
@@ -100,7 +105,7 @@ void ScopeTable::print(){
 }
 
 ScopeTable::~ScopeTable(){
-    cout<<"destructor for id: "<<id<<" called\n";
+    // cout<<"destructor for id: "<<id<<" called\n";
     for(int i=0;i<size;i++){
         SymbolInfo * current=table[i];
         while (current!=NULL){
