@@ -2,10 +2,13 @@
 #include"SymbolInfo.h"
 #include"ScopeTable.h"
 #include<string>
+#include<iostream>
 using std::string;
+using std::cout;
 
 SymbolTable::SymbolTable(int scopeTableSize){
     this->scopeTableSize=scopeTableSize;
+    enterScope();
 }
 
 void SymbolTable::enterScope(){
@@ -18,10 +21,12 @@ void SymbolTable::enterScope(){
         ScopeTable * newScope=new ScopeTable(scopeTableSize,id,currentScope);
         currentScope=newScope;
     }
+    cout<<"New ScopeTable with id "<<currentScope->getId()<<" created\n";
 }
 
 bool SymbolTable::exitScope(){
     if(currentScope!=NULL){
+        cout<<"ScopeTable with id "<<currentScope->getId()<<" removed\n";
         ScopeTable * prevScope=currentScope->getParent();
         delete currentScope;
         currentScope=prevScope;
@@ -39,13 +44,15 @@ bool SymbolTable:: remove(string name){
         return currentScope->deleteSymbolInfo(name);
     return false;
 }
-
-SymbolInfo* SymbolTable::lookup(string name){
+/* scopeId,bucketNo and pos are the location of the searched symbol if found*/
+SymbolInfo* SymbolTable::lookup(string name,string & scopeId,int & bucketNo,int & pos){
     ScopeTable * scope=currentScope;
     while(scope!=NULL){
-        SymbolInfo * symbol=scope->lookup(name);
-        if(symbol!=NULL)
+        SymbolInfo * symbol=scope->lookup(name,bucketNo,pos);
+        if(symbol!=NULL){
+            scopeId=scope->getId();
             return symbol;
+        }
         scope=scope->getParent();
     };
     return NULL;

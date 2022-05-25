@@ -18,20 +18,20 @@ int main(){
         }
         else if(cmd=="S"){
             st.enterScope();
-            cout<<"entered scope\n";
+            // cout<<"entered scope\n";
         }
         else if(cmd=="E"){
             bool done=st.exitScope();
-            if(done)
-                cout<<"exited scope\n";
-            else
-                cout<<"scope stack is empty\n";
+            if(!done)
+                cout<<"Scope Stack is empty\n";
         }
         else if(cmd=="I"){
             string name,type;
             cin>>name>>type;
             bool success=st.insert(name,type);
-            cout<<(success?"inserted":"could not insert")<<"\n";
+            // cout<<(success?"inserted":"could not insert")<<"\n";
+            if(!success)
+                cout<<"could not insert\n";
         }else if(cmd=="D"){
             string name;
             cin>>name;
@@ -40,15 +40,21 @@ int main(){
         }else if(cmd=="L"){
             string name;
             cin>>name;
-            SymbolInfo * symbol=st.lookup(name);
+            string scopeID;
+            int bucketNo,pos;
+            SymbolInfo * symbol=st.lookup(name,scopeID,bucketNo,pos);
             if(symbol!=NULL){
-                cout<<"<"<<symbol->getName()<<","<<symbol->getType()<<">\n";
+                // cout<<"<"<<symbol->getName()<<","<<symbol->getType()<<">\n";
+                cout<<"Found in ScopeTable # "<<scopeID<<" at position "<<bucketNo<<", "<<pos<<"\n";
             }else
-                cout<<"does not exist\n";
-        }else if(cmd=="PC"){
-            st.printCurrentScopeTable();
-        }else if(cmd=="PA"){
-            st.printAllScopeTable();
+                cout<<"Not Found\n";
+        }else if(cmd=="P"){
+            string next;
+            cin>>next;
+            if(next=="C")
+                st.printCurrentScopeTable();
+            else if(next=="A")
+                st.printAllScopeTable();
         }
     };
     return 0;

@@ -15,7 +15,7 @@ class SymbolTable{
         bool exitScope();
         bool insert(string name,string type);
         bool remove(string name);
-        SymbolInfo * lookup(string name);
+        SymbolInfo * lookup(string name,string & scopeId,int & bucketNo,int & pos);
         void printCurrentScopeTable();
         void printAllScopeTable();
         ~SymbolTable();
