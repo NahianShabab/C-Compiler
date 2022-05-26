@@ -8,7 +8,9 @@ using std::cin;
 using std::string;
 
 int main(){
-    SymbolTable st(7);
+    int n;
+    cin>>n;
+    SymbolTable st(n);
     bool running=true;
     while (running){
         string cmd;

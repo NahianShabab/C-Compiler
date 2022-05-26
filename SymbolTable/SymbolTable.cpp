@@ -36,7 +36,9 @@ bool SymbolTable::exitScope(){
 }
 
 bool SymbolTable::insert(string name,string type){
-    return currentScope==NULL?false:currentScope->insert(name,type);
+    if(currentScope==NULL)
+        enterScope();
+    return currentScope->insert(name,type);
 }
 
 bool SymbolTable:: remove(string name){
