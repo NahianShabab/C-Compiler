@@ -3,24 +3,25 @@
 #include"ScopeTable.h"
 #include"SymbolInfo.h"
 #include"SymbolTable.h"
+#include<fstream>
 using std::cout;
-using std::cin;
 using std::string;
+using std::ifstream;
 
 int main(){
+    ifstream fin("input.txt");
     int n;
-    cin>>n;
+    fin>>n;
     SymbolTable st(n);
     bool running=true;
-    while (running){
+    while (running && !fin.eof()){
         string cmd;
-        cin>>cmd;
+        fin>>cmd;
         if(cmd=="exit"){
             running=false;
         }
         else if(cmd=="S"){
             st.enterScope();
-            // cout<<"entered scope\n";
         }
         else if(cmd=="E"){
             bool done=st.exitScope();
@@ -29,35 +30,31 @@ int main(){
         }
         else if(cmd=="I"){
             string name,type;
-            cin>>name>>type;
+            fin>>name>>type;
             bool success=st.insert(name,type);
-            // cout<<(success?"inserted":"could not insert")<<"\n";
-            if(!success)
-                cout<<"could not insert\n";
         }else if(cmd=="D"){
             string name;
-            cin>>name;
+            fin>>name;
             bool success=st.remove(name);
-            cout<<(success?"removed":"could not remove")<<"\n";
         }else if(cmd=="L"){
             string name;
-            cin>>name;
+            fin>>name;
             string scopeID;
             int bucketNo,pos;
             SymbolInfo * symbol=st.lookup(name,scopeID,bucketNo,pos);
             if(symbol!=NULL){
-                // cout<<"<"<<symbol->getName()<<","<<symbol->getType()<<">\n";
                 cout<<"Found in ScopeTable # "<<scopeID<<" at position "<<bucketNo<<", "<<pos<<"\n";
             }else
-                cout<<"Not Found\n";
+                cout<<name<<" not found\n";
         }else if(cmd=="P"){
             string next;
-            cin>>next;
+            fin>>next;
             if(next=="C")
                 st.printCurrentScopeTable();
             else if(next=="A")
                 st.printAllScopeTable();
         }
     };
+    fin.close();
     return 0;
 }

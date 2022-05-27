@@ -28,8 +28,9 @@ bool ScopeTable::insert(string name,string type){
     int idx=hashFunction(name);
     SymbolInfo * current=table[idx];
     while (current!=NULL)
-    {
+    { 
         if(current->getName()==name){
+            cout<<name<<" already exists in current Scopetable\n";
             return false;
         }
         current=current->next;
@@ -59,6 +60,7 @@ bool ScopeTable::deleteSymbolInfo(string name){
     int idx=hashFunction(name);
     SymbolInfo * current=table[idx];
     SymbolInfo * prev=table[idx];
+    int pos=0;
     while (current!=NULL){
         if(current->getName()==name){
             if(current==table[idx])
@@ -66,11 +68,14 @@ bool ScopeTable::deleteSymbolInfo(string name){
             else
                 prev->next=current->next;
             delete current;
+            cout<<"Deleted Entry "<<idx<<" , "<<pos<<" from current Scopetable"<<"\n";
             return true;
         }
         prev=current;
         current=current->next;
+        pos++;
     }
+    cout<<name<<" not found in current Scope table\n";
     return false;
 }
 
@@ -95,7 +100,7 @@ void ScopeTable::print(){
         cout<<"["<<i<<"]: ";
         SymbolInfo * current=table[i];
         while (current!=NULL){
-            cout<<"<"<<current->getName()<<","<<current->getType()<<">, ";
+            cout<<"< "<<current->getName()<<" : "<<current->getType()<<" > ";
             current=current->next;
         }
         cout<<"\n";
