@@ -1,4 +1,4 @@
-%option noyywrap yylineno
+%option noyywrap
 
 /*
 following is where include files and declare variables
