@@ -90,13 +90,95 @@ continue {
         writeToken("CONTINUE"); 
 }
 
-
-
-(\+|-)[1-9][0-9]* {
-    string lexeme=string(yytext).substr(1);
-    logToken("CONST_INT",lexeme);
-    writeToken("CONST_INT",lexeme);    
+[a-zA-Z_][a-zA-Z_0-9]* {
+        //identifier
+        logToken("ID",yytext);
 }
+
+
+[\+|-] {
+        logToken("ADDOP",yytext);
+}
+
+[*/%] {
+        logToken("MULOP",yytext);
+}
+
+\+\+|-- {
+        logToken("INCOP",yytext);
+}
+
+(!=)|(==)|(<=)|<|(>=)|> {
+        logToken("RELOP",yytext);
+}
+
+= {
+        logToken("ASSIGNOP",yytext);
+}
+
+&&|(\|\|) {
+        logToken("LOGICOP",yytext);
+}
+
+! {
+        logToken("NOT",yytext);
+}
+
+\( {
+        logToken("LPAREN",yytext);
+}
+
+\) {
+        logToken("RPAREN",yytext);
+}
+
+\{ {
+        logToken("LCURL",yytext);
+}
+
+\} {
+        logToken("RCURL",yytext);
+}
+
+\[ {
+        logToken("LTHIRD",yytext);
+}
+\] {
+        logToken("RTHIRD",yytext);
+}
+
+, {
+        logToken("COMMA",yytext);
+}
+
+; {
+        logToken("SEMICOLON",yytext);
+}
+
+
+(\+|-)?([0-9]*[.][0-9]+(E(\+|-)?[0-9]*)?)|([0-9]+E(\+|-)?[0-9]+) {
+        //float;
+        logToken("CONST_FLOAT",yytext);
+}
+
+(\+|-)?[0-9]+ {
+        //int
+        logToken("CONST_INT",yytext);
+}
+
+'[\x20-\x7E]' {
+        //chars
+        logToken("CONST_CHAR",yytext);
+}
+
+'\\[nt\\'afrbv0]' {
+        //chars
+        logToken("CONST_CHAR",yytext);
+}
+
+
+
+
 
 
 .   {

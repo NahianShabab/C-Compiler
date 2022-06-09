@@ -15,7 +15,7 @@ ofstream fToken("token.txt");
 
 %%
 [ \t\v]+ {}
-. {fToken<<yytext<<"\n";}
+. {}
 %%
 
 int main(int argc,char * argv[]){

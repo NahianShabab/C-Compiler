@@ -1,1 +1,7 @@
-Line No. 1: Token CONST_INT Lexeme 123 found
+Line No. 1: Token CONST_INT Lexeme +123 found
+Line No. 1: Token SEMICOLON Lexeme ; found
+Line No. 2: Token CONST_INT Lexeme -123 found
+Line No. 2: Token SEMICOLON Lexeme ; found
+Line No. 3: Token CONST_INT Lexeme 1 found
+Line No. 3: Token CONST_INT Lexeme +2 found
+Line No. 3: Token SEMICOLON Lexeme ; found
