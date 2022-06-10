@@ -1,4 +1,5 @@
 %option noyywrap
+%option yylineno
 
 /*
 following is where include files and declare variables
@@ -8,19 +9,33 @@ following is where include files and declare variables
 #include<stdio.h>
 #include<string>
 #include<fstream>
+#include"util.h"
 using std::cout;
 using std::ofstream;
 using std::string;
 ofstream fLog("log.txt");
 ofstream fToken("token.txt");
 int lineCount=1;
+string character="";
+string stringLiteral="";
+string comment="";
 void logToken(string token,string lexeme=""){
-    fLog<<"Line No. "<<lineCount<<": Token "<<token<<" Lexeme "<<lexeme<<" found\n";
+    fLog<<"Line No. "<<yylineno<<": Token "<<token<<" Lexeme "<<lexeme<<" found\n";
 }
 void writeToken(string type,string symbol=""){
     fToken<<'<'<<type<<(symbol==""?">":(","+symbol+">"));
 }
 %}
+%x COMMENT_SINGLE
+%x COMMENT_MULTIPLE
+%x CHARACTER
+%x CHARACTER_END
+%x STRING
+ 
+Identifier [a-zA-Z_][a-zA-Z_0-9]*
+Float ([0-9]*[.][0-9]+(E(\+|-)?[0-9]+)?)|([0-9]+E(\+|-)?[0-9]+)
+Integer [0-9]+
+SpecialCharacter (\\n)|(\\t)|(\\\\)|(\\')|(\\a)|(\\f)|(\\r)|(\\b)|(\\v)|(\\0)|(\\\")
 
 %%
 [ \t\v]+ {}
@@ -90,11 +105,55 @@ continue {
         writeToken("CONTINUE"); 
 }
 
-[a-zA-Z_][a-zA-Z_0-9]* {
-        //identifier
+
+{Identifier} {
         logToken("ID",yytext);
 }
 
+\/\/ {  
+        comment="";
+        BEGIN COMMENT_SINGLE;
+        // cout<<"Comment Start\n";
+}
+<COMMENT_SINGLE>(\\[\n]) {
+        comment.append(yytext);
+        // cout<<"\\+newline in comment single\n";
+}
+<COMMENT_SINGLE>[^\n] {
+        comment.append(yytext);
+        // cout<<"all text in single comment\n";
+}
+<COMMENT_SINGLE>[\n] {
+        // cout<<"Comment End\n";
+        logToken("COMMENT",comment);
+        comment="";
+        BEGIN INITIAL;
+}
+<COMMENT_SINGLE><<EOF>> {
+        logToken("COMMENT",comment);
+        comment="";
+        BEGIN INITIAL;
+}
+
+\/\* {
+        // cout<<"Multiline Comment started\n";
+        comment="";
+        BEGIN COMMENT_MULTIPLE;
+}
+<COMMENT_MULTIPLE>\*\/ {
+        cout<<"Multiline Comment end\n";
+        logToken("COMMENT",comment);
+        comment="";
+        BEGIN INITIAL;
+}
+<COMMENT_MULTIPLE><<EOF>> {
+        cout<<"Multiline comment not ended error!\n";
+        comment="";
+        BEGIN INITIAL;
+}
+<COMMENT_MULTIPLE>.|[\n] {
+        comment.append(yytext);
+}
 
 [\+|-] {
         logToken("ADDOP",yytext);
@@ -155,31 +214,124 @@ continue {
         logToken("SEMICOLON",yytext);
 }
 
+[0-9]*[.]([0-9]*[.][0-9]*)+ {
+        cout<<"Multiple Decimal Point error!\n";
+}
 
-(\+|-)?([0-9]*[.][0-9]+(E(\+|-)?[0-9]*)?)|([0-9]+E(\+|-)?[0-9]+) {
-        //float;
+
+{Float} {
         logToken("CONST_FLOAT",yytext);
 }
 
-(\+|-)?[0-9]+ {
-        //int
+{Integer}{Identifier} {
+        logToken("Error",yytext);
+}
+
+{Integer} {
         logToken("CONST_INT",yytext);
 }
 
-'[\x20-\x7E]' {
-        //chars
-        logToken("CONST_CHAR",yytext);
+' {
+        character="";
+        BEGIN CHARACTER;
+}
+<CHARACTER>[\x20-\x26\x28-\x5B\x5D-\x7E] {
+        character.append(yytext);
+        BEGIN CHARACTER_END;
+}
+<CHARACTER>{SpecialCharacter} {
+        char ch=specialCharacterValue(yytext);
+        character.append(string(1,ch));
+        BEGIN CHARACTER_END;
+}
+<CHARACTER>' {
+        cout<<"Empty character error\n";
+        BEGIN INITIAL;
+}
+<CHARACTER>. {
+        cout<<"Invalid Character!\n";
+        BEGIN INITIAL;
+}
+<CHARACTER>[\n] {
+        cout<<"Character Not ended!\n";
+        BEGIN INITIAL;
+}
+<CHARACTER><<EOF>> {
+        cout<<"character not ended!\n";
+        BEGIN INITIAL;
 }
 
-'\\[nt\\'afrbv0]' {
-        //chars
-        logToken("CONST_CHAR",yytext);
+<CHARACTER_END>' {
+        cout<<"Character end\n";
+        logToken("CONST_CHAR",character);
+        character="";
+        BEGIN INITIAL;
+}
+<CHARACTER_END>[\x20-\x26\x28-\x5B\x5D-\x7E] {
+        character.append(yytext);
+        cout<<"MultiCharacter constant error!\n";
+}
+<CHARACTER_END>{SpecialCharacter} {
+        char ch=specialCharacterValue(yytext);
+        character.append(string(1,ch));
+}
+<CHARACTER_END>. {
+        cout<<"Invalid Character!\n";
+        BEGIN INITIAL;
+}
+<CHARACTER_END>[\n] {
+        cout<<"Character not ended!\n";
+        BEGIN INITIAL;
+}
+<CHARACTER_END><<EOF>> {
+        cout<<"\' not ended properly!\n";
+        BEGIN INITIAL;
 }
 
 
+\" {
+        cout<<"String started\n";
+        stringLiteral="";
+        BEGIN STRING;
+}
+
+<STRING>[\x20-\x21\x23-\x5B\x5D-\x7E] {
+        stringLiteral.append(yytext);
+}
+<STRING>{SpecialCharacter} {
+        char ch=specialCharacterValue(string(yytext));
+        stringLiteral.append(string(1,ch));
+}
+<STRING>\\[\n] {
+        stringLiteral.append("    ");
+}
+
+<STRING>\\. {
+        cout<<"Unknown escape sequence\n";
+        BEGIN INITIAL;
+}
+<STRING>\" {
+        logToken("STRING",stringLiteral);
+        stringLiteral="";
+        cout<<"String ended\n";
+        BEGIN INITIAL;
+}
+<STRING>[\n] {
+        cout<<"String ended abruptly\n";
+        BEGIN INITIAL;
+}
+
+<STRING><<EOF>> {
+        cout<<"String ended abruptly\n";
+        BEGIN INITIAL;
+}
 
 
-
+<STRING>. {
+        cout<<"Unknown Character in string\n";
+        cout<<"The character is: "<<yytext<<"\n";
+        BEGIN INITIAL;
+}
 
 .   {
 

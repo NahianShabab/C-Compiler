@@ -1,8 +1,7 @@
 #include<iostream>
-using std::cout;
+#include<string>
+using namespace std;
 int main(){
-    int a=0000e0000;
-    char b=127;
-    cout<<b;
+    char a='"';
     return 0;
 }
