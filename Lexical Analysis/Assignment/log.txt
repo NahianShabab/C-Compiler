@@ -1,1 +1,5 @@
-Line No. 1: Token CONST_FLOAT Lexeme 123E12 found
+Line no 1: Token <ID> Lexeme E10 found
+
+ScopeTable # 1
+2 --> < E10 : ID > 
+
