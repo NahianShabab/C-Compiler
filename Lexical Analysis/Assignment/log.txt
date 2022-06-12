@@ -1,5 +1,171 @@
-Line no 1: Token <ID> Lexeme E10 found
+Line no 1: Token <INT> Lexeme int found
+
+Line no 1: Token <ID> Lexeme factorial found
 
 ScopeTable # 1
-2 --> < E10 : ID > 
+6 --> < factorial : ID > 
 
+Line no 1: Token <LPAREN> Lexeme ( found
+
+Line no 1: Token <INT> Lexeme int found
+
+Line no 1: Token <ID> Lexeme n found
+
+ScopeTable # 1
+5 --> < n : ID > 
+6 --> < factorial : ID > 
+
+Line no 1: Token <RPAREN> Lexeme ) found
+
+Line no 1: Token <LCURL> Lexeme { found
+
+Line no 2: Token <IF> Lexeme if found
+
+Line no 2: Token <LPAREN> Lexeme ( found
+
+Line no 2: Token <ID> Lexeme n found
+
+ScopeTable # 1.1
+5 --> < n : ID > 
+
+ScopeTable # 1
+5 --> < n : ID > 
+6 --> < factorial : ID > 
+
+Line no 2: Token <RELOP> Lexeme <= found
+
+Line no 2: Token <CONST_INT> Lexeme 1 found
+
+ScopeTable # 1.1
+0 --> < 1 : CONST_INT > 
+5 --> < n : ID > 
+
+ScopeTable # 1
+5 --> < n : ID > 
+6 --> < factorial : ID > 
+
+Line no 2: Token <RPAREN> Lexeme ) found
+
+Line no 3: Token <RETURN> Lexeme return found
+
+Line no 3: Token <CONST_INT> Lexeme 1 found
+
+1 already exists in current ScopeTable
+
+Line no 3: Token <SEMICOLON> Lexeme ; found
+
+Line no 4: Token <RETURN> Lexeme return found
+
+Line no 4: Token <ID> Lexeme n found
+
+n already exists in current ScopeTable
+
+Line no 4: Token <MULOP> Lexeme * found
+
+Line no 4: Token <ID> Lexeme factorial found
+
+ScopeTable # 1.1
+0 --> < 1 : CONST_INT > 
+5 --> < n : ID > 
+6 --> < factorial : ID > 
+
+ScopeTable # 1
+5 --> < n : ID > 
+6 --> < factorial : ID > 
+
+Line no 4: Token <LPAREN> Lexeme ( found
+
+Line no 4: Token <ID> Lexeme n found
+
+n already exists in current ScopeTable
+
+Line no 4: Token <ADDOP> Lexeme - found
+
+Line no 4: Token <CONST_INT> Lexeme 1 found
+
+1 already exists in current ScopeTable
+
+Line no 4: Token <RPAREN> Lexeme ) found
+
+Line no 4: Token <SEMICOLON> Lexeme ; found
+
+Line no 5: Token <RCURL> Lexeme } found
+
+Line no 6: Token <INT> Lexeme int found
+
+Line no 6: Token <ID> Lexeme main found
+
+ScopeTable # 1
+5 --> < main : ID > < n : ID > 
+6 --> < factorial : ID > 
+
+Line no 6: Token <LPAREN> Lexeme ( found
+
+Line no 6: Token <RPAREN> Lexeme ) found
+
+Line no 6: Token <LCURL> Lexeme { found
+
+Line no 7: Token <ID> Lexeme printf found
+
+ScopeTable # 1.2
+1 --> < printf : ID > 
+
+ScopeTable # 1
+5 --> < main : ID > < n : ID > 
+6 --> < factorial : ID > 
+
+Line no 7: Token <LPAREN> Lexeme ( found
+
+Line no 7: Token <ID> Lexeme factorial found
+
+ScopeTable # 1.2
+1 --> < printf : ID > 
+6 --> < factorial : ID > 
+
+ScopeTable # 1
+5 --> < main : ID > < n : ID > 
+6 --> < factorial : ID > 
+
+Line no 7: Token <LPAREN> Lexeme ( found
+
+Line no 7: Token <CONST_INT> Lexeme 5 found
+
+ScopeTable # 1.2
+1 --> < printf : ID > 
+4 --> < 5 : CONST_INT > 
+6 --> < factorial : ID > 
+
+ScopeTable # 1
+5 --> < main : ID > < n : ID > 
+6 --> < factorial : ID > 
+
+Line no 7: Token <RPAREN> Lexeme ) found
+
+Line no 7: Token <RPAREN> Lexeme ) found
+
+Line no 7: Token <SEMICOLON> Lexeme ; found
+
+Line no 8: Token <RETURN> Lexeme return found
+
+Line no 8: Token <CONST_INT> Lexeme 0 found
+
+ScopeTable # 1.2
+1 --> < printf : ID > 
+4 --> < 5 : CONST_INT > 
+6 --> < 0 : CONST_INT > < factorial : ID > 
+
+ScopeTable # 1
+5 --> < main : ID > < n : ID > 
+6 --> < factorial : ID > 
+
+Line no 8: Token <SEMICOLON> Lexeme ; found
+
+Line no 9: Token <RCURL> Lexeme } found
+
+ScopeTable # 1
+5 --> < main : ID > < n : ID > 
+6 --> < factorial : ID > 
+
+
+Total lines: 9
+Total errors: 0

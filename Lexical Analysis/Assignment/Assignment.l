@@ -16,19 +16,23 @@ using std::ofstream;
 using std::string;
 ofstream fLog("log.txt");
 ofstream fToken("token.txt");
-int lineCount=1;
 string character="";
 string rawCharacter="";
 string stringLiteral="";
 string rawStringLiteral="";
 string comment="";
+int startLine=0;
 SymbolTable symbolTable(7);
 int errorCount=0;
-void logToken(string token,string lexeme=""){
-    fLog<<"Line no "<<yylineno<<": Token <"<<token<<"> Lexeme "<<lexeme<<" found\n\n";
+void logToken(string token,string lexeme="",int lineNo=yylineno){
+    fLog<<"Line no "<<lineNo<<": Token <"<<token<<"> Lexeme "<<lexeme<<" found\n\n";
 }
-void logError(string errorMsg){
-        fLog<<"Error at line no "<<yylineno<<": "<<errorMsg<<"\n\n";
+void logTokenString(string token,string lexeme,string insertedLexime,int lineNo){
+    fLog<<"Line no "<<lineNo<<": Token <"<<token<<"> Lexeme "<<lexeme<<" found --> <"<<token<<","<<insertedLexime<<">\n\n";    
+}
+void logError(string errorMsg,int lineNo=yylineno){
+        fLog<<"Error at line no "<<lineNo<<": "<<errorMsg<<"\n\n";
+        errorCount++;
 }
 void writeToken(string type,string symbol=""){
     fToken<<'<'<<type<<(symbol==""?">":(","+symbol+">"));
@@ -41,13 +45,13 @@ void writeToken(string type,string symbol=""){
 %x STRING
  
 Identifier [a-zA-Z_][a-zA-Z_0-9]*
-Float ([0-9]*[.][0-9]*(E(\+|-)?[0-9]+)?)|([0-9]+E(\+|-)?[0-9]+)
+Float ([0-9]+[.][0-9]*(E(\+|-)?[0-9]+)?)|([0-9]*[.][0-9]+(E(\+|-)?[0-9]+)?)|([0-9]+E(\+|-)?[0-9]+)
 Integer [0-9]+
 SpecialCharacter (\\n)|(\\t)|(\\\\)|(\\')|(\\a)|(\\f)|(\\r)|(\\b)|(\\v)|(\\0)|(\\\")
 
 %%
 [ \t\v]+ {}
-\n {++lineCount;}
+\n {}
 if {
         logToken("IF","if");
         writeToken("IF");
@@ -118,7 +122,7 @@ continue {
         logToken("ID",yytext);
         writeToken("ID",yytext);
         if(symbolTable.insert(yytext,"ID")){
-                symbolTable.printCurrentScopeTable(fLog);
+                symbolTable.printAllScopeTable(fLog);
         }
         else{
                 fLog<<yytext<<" already exists in current ScopeTable\n\n";
@@ -127,6 +131,7 @@ continue {
 
 \/\/ {  
         comment="//";
+        startLine=yylineno;
         BEGIN COMMENT_SINGLE;
         // cout<<"Comment Start\n";
 }
@@ -140,33 +145,30 @@ continue {
 }
 <COMMENT_SINGLE>[\n] {
         // cout<<"Comment End\n";
-        logToken("COMMENT",comment);
-        comment="";
+        logToken("COMMENT",comment,startLine);
         BEGIN INITIAL;
 }
 <COMMENT_SINGLE><<EOF>> {
-        logToken("COMMENT",comment);
-        comment="";
+        logToken("COMMENT",comment,startLine);
         BEGIN INITIAL;
 }
 
 \/\* {
         // cout<<"Multiline Comment started\n";
         comment="/*";
+        startLine=yylineno;
         BEGIN COMMENT_MULTIPLE;
 }
 <COMMENT_MULTIPLE>\*\/ {
         // cout<<"Multiline Comment end\n";
         comment.append("*/");
-        logToken("COMMENT",comment);
-        comment="";
+        logToken("COMMENT",comment,startLine);
         BEGIN INITIAL;
 }
 <COMMENT_MULTIPLE><<EOF>> {
         //error
         //cout<<"Multiline comment not ended error!\n";
-        logError("Unterminated Comment "+comment+"\n\n");
-        comment="";
+        logError("Unterminated Comment "+comment,startLine);
         BEGIN INITIAL;
 }
 <COMMENT_MULTIPLE>.|[\n] {
@@ -251,22 +253,24 @@ continue {
 
 [.] {   
         //error
-        logToken("Single Dot\n");
+        logError("Single Dot");
 }
 
 [0-9]*[.]([0-9]*[.][0-9]*)+ {
         //error
         // cout<<"Multiple Decimal Point error!\n";
-        logError("Too many decimal points "+string(yytext)+"\n\n");
+        logError("Too many decimal points "+string(yytext));
 }
 
-([0-9]+.[0-9]*|[0-9]*[.][0-9]+|[0-9]+)E([0-9]*[.][0-9])+
+([0-9]+.[0-9]*|[0-9]*[.][0-9]+|[0-9]+)E(\+|-)?([0-9]*[.][0-9]*)+ {
+        logError("Ill formed number "+string(yytext));
+}
 
 {Float} {
         logToken("CONST_FLOAT",yytext);
         writeToken("CONST_FLOAT",yytext);
         if(symbolTable.insert(yytext,"CONST_FLOAT")){
-                symbolTable.printCurrentScopeTable(fLog);
+                symbolTable.printAllScopeTable(fLog);
         }
         else{
                 fLog<<yytext<<" already exists in current ScopeTable\n\n";
@@ -276,14 +280,14 @@ continue {
 {Integer}{Identifier} {
         //error
         // logToken("Error",yytext);
-        logError("Invalid prefix on ID or invalid suffix on Number "+string(yytext)+"\n\n");
+        logError("Invalid prefix on ID or invalid suffix on Number "+string(yytext));
 }
 
 {Integer} {
         logToken("CONST_INT",yytext);
         writeToken("CONST_INT",yytext);
         if(symbolTable.insert(yytext,"CONST_INT")){
-                symbolTable.printCurrentScopeTable(fLog);
+                symbolTable.printAllScopeTable(fLog);
         }
         else{
                 fLog<<yytext<<" already exists in current ScopeTable\n\n";
@@ -293,9 +297,10 @@ continue {
 ' {
         character="";
         rawCharacter="\'";
+        startLine=yylineno;
         BEGIN CHARACTER;
 }
-<CHARACTER>[\x20-\x26\x28-\x5B\x5D-\x7E] {
+<CHARACTER>[\x20-\x26\x28-\x5B\x5D-\x7E\x9] {
         character.append(yytext);
         rawCharacter.append(yytext);
         BEGIN CHARACTER_END;
@@ -309,25 +314,25 @@ continue {
 <CHARACTER>' {
         //error
         // cout<<"Empty character error\n";
-        logError("Empty character constant error \'\'\n\n");
+        logError("Empty character constant error \'\'",startLine);
         BEGIN INITIAL;
 }
 <CHARACTER>. {
         //error
-        cout<<"Invalid Character!\n";
-        logError("Invalid character "+string(yytext)+"\n\n");
+        // cout<<"Invalid Character!\n";
+        logError("Invalid character "+string(yytext),startLine);
         BEGIN INITIAL;
 }
 <CHARACTER>[\n] {
         //error
         // cout<<"Character Not ended!\n";
-        logError("Unterminated Character "+rawCharacter+"\n\n");
+        logError("Unterminated Character "+rawCharacter,startLine);
         BEGIN INITIAL;
 }
 <CHARACTER><<EOF>> {
         //error
         // cout<<"character not ended!\n";
-        logError("Unterminated Character "+rawCharacter+"\n\n");
+        logError("Unterminated Character "+rawCharacter,startLine);
         BEGIN INITIAL;
 }
 
@@ -335,21 +340,21 @@ continue {
         // cout<<"Character end\n";
         rawCharacter.append("\'");
         if(character.size()==1){
-                logToken("CONST_CHAR",rawCharacter);
+                logTokenString("CONST_CHAR",rawCharacter,character,startLine);
                 writeToken("CONST_CHAR",character);
                 if(symbolTable.insert(rawCharacter,"CONST_CHAR")){
-                        symbolTable.printCurrentScopeTable(fLog);
+                        symbolTable.printAllScopeTable(fLog);
                 }
                 else{
-                        fLog<<character<<" already exists in current ScopeTable\n\n";
+                        fLog<<rawCharacter<<" already exists in current ScopeTable\n\n";
                 }
         }
         else{
-                logError("Multi character constant error "+rawCharacter+"\n\n");
+                logError("Multi character constant error "+rawCharacter,startLine);
         }
         BEGIN INITIAL;
 }
-<CHARACTER_END>[\x20-\x26\x28-\x5B\x5D-\x7E] {
+<CHARACTER_END>[\x20-\x26\x28-\x5B\x5D-\x7E\x09] {
         //warning? or //error? 
         character.append(yytext);
         rawCharacter.append(yytext);
@@ -364,17 +369,17 @@ continue {
 }
 <CHARACTER_END>. {
         //error
-        logError("Invalid Character "+rawCharacter+"\n\n");
+        logError("Invalid Character "+string(yytext),startLine);
         BEGIN INITIAL;
 }
 <CHARACTER_END>[\n] {
         //error
-        logError("Unterminated Character "+rawCharacter+"\n\n");
+        logError("Unterminated Character "+rawCharacter,startLine);
         BEGIN INITIAL;
 }
 <CHARACTER_END><<EOF>> {
         //error no closing '
-         logError("Unterminated Character "+rawCharacter+"\n\n");
+         logError("Unterminated Character "+rawCharacter,startLine);
         BEGIN INITIAL;
 }
 
@@ -383,10 +388,11 @@ continue {
         // cout<<"String started\n";
         stringLiteral="";
         rawStringLiteral="\"";
+        startLine=yylineno;
         BEGIN STRING;
 }
 
-<STRING>[\x20-\x21\x23-\x5B\x5D-\x7E] {
+<STRING>[\x20-\x21\x23-\x5B\x5D-\x7E\x09] {
         stringLiteral.append(yytext);
         rawStringLiteral.append(yytext);
 }
@@ -403,25 +409,25 @@ continue {
 
 <STRING>\\. {
         //error
-        logError("Unknown Escape Sequence "+rawStringLiteral+"\n\n");
+        logError("Unknown Escape Sequence "+rawStringLiteral+string(yytext),startLine);
         BEGIN INITIAL;
 }
 <STRING>\" {
         rawStringLiteral.append("\"");
-        logToken("STRING",rawStringLiteral);
+        logTokenString("STRING",rawStringLiteral,stringLiteral,startLine);
         writeToken("STRING",stringLiteral);
         // cout<<"String ended\n";
         BEGIN INITIAL;
 }
 <STRING>[\n] {
         //error
-        logError("Unterminated String "+rawStringLiteral);
+        logError("Unterminated String "+rawStringLiteral,startLine);
         BEGIN INITIAL;
 }
 
 <STRING><<EOF>> {
         //error
-        logError("Unterminated String "+rawStringLiteral);
+        logError("Unterminated String "+rawStringLiteral,startLine);
         BEGIN INITIAL;
 }
 
@@ -429,13 +435,14 @@ continue {
 <STRING>. {
         //error
         // cout<<"Unknown Character in string\n";
-        // cout<<"The character is: "<<yytext<<"\n";
-        logError("Unknown Character in String "+rawStringLiteral);
+        // cout<<"The character is: "<<(int)yytext[0]<<"\n";
+        logError("Unknown Character in String "+rawStringLiteral,startLine);
         BEGIN INITIAL;
 }
 
 .   {
         //error unknown character
+        logError("Unrecognized character : "+string(yytext));
 
     }
 %%
@@ -449,6 +456,13 @@ int main(int argc,char * argv[]){
 	yyin=fin;
 	yylex();
 	fclose(yyin);
+
+        symbolTable.printAllScopeTable(fLog);
+        fLog<<"\n";
+        fLog<<"Total lines: "<<yylineno<<"\n";
+        fLog<<"Total errors: "<<errorCount<<"\n";
+        
+
 	fLog.close();
 	fToken.close();
 	return 0;

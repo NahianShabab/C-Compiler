@@ -1,7 +1,9 @@
 #ifndef UTIL_H
 #define UTIL_H
 #include<string>
+#include<iostream>
 using std::string;
+using std::cout;
 
 //(\\n)|(\\t)|(\\\\)|(\\')|(\\a)|(\\f)|(\\r)|(\\b)|(\\v)|(\\0)|(\\\")
 char specialCharacterValue(string str){
