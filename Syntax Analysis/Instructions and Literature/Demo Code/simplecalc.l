@@ -1,0 +1,36 @@
+%option noyywrap
+
+%{
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include "y.tab.h"
+/* Originally the following line of code was "extern double yylval"
+But it didn't work, because yylval is declared as YYSTYPE 
+in tab.h file, so i changed it as following
+*/
+extern YYSTYPE yylval;
+%}
+
+
+WS [ \t]+
+DIGIT [0-9]
+NUMBER [-]?{DIGIT}+(\.{DIGIT}+)?
+
+%%
+
+{NUMBER}  {
+  sscanf(yytext,"%lf", &yylval);
+	     return NUMBER;
+	  }
+
+"+"       { return PLUS; }
+"-"       { return MINUS; }
+"/"       { return SLASH; }
+"*"       { return ASTERISK; }
+"("       { return LPAREN; }
+")"       { return RPAREN; }
+"\n"      { return NEWLINE; }
+{WS} { /* No action and no return */}
+
+%%

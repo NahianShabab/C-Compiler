@@ -1,0 +1,6 @@
+Line 1: type_specifier : INT
+Line 3: compound_statement : LCURL RCURL
+Line 3: func_definition : type_specifier ID LPAREN RPAREN compound_statement
+Line 3: unit : func_definition
+Line 3: program : unit
+Line 3: start: program
