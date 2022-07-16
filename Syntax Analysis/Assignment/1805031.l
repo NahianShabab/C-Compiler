@@ -9,6 +9,8 @@
 #include<fstream>
 #include"util.h"
 #include"SymbolTable.h"
+#include"SymbolInfo.h"
+#include"NonTerminal.h"
 #include"y.tab.h"
 using namespace std;
 
@@ -75,20 +77,25 @@ printf {return PRINTLN;}
         // else{
         //         fLog<<yytext<<" already exists in current ScopeTable\n\n";
         // }
+        yylval.symbol=new SymbolInfo(yytext,"ID");
         return ID;
 }
 
 [\+|-] {
+        yylval.symbol=new SymbolInfo(yytext,"ADDOP");
         return ADDOP;
 }
 
-[*/%] {return MULOP;
+[*/%] {
+        yylval.symbol=new SymbolInfo(yytext,"MULOP");
+        return MULOP;
 
 }
 
 \+\+ {return INCOP;}
 
 (!=)|(==)|(<=)|<|(>=)|> {
+        yylval.symbol=new SymbolInfo(yytext,"RELOP");
         return RELOP;
 }
 
@@ -97,6 +104,7 @@ printf {return PRINTLN;}
 }
 
 &&|(\|\|) {
+        yylval.symbol=new SymbolInfo(yytext,"LOGICOP");
         return LOGICOP;
 }
 
@@ -114,12 +122,12 @@ printf {return PRINTLN;}
 
 \{ {
         return LCURL;
-        // symbolTable.enterScope();
+        table->enterScope();
 }
 
 \} {
         return RCURL;
-        // symbolTable.exitScope();
+        table->exitScope();
 }
 
 \[ {
@@ -157,6 +165,7 @@ printf {return PRINTLN;}
         // else{
         //         fLog<<yytext<<" already exists in current ScopeTable\n\n";
         // }
+        yylval.symbol=new SymbolInfo(yytext,"CONST_FLOAT");
         return CONST_FLOAT;
 }
 
@@ -171,6 +180,7 @@ printf {return PRINTLN;}
         // else{
         //         fLog<<yytext<<" already exists in current ScopeTable\n\n";
         // }
+        yylval.symbol=new SymbolInfo(yytext,"CONST_INT");
         return CONST_INT;
 }
 

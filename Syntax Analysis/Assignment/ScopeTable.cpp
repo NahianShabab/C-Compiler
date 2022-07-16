@@ -26,18 +26,20 @@ unsigned long ScopeTable::sdbm(string value){
     return hash;
 }
 
-bool ScopeTable::insert(string name,string type){
-    int idx=hashFunction(name);
+bool ScopeTable::insert(SymbolInfo * s){
+    if(s==NULL)
+        return false;
+    int idx=hashFunction(s->getName());
     SymbolInfo * current=table[idx];
     while (current!=NULL)
     { 
-        if(current->getName()==name){
+        if(current->getName()==s->getName()){
             // cout<<name<<" already exists in current Scopetable\n";
             return false;
         }
         current=current->next;
     }
-    SymbolInfo * n=new SymbolInfo(name,type);
+    SymbolInfo * n=s;
     n->next=table[idx];
     table[idx]=n;
     // cout<<"Inserted in ScopeTable# "<<id<<" at position: "<<idx<<", 0\n";

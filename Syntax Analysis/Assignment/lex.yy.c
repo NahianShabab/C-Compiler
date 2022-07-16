@@ -558,6 +558,8 @@ char *yytext;
 #include<fstream>
 #include"util.h"
 #include"SymbolTable.h"
+#include"SymbolInfo.h"
+#include"NonTerminal.h"
 #include"y.tab.h"
 using namespace std;
 
@@ -592,8 +594,8 @@ int errorCount=0;
 // void writeToken(string type,string symbol=""){
 //     fToken<<'<'<<type<<(symbol==""?">":(","+symbol+">"));
 // }
-#line 596 "lex.yy.c"
-#line 597 "lex.yy.c"
+#line 598 "lex.yy.c"
+#line 599 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -810,9 +812,9 @@ YY_DECL
 		}
 
 	{
-#line 53 "1805031.l"
+#line 55 "1805031.l"
 
-#line 816 "lex.yy.c"
+#line 818 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -881,63 +883,63 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 54 "1805031.l"
+#line 56 "1805031.l"
 {}
 	YY_BREAK
 case 2:
 /* rule 2 can match eol */
 YY_RULE_SETUP
-#line 55 "1805031.l"
+#line 57 "1805031.l"
 {}
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 57 "1805031.l"
+#line 59 "1805031.l"
 {return IF;}   
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 58 "1805031.l"
+#line 60 "1805031.l"
 {return FOR;}
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 59 "1805031.l"
+#line 61 "1805031.l"
 {return INT;}
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 60 "1805031.l"
+#line 62 "1805031.l"
 {return FLOAT;}
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 61 "1805031.l"
+#line 63 "1805031.l"
 {return VOID;}
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 62 "1805031.l"
+#line 64 "1805031.l"
 {return ELSE;}
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 63 "1805031.l"
+#line 65 "1805031.l"
 {return WHILE;}
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 64 "1805031.l"
+#line 66 "1805031.l"
 {return RETURN;}
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 65 "1805031.l"
+#line 67 "1805031.l"
 {return PRINTLN;}
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 69 "1805031.l"
+#line 71 "1805031.l"
 {
         // logToken("ID",yytext);
         // writeToken("ID",yytext);
@@ -947,117 +949,123 @@ YY_RULE_SETUP
         // else{
         //         fLog<<yytext<<" already exists in current ScopeTable\n\n";
         // }
+        yylval.symbol=new SymbolInfo(yytext,"ID");
         return ID;
 }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 81 "1805031.l"
+#line 84 "1805031.l"
 {
+        yylval.symbol=new SymbolInfo(yytext,"ADDOP");
         return ADDOP;
 }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 85 "1805031.l"
-{return MULOP;
+#line 89 "1805031.l"
+{
+        yylval.symbol=new SymbolInfo(yytext,"MULOP");
+        return MULOP;
 
 }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 89 "1805031.l"
+#line 95 "1805031.l"
 {return INCOP;}
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 91 "1805031.l"
+#line 97 "1805031.l"
 {
+        yylval.symbol=new SymbolInfo(yytext,"RELOP");
         return RELOP;
 }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 95 "1805031.l"
+#line 102 "1805031.l"
 {
         return ASSIGNOP;
 }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 99 "1805031.l"
+#line 106 "1805031.l"
 {
+        yylval.symbol=new SymbolInfo(yytext,"LOGICOP");
         return LOGICOP;
 }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 103 "1805031.l"
+#line 111 "1805031.l"
 {
         return NOT;
 }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 107 "1805031.l"
+#line 115 "1805031.l"
 {
         return LPAREN;
 }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 111 "1805031.l"
+#line 119 "1805031.l"
 {
         return RPAREN; 
 }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 115 "1805031.l"
+#line 123 "1805031.l"
 {
         return LCURL;
-        // symbolTable.enterScope();
+        table->enterScope();
 }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 120 "1805031.l"
+#line 128 "1805031.l"
 {
         return RCURL;
-        // symbolTable.exitScope();
+        table->exitScope();
 }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 125 "1805031.l"
+#line 133 "1805031.l"
 {
         return LTHIRD;
 }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 128 "1805031.l"
+#line 136 "1805031.l"
 {
         return RTHIRD;
 }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 132 "1805031.l"
+#line 140 "1805031.l"
 {
         return COMMA;
 }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 136 "1805031.l"
+#line 144 "1805031.l"
 {
         return SEMICOLON;
 }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 140 "1805031.l"
+#line 148 "1805031.l"
 {   
         //error
         // logError("Single Dot");
@@ -1065,21 +1073,21 @@ YY_RULE_SETUP
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 145 "1805031.l"
+#line 153 "1805031.l"
 {
         // logError("Too many decimal points "+string(yytext));
 }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 149 "1805031.l"
+#line 157 "1805031.l"
 {
         // logError("Ill formed number "+string(yytext));
 }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 153 "1805031.l"
+#line 161 "1805031.l"
 {
         // if(symbolTable.insert(yytext,"CONST_FLOAT")){
         //         symbolTable.printAllScopeTable(fLog);
@@ -1087,19 +1095,20 @@ YY_RULE_SETUP
         // else{
         //         fLog<<yytext<<" already exists in current ScopeTable\n\n";
         // }
+        yylval.symbol=new SymbolInfo(yytext,"CONST_FLOAT");
         return CONST_FLOAT;
 }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 163 "1805031.l"
+#line 172 "1805031.l"
 {
         // logError("Invalid prefix on ID or invalid suffix on Number "+string(yytext));
 }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 167 "1805031.l"
+#line 176 "1805031.l"
 {
         // if(symbolTable.insert(yytext,"CONST_INT")){
         //         symbolTable.printAllScopeTable(fLog);
@@ -1107,12 +1116,13 @@ YY_RULE_SETUP
         // else{
         //         fLog<<yytext<<" already exists in current ScopeTable\n\n";
         // }
+        yylval.symbol=new SymbolInfo(yytext,"CONST_INT");
         return CONST_INT;
 }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 178 "1805031.l"
+#line 188 "1805031.l"
 {
         //error unknown character
         // logError("Unrecognized character : "+string(yytext));
@@ -1121,10 +1131,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 183 "1805031.l"
+#line 193 "1805031.l"
 ECHO;
 	YY_BREAK
-#line 1128 "lex.yy.c"
+#line 1138 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2141,7 +2151,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 183 "1805031.l"
+#line 193 "1805031.l"
 
 
 // int main(int argc,char * argv[]){

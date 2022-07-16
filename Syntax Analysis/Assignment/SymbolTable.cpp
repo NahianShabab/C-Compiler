@@ -37,10 +37,10 @@ bool SymbolTable::exitScope(){
     return false;
 }
 
-bool SymbolTable::insert(string name,string type){
+bool SymbolTable::insert(SymbolInfo * s){
     if(currentScope==NULL)
         enterScope();
-    return currentScope->insert(name,type);
+    return currentScope->insert(s);
 }
 
 bool SymbolTable:: remove(string name){
