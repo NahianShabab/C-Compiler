@@ -31,7 +31,7 @@ extern void yyerror(const char *);
 // string comment="";
 int startLine=0;
 // SymbolTable symbolTable(7);
-int errorCount=0;
+// int errorCount=0;
 // void logToken(string token,string lexeme="",int lineNo=yylineno){
 //     fLog<<"Line no "<<lineNo<<": Token <"<<token<<"> Lexeme "<<lexeme<<" found\n\n";
 // }
@@ -152,10 +152,14 @@ printf {return PRINTLN;}
 
 [0-9]*[.]([0-9]*[.][0-9]*)+ {
         // logError("Too many decimal points "+string(yytext));
+        string err="Too many decimal points "+string(yytext);
+        yyerror(err.c_str());
 }
 
 ([0-9]+.[0-9]*|[0-9]*[.][0-9]+|[0-9]+)E(\+|-)?([0-9]*[.][0-9]*)+ {
         // logError("Ill formed number "+string(yytext));
+        string err="Ill Formed Number "+string(yytext);
+        yyerror(err.c_str());
 }
 
 {Float} {
@@ -171,6 +175,8 @@ printf {return PRINTLN;}
 
 {Integer}{Identifier} {
         // logError("Invalid prefix on ID or invalid suffix on Number "+string(yytext));
+        string err="Invalid prefix on ID or invalid suffix on Number "+string(yytext);
+        yyerror(err.c_str());
 }
 
 {Integer} {
@@ -188,6 +194,8 @@ printf {return PRINTLN;}
 .   {
         //error unknown character
         // logError("Unrecognized character : "+string(yytext));
+        string err=string("Unrecognized character ")+string(yytext);
+        yyerror(err.c_str());
 
     }
 %%

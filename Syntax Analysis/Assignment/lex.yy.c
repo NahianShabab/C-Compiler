@@ -580,7 +580,7 @@ extern void yyerror(const char *);
 // string comment="";
 int startLine=0;
 // SymbolTable symbolTable(7);
-int errorCount=0;
+// int errorCount=0;
 // void logToken(string token,string lexeme="",int lineNo=yylineno){
 //     fLog<<"Line no "<<lineNo<<": Token <"<<token<<"> Lexeme "<<lexeme<<" found\n\n";
 // }
@@ -1076,18 +1076,22 @@ YY_RULE_SETUP
 #line 153 "1805031.l"
 {
         // logError("Too many decimal points "+string(yytext));
+        string err="Too many decimal points "+string(yytext);
+        yyerror(err.c_str());
 }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 157 "1805031.l"
+#line 159 "1805031.l"
 {
         // logError("Ill formed number "+string(yytext));
+        string err="Ill Formed Number "+string(yytext);
+        yyerror(err.c_str());
 }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 161 "1805031.l"
+#line 165 "1805031.l"
 {
         // if(symbolTable.insert(yytext,"CONST_FLOAT")){
         //         symbolTable.printAllScopeTable(fLog);
@@ -1101,14 +1105,16 @@ YY_RULE_SETUP
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 172 "1805031.l"
+#line 176 "1805031.l"
 {
         // logError("Invalid prefix on ID or invalid suffix on Number "+string(yytext));
+        string err="Invalid prefix on ID or invalid suffix on Number "+string(yytext);
+        yyerror(err.c_str());
 }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 176 "1805031.l"
+#line 182 "1805031.l"
 {
         // if(symbolTable.insert(yytext,"CONST_INT")){
         //         symbolTable.printAllScopeTable(fLog);
@@ -1122,19 +1128,21 @@ YY_RULE_SETUP
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 188 "1805031.l"
+#line 194 "1805031.l"
 {
         //error unknown character
         // logError("Unrecognized character : "+string(yytext));
+        string err=string("Unrecognized character ")+string(yytext);
+        yyerror(err.c_str());
 
     }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 193 "1805031.l"
+#line 201 "1805031.l"
 ECHO;
 	YY_BREAK
-#line 1138 "lex.yy.c"
+#line 1146 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2151,7 +2159,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 193 "1805031.l"
+#line 201 "1805031.l"
 
 
 // int main(int argc,char * argv[]){

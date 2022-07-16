@@ -18,5 +18,6 @@ class SymbolTable{
         SymbolInfo * lookup(string name,string & scopeId,int & bucketNo,int & pos);
         void printCurrentScopeTable(ofstream & fout);
         void printAllScopeTable(ofstream & fout);
+        bool isRootScope();
         ~SymbolTable();
 };

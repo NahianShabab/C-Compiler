@@ -29,6 +29,8 @@ void SymbolTable::enterScope(){
 bool SymbolTable::exitScope(){
     if(currentScope!=NULL){
         // cout<<"ScopeTable with id "<<currentScope->getId()<<" removed\n";
+        if(isRootScope())
+            return false;
         ScopeTable * prevScope=currentScope->getParent();
         delete currentScope;
         currentScope=prevScope;
@@ -60,6 +62,10 @@ SymbolInfo* SymbolTable::lookup(string name,string & scopeId,int & bucketNo,int 
         scope=scope->getParent();
     };
     return NULL;
+}
+
+bool SymbolTable::isRootScope(){
+    return currentScope!=NULL && currentScope->getParent()==NULL;
 }
 
 void SymbolTable::printCurrentScopeTable(ofstream & fout){

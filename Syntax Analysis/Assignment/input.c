@@ -1,6 +1,3 @@
 int main(){
-}
-
-int func1(){
-    
+	return 0;
 }
