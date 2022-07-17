@@ -25,6 +25,9 @@ void yyerror(const char *s)
 	fError<<"Error at line "<<yylineno<<" : "<<s<<"\n\n";
 	errorCount++;
 }
+void yyerror(string s){
+	yyerror(s.c_str());
+}
 void logNewLine(){
 	fLog<<'\n';
 }
@@ -52,11 +55,26 @@ void deleteNonTerminal(NonTerminal * n){
 	delete n;
 }
 
+bool compareFunctions(SymbolInfo * s1,SymbolInfo * s2){
+	FunctionInfo * f1=s1->functionInfo;
+	FunctionInfo * f2=s2->functionInfo;
+	if(f1->returnType!=f2->returnType)
+		return false;
+	if(f1->dataTypes.size()!=f2->dataTypes.size())
+		return false;
+	for(int i=0;i<f1->dataTypes.size();i++){
+		if(f1->dataTypes.at(i)!=f2->dataTypes.at(i))
+			return false;
+	}
+	return true;
+}
+
 %}
 
 %union{
 	SymbolInfo * symbol;
 	NonTerminal * nonTerminal;
+	ParameterList * parameterList;
 }
 
 %token LPAREN RPAREN SEMICOLON COMMA LCURL RCURL INT FLOAT VOID LTHIRD RTHIRD FOR IF WHILE RETURN NOT INCOP DECOP
@@ -66,10 +84,11 @@ void deleteNonTerminal(NonTerminal * n){
 %nonassoc S_IF
 %nonassoc ELSE
 
-%type <nonTerminal> start program unit var_declaration func_declaration func_definition type_specifier parameter_list
+%type <nonTerminal> start program unit var_declaration func_declaration func_definition type_specifier 
 %type <nonTerminal> compound_statement statements statement declaration_list expression_statement expression 
 %type <nonTerminal> variable logic_expression rel_expression simple_expression term unary_expression factor
 %type <nonTerminal> argument_list arguments
+%type<parameterList> parameter_list
 
 %%
 start : program
@@ -129,29 +148,102 @@ unit : var_declaration
      ;
      
 func_declaration : type_specifier ID LPAREN parameter_list RPAREN SEMICOLON
-		{
-			logGrammer("func_declaration : type_specifier ID LPAREN parameter_list RPAREN SEMICOLON");
-			$$=new NonTerminal();
-			$$->text+=$1->text;
-			$$->text+=" "+$2->getName();
-			table->insert($2);
-			$$->text+="(";
-			$$->text+=$4->text;
-			$$->text+=");";
-			logPiece($$->text);
-
-			deleteNonTerminal($1);
-			deleteNonTerminal($4);
+		{	
+			// cout<<"here at 1 "<<$2->getName()<<'\n';
+			$2->functionInfo=new FunctionInfo(false);
+			$2->functionInfo->returnType=$1->text;
+			$2->functionInfo->dataTypes=$4->dataTypes;
+			$2->functionInfo->names=$4->names;
+			SymbolInfo * s=table->lookup($2->getName());
+			if(s!=NULL){
+				if(s->functionInfo!=NULL){ /*if s is a function*/
+					if(s->functionInfo->isDefined){ /*There already exists a definition*/
+						if(compareFunctions($2,s)){ /*definition and declaration match*/
+							logGrammer("func_declaration : type_specifier ID LPAREN parameter_list RPAREN SEMICOLON");
+							$$=new NonTerminal();
+							$$->text+=$1->text;
+							$$->text+=" "+$2->getName();
+							$$->text+="(";
+							$$->text+=$4->text;
+							$$->text+=");";
+							logPiece($$->text);
+							delete $2;
+						}else{ /* declared function do not match with definition*/
+							yyerror("Declared Function \""+$2->getName()+"\" does not match previous definition");
+							delete $2;
+						}
+					}else{ /*previous one was declaration,replace it*/
+						table->remove($2->getName());
+						table->insert($2);
+						logGrammer("func_declaration : type_specifier ID LPAREN parameter_list RPAREN SEMICOLON");
+						$$=new NonTerminal();
+						$$->text+=$1->text;
+						$$->text+=" "+$2->getName();
+						$$->text+="(";
+						$$->text+=$4->text;
+						$$->text+=");";
+						logPiece($$->text);
+					}
+				}else{
+					yyerror("Function name "+$2->getName()+" conflicts with existing variable");
+					delete $2;
+				}
+			}else{
+				table->insert($2);
+				logGrammer("func_declaration : type_specifier ID LPAREN parameter_list RPAREN SEMICOLON");
+				$$=new NonTerminal();
+				$$->text+=$1->text;
+				$$->text+=" "+$2->getName();
+				$$->text+="(";
+				$$->text+=$4->text;
+				$$->text+=");";
+				logPiece($$->text);
+			}
+			delete $1;delete $4;
 		}
 		| type_specifier ID LPAREN RPAREN SEMICOLON
-		{
-			logGrammer("func_declaration : type_specifier ID LPAREN RPAREN SEMICOLON");
-			$$=new NonTerminal();
-			$$->text=$1->text+" "+$2->getName()+"();";
-			table->insert($2);
-			logPiece($$->text);
+		{	
+			$2->functionInfo=new FunctionInfo(false);
+			$2->functionInfo->returnType=$1->text;
+			SymbolInfo * s=table->lookup($2->getName());
+			if(s!=NULL){
+				if(s->functionInfo!=NULL){
+					if(s->functionInfo->isDefined){
+						if(compareFunctions($2,s)){ /*definition and declaration match*/
+							logGrammer("func_declaration : type_specifier ID LPAREN RPAREN SEMICOLON");
+							$$=new NonTerminal();
+							$$->text=$1->text+" "+$2->getName()+"();";
+							logPiece($$->text);
+							delete $2;
+						}else{ /* declared function do not match with definition*/
+							yyerror("Declared Function \""+$2->getName()+"\" does not match previous definition");
+							delete $2;
+						}
+					}else{
+						table->remove($2->getName());
+						table->insert($2);
+						logGrammer("func_declaration : type_specifier ID LPAREN RPAREN SEMICOLON");
+						$$=new NonTerminal();
+						$$->text=$1->text+" "+$2->getName()+"();";
+						table->insert($2);
+						logPiece($$->text);
+					}
+				}else{
+					yyerror("Function name "+$2->getName()+" conflicts with existing variable");
+					delete $2;
+				}
+			}else{
+				
+				logGrammer("func_declaration : type_specifier ID LPAREN RPAREN SEMICOLON");
+				$$=new NonTerminal();
+				$$->text=$1->text+" "+$2->getName()+"();";
+				logPiece($$->text);
+				table->insert($2);
+			}
 			deleteNonTerminal($1);
+			
 		}
+	
 		;
 		 
 func_definition : type_specifier ID LPAREN parameter_list RPAREN compound_statement
@@ -159,10 +251,39 @@ func_definition : type_specifier ID LPAREN parameter_list RPAREN compound_statem
 			logGrammer("func_definition : type_specifier ID LPAREN parameter_list RPAREN compound_statement");
 			$$=new NonTerminal();
 			$$->text=$1->text+" "+$2->getName()+"("+$4->text+")"+$6->text;
-			table->insert($2);
+			// table->insert($2);
 			logPiece($$->text);
+			
+			$2->functionInfo=new FunctionInfo(true);
+			$2->functionInfo->dataTypes=$4->dataTypes;
+			$2->functionInfo->names=$4->names;
+
+			SymbolInfo * s=table->lookup($2->getName());
+
+			if(s!=NULL){
+				if(s->functionInfo!=NULL){
+					if(s->functionInfo->isDefined){
+						yyerror("Function \""+$2->getName()+"\" already defined");
+						delete $2;
+					}else{
+						if(compareFunctions(s,$2)){
+							table->remove($2->getName());
+							table->insert($2);
+						}else{
+							yyerror("Function \""+$2->getName()+"\" conflicts with previous declaration");
+							delete $2;
+						}
+					}
+				}else{
+					yyerror("Function name "+$2->getName()+" conflicts with existing variable");
+					delete $2;
+				}
+			}else{
+				table->insert($2);
+			}
+
 			deleteNonTerminal($1);
-			deleteNonTerminal($4);
+			delete $4;
 			deleteNonTerminal($6);
 		}
 		| type_specifier ID LPAREN RPAREN compound_statement
@@ -174,10 +295,34 @@ func_definition : type_specifier ID LPAREN parameter_list RPAREN compound_statem
 			$$->text+="(";
 			$$->text+=")";
 			$$->text+=$5->text;
-
-			table->insert($2);
-
 			logPiece($$->text);
+
+			$2->functionInfo=new FunctionInfo(true);
+			$2->functionInfo->returnType=$1->text;
+			SymbolInfo * s=table->lookup($2->getName());
+
+			if(s!=NULL){
+				if(s->functionInfo!=NULL){
+					if(s->functionInfo->isDefined){
+						yyerror("Function \""+$2->getName()+"\" already defined");
+						delete $2;
+					}else{
+						if(compareFunctions(s,$2)){
+							table->remove($2->getName());
+							table->insert($2);
+						}else{
+							yyerror("Function \""+$2->getName()+"\" conflicts with previous declaration");
+							delete $2;
+						}
+					}
+				}else{
+					yyerror("Function name "+$2->getName()+" conflicts with existing variable");
+					delete $2;
+				}
+			}else{
+				table->insert($2);
+			}
+
 			deleteNonTerminal($1);
 			deleteNonTerminal($5);
 		}
@@ -187,40 +332,58 @@ func_definition : type_specifier ID LPAREN parameter_list RPAREN compound_statem
 parameter_list  : parameter_list COMMA type_specifier ID
 		{
 			logGrammer("parameter_list  : parameter_list COMMA type_specifier ID");
-			$$=new NonTerminal();
+			$$=new ParameterList(); 
 			$$->text=$1->text+","+$3->text+" "+$4->getName();
-			table->insert($4);
 			logPiece($$->text);
 
-			deleteNonTerminal($1);
+			$$->dataTypes=$1->dataTypes;
+			$$->names=$1->names;
+
+			$$->dataTypes.push_back($3->text);
+			$$->names.push_back($4->getName());
+
+			delete $1;
 			deleteNonTerminal($3);
+			delete $4;
 		}
 		| parameter_list COMMA type_specifier
 		{
 			logGrammer("parameter_list  : parameter_list COMMA type_specifier");
-			$$=new NonTerminal();
+			$$=new ParameterList();
 			$$->text=$1->text+","+$3->text;
 			logPiece($$->text);
 
-			deleteNonTerminal($1);
+			$$->dataTypes=$1->dataTypes;
+			$$->names=$1->names;
+
+			$$->dataTypes.push_back($3->text);
+			$$->names.push_back("");
+
+			delete $1;
 			deleteNonTerminal($3);
 		}
  		| type_specifier ID
 		{
 			logGrammer("parameter_list  : type_specifier ID");
-			$$=new NonTerminal();
+			$$=new ParameterList();
 			$$->text=$1->text+" "+$2->getName();
-			table->insert($2);
 			logPiece($$->text);
+			
+			$$->dataTypes.push_back($1->text);
+			$$->names.push_back($2->getName());
 
-			deleteNonTerminal($1);
+			delete $1;
 		}
 		| type_specifier
 		{
 			logGrammer("parameter_list  : type_specifier");
-			$$=new NonTerminal();
+			$$=new ParameterList();
 			$$->text=$1->text;
 			logPiece($$->text);
+
+			$$->dataTypes.push_back($1->text);
+			$$->names.push_back("");
+
 			deleteNonTerminal($1);
 		}
  		;

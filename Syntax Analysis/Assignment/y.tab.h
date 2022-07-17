@@ -125,12 +125,13 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 57 "1805031.y"
+#line 74 "1805031.y"
 
 	SymbolInfo * symbol;
 	NonTerminal * nonTerminal;
+	ParameterList * parameterList;
 
-#line 134 "y.tab.h"
+#line 135 "y.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

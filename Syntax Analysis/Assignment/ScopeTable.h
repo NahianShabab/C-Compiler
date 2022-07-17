@@ -19,7 +19,7 @@ class ScopeTable{
     public:
         ScopeTable(int size,string id,ScopeTable * parent);
         bool insert(SymbolInfo * s);
-        SymbolInfo * lookup(string name,int & bucketNo,int & position);
+        SymbolInfo * lookup(string name);
         bool deleteSymbolInfo(string name);
         void print(ofstream & fout);
         string getId();

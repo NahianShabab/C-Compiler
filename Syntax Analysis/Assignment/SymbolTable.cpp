@@ -51,12 +51,11 @@ bool SymbolTable:: remove(string name){
     return false;
 }
 /* scopeId,bucketNo and pos are the location of the searched symbol if found*/
-SymbolInfo* SymbolTable::lookup(string name,string & scopeId,int & bucketNo,int & pos){
+SymbolInfo* SymbolTable::lookup(string name){
     ScopeTable * scope=currentScope;
     while(scope!=NULL){
-        SymbolInfo * symbol=scope->lookup(name,bucketNo,pos);
+        SymbolInfo * symbol=scope->lookup(name);
         if(symbol!=NULL){
-            scopeId=scope->getId();
             return symbol;
         }
         scope=scope->getParent();

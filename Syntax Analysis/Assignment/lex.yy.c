@@ -1069,11 +1069,13 @@ YY_RULE_SETUP
 {   
         //error
         // logError("Single Dot");
+        string err="Invalid Decimal Point"+string(yytext);
+        yyerror(err.c_str());
 }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 153 "1805031.l"
+#line 155 "1805031.l"
 {
         // logError("Too many decimal points "+string(yytext));
         string err="Too many decimal points "+string(yytext);
@@ -1082,7 +1084,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 159 "1805031.l"
+#line 161 "1805031.l"
 {
         // logError("Ill formed number "+string(yytext));
         string err="Ill Formed Number "+string(yytext);
@@ -1091,7 +1093,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 165 "1805031.l"
+#line 167 "1805031.l"
 {
         // if(symbolTable.insert(yytext,"CONST_FLOAT")){
         //         symbolTable.printAllScopeTable(fLog);
@@ -1105,7 +1107,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 176 "1805031.l"
+#line 178 "1805031.l"
 {
         // logError("Invalid prefix on ID or invalid suffix on Number "+string(yytext));
         string err="Invalid prefix on ID or invalid suffix on Number "+string(yytext);
@@ -1114,7 +1116,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 182 "1805031.l"
+#line 184 "1805031.l"
 {
         // if(symbolTable.insert(yytext,"CONST_INT")){
         //         symbolTable.printAllScopeTable(fLog);
@@ -1128,7 +1130,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 194 "1805031.l"
+#line 196 "1805031.l"
 {
         //error unknown character
         // logError("Unrecognized character : "+string(yytext));
@@ -1139,10 +1141,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 201 "1805031.l"
+#line 203 "1805031.l"
 ECHO;
 	YY_BREAK
-#line 1146 "lex.yy.c"
+#line 1148 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2159,7 +2161,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 201 "1805031.l"
+#line 203 "1805031.l"
 
 
 // int main(int argc,char * argv[]){

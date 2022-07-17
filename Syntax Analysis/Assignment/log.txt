@@ -2,71 +2,58 @@ Line 1: type_specifier : INT
 
 int
 
-Line 2: factor : CONST_INT
-
-0
-
-Line 2: unary_expression : factor
-
-0
-
-Line 2: term :	unary_expression
-
-0
-
-Line 2: simple_expression : term
-
-0
-
-Line 2: rel_expression	: simple_expression
-
-0
-
-Line 2: logic_expression : rel_expression
-
-0
-
-Line 2: expression : logic_expression
-
-0
-
-Line 2: statement : RETURN expression SEMICOLON
-
-return 0;
-
-Line 2: statements : statement
-
-return 0;
-
-Line 3: compound_statement : LCURL statements RCURL
+Line 3: compound_statement : LCURL RCURL
 
 {
-return 0;
 }
 
 Line 3: func_definition : type_specifier ID LPAREN RPAREN compound_statement
 
 int main(){
-return 0;
 }
 
 Line 3: unit : func_definition
 
 int main(){
-return 0;
 }
 
 Line 3: program : unit
 
 int main(){
-return 0;
 }
 
-Line 3: start: program
+Line 4: type_specifier : INT
+
+int
+
+Line 6: compound_statement : LCURL RCURL
+
+{
+}
+
+Line 6: func_definition : type_specifier ID LPAREN RPAREN compound_statement
+
+int main(){
+}
+
+Error at line 6 : Function "main" already defined
+Line 6: unit : func_definition
+
+int main(){
+}
+
+Line 6: program : program unit
+
+int main(){
+}
+int main(){
+}
+
+Line 7: start: program
 
 ScopeTable # 1
-5 --> < main : ID > 
+5 --> < main : ID : FUNCTION : 0 >
 
 
-Total Lines : 3
-Total Errors : 0
+Total Lines : 7
+Total Errors : 1

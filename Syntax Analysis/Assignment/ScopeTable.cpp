@@ -46,16 +46,13 @@ bool ScopeTable::insert(SymbolInfo * s){
     return true;
 }
 
-SymbolInfo* ScopeTable::lookup(string name,int & bucketNo,int & pos){
+SymbolInfo* ScopeTable::lookup(string name){
     int idx=hashFunction(name);
     SymbolInfo * current=table[idx];
-    bucketNo=idx;
-    pos=0;
     while(current!=NULL){
         if(current->getName()==name)
             return current;
         current=current->next;
-        pos++;
     }
     return NULL;
 }
@@ -108,7 +105,14 @@ void ScopeTable::print(ofstream & fout){
             printNewLine=true;
         }
         while (current!=NULL){
-            fout<<"< "<<current->getName()<<" : "<<current->getType()<<" > ";
+            fout<<"< "<<current->getName()<<" : "<<current->getType()<<" : ";
+            if(current->functionInfo!=NULL){
+                fout<<"FUNCTION : "<<current->functionInfo->dataTypes.size()<<" >";
+            }else if(current->variableInfo!=NULL){
+                fout<<"VAR >";
+            }else{
+                fout<<"OTHER >";
+            }
             current=current->next;
         }
         if(printNewLine)

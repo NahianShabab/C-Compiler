@@ -148,6 +148,8 @@ printf {return PRINTLN;}
 [.] {   
         //error
         // logError("Single Dot");
+        string err="Invalid Decimal Point"+string(yytext);
+        yyerror(err.c_str());
 }
 
 [0-9]*[.]([0-9]*[.][0-9]*)+ {
