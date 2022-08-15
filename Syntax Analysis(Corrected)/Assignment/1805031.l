@@ -19,6 +19,7 @@ using  namespace std;
 extern YYSTYPE yylval;
 extern SymbolTable * table;
 extern ofstream fLog;
+extern Parameter * currentParameterList;
 extern void yyerror(const char *);
 extern void yyerror(string);
 
@@ -130,23 +131,35 @@ printf {return PRINTLN;}
 }
 
 \{ {
-        // if(currentParameterList!=NULL){
-        //         table->enterScope();
-        //         // cout<<"Got some parameters\n";
-        //         // cout<<"size: "<<currentParameterList->text<<'\n';
-        //         insertVarialblesInScope();
-        // }
-        // // table->printAllScopeTable(fLog);
+        table->enterScope();
+        if(currentParameterList!=NULL){
+            //insert parameters here
+            for(int i=0;i<currentParameterList->dataTypes.size();i++){
+                if(currentParameterList->dataTypes.at(i)=="void"){
+                        yyerror("void data type at parameter no "+to_string(i));
+                        continue;
+                }
+                if(currentParameterList->names.at(i)==""){
+                        continue;
+                }
+                SymbolInfo * s=new SymbolInfo(currentParameterList->names.at(i),"ID");
+                s->variableInfo=new VariableInfo(currentParameterList->dataTypes.at(i));
+                if(table->insert(s)==false){
+                        yyerror("Multiple Declaration of "+s->getName());
+                }
+            }
+        }
+        table->printAllScopeTable(fLog);
         return LCURL;
 }
 
 \} {
-        // if(table->isRootScope()){
-        //         yyerror("Invalid Scope");
-        // }else{
-        //         table->printCurrentScopeTable(fLog);
-        //         table->exitScope();
-        // }
+        if(table->isRootScope()){
+                yyerror("Invalid Scope");
+        }else{
+                table->printCurrentScopeTable(fLog);
+                table->exitScope();
+        }
         return RCURL;
 }
 

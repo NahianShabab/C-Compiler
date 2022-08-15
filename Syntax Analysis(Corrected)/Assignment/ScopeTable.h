@@ -18,8 +18,8 @@ class ScopeTable{
         unsigned long sdbm(string str);
     public:
         ScopeTable(int size,string id,ScopeTable * parent);
-        bool insert(string name,string type);
-        SymbolInfo * lookup(string name,int & bucketNo,int & position);
+        bool insert(SymbolInfo * s);
+        SymbolInfo * lookup(string name);
         bool deleteSymbolInfo(string name);
         void print(ofstream & fout);
         string getId();

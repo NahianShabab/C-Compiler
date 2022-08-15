@@ -13,10 +13,11 @@ class SymbolTable{
         SymbolTable(int scopeTableSize);
         void enterScope();
         bool exitScope();
-        bool insert(string name,string type);
+        bool insert(SymbolInfo * s);
         bool remove(string name);
-        SymbolInfo * lookup(string name,string & scopeId,int & bucketNo,int & pos);
+        SymbolInfo * lookup(string name);
         void printCurrentScopeTable(ofstream & fout);
         void printAllScopeTable(ofstream & fout);
+        bool isRootScope();
         ~SymbolTable();
 };

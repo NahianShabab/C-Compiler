@@ -26,7 +26,14 @@ void SymbolTable::enterScope(){
     // cout<<"New ScopeTable with id "<<currentScope->getId()<<" created\n";
 }
 
+bool SymbolTable::isRootScope(){
+    return currentScope==NULL?false:currentScope->getParent()==NULL;
+}
+
 bool SymbolTable::exitScope(){
+    if(isRootScope()){
+        return false;
+    }
     if(currentScope!=NULL){
         // cout<<"ScopeTable with id "<<currentScope->getId()<<" removed\n";
         ScopeTable * prevScope=currentScope->getParent();
@@ -37,10 +44,10 @@ bool SymbolTable::exitScope(){
     return false;
 }
 
-bool SymbolTable::insert(string name,string type){
+bool SymbolTable::insert(SymbolInfo * s){
     if(currentScope==NULL)
         enterScope();
-    return currentScope->insert(name,type);
+    return currentScope->insert(s);
 }
 
 bool SymbolTable:: remove(string name){
@@ -49,12 +56,11 @@ bool SymbolTable:: remove(string name){
     return false;
 }
 /* scopeId,bucketNo and pos are the location of the searched symbol if found*/
-SymbolInfo* SymbolTable::lookup(string name,string & scopeId,int & bucketNo,int & pos){
+SymbolInfo* SymbolTable::lookup(string name){
     ScopeTable * scope=currentScope;
     while(scope!=NULL){
-        SymbolInfo * symbol=scope->lookup(name,bucketNo,pos);
+        SymbolInfo * symbol=scope->lookup(name);
         if(symbol!=NULL){
-            scopeId=scope->getId();
             return symbol;
         }
         scope=scope->getParent();
@@ -74,6 +80,8 @@ void SymbolTable::printAllScopeTable(ofstream & fout){
         scope=scope->getParent();
     };
 }
+
+
 
 SymbolTable::~SymbolTable(){
     ScopeTable * scope=currentScope;

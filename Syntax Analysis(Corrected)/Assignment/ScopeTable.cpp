@@ -26,34 +26,32 @@ unsigned long ScopeTable::sdbm(string value){
     return hash;
 }
 
-bool ScopeTable::insert(string name,string type){
-    int idx=hashFunction(name);
+bool ScopeTable::insert(SymbolInfo * s){
+    if(s==NULL)
+        return false;
+    int idx=hashFunction(s->getName());
     SymbolInfo * current=table[idx];
     while (current!=NULL)
     { 
-        if(current->getName()==name){
+        if(current->getName()==s->getName()){
             // cout<<name<<" already exists in current Scopetable\n";
             return false;
         }
         current=current->next;
     }
-    SymbolInfo * n=new SymbolInfo(name,type);
-    n->next=table[idx];
-    table[idx]=n;
+    s->next=table[idx];
+    table[idx]=s;
     // cout<<"Inserted in ScopeTable# "<<id<<" at position: "<<idx<<", 0\n";
     return true;
 }
 
-SymbolInfo* ScopeTable::lookup(string name,int & bucketNo,int & pos){
+SymbolInfo* ScopeTable::lookup(string name){
     int idx=hashFunction(name);
     SymbolInfo * current=table[idx];
-    bucketNo=idx;
-    pos=0;
     while(current!=NULL){
         if(current->getName()==name)
             return current;
         current=current->next;
-        pos++;
     }
     return NULL;
 }
@@ -96,7 +94,7 @@ ScopeTable * ScopeTable::getParent(){
 void ScopeTable::print(ofstream & fout){
     // cout<<"\n";
     // cout<<"----------------------------------------------------------------\n";
-    fout<<"ScopeTable # "<<id<<"\n";
+    fout<<"ScopeTable # "<<id<<endl;
     // cout<<"----------------------------------------------------------------\n";
     for(int i=0;i<size;i++){
         SymbolInfo * current=table[i];
@@ -106,14 +104,26 @@ void ScopeTable::print(ofstream & fout){
             printNewLine=true;
         }
         while (current!=NULL){
-            fout<<"< "<<current->getName()<<" : "<<current->getType()<<" > ";
+            fout<<" ["<<current->getName()<<" : ";
+            if(current->functionInfo!=NULL){
+                fout<<"FUNCTION,"<<"RETURNS "<<current->functionInfo->returnType<<"] ";
+            }else if(current->variableInfo!=NULL){
+                fout<<"VARIABLE,";
+                if(current->variableInfo->arrayInfo!=NULL){
+                    fout<<current->variableInfo->dataType<<" ARRAY] ";
+                }else{
+                    fout<<current->variableInfo->dataType<<"] ";
+                }
+            }else{
+                fout<<"OTHER] ";
+            }
             current=current->next;
         }
         if(printNewLine)
-            fout<<"\n";
+            fout<<endl;
     }
     // cout<<"----------------------------------------------------------------\n";
-    fout<<"\n";
+    fout<<endl;
 }
 
 ScopeTable::~ScopeTable(){
