@@ -1,1 +1,1 @@
-Error at Line 6 : Multiple declaration of c
+Error at Line 5 : a is not an array

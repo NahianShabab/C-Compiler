@@ -22,3 +22,20 @@ class DeclarationList:public NonTerminal{
     public:
         vector<SymbolInfo *> symbols=vector<SymbolInfo *>();
 };
+
+class Expression:public NonTerminal{
+    public:
+        vector<SymbolInfo *> symbols=vector<SymbolInfo *>();
+        ~Expression(){
+            for(SymbolInfo * s:symbols){
+                if(s->functionInfo==NULL && s->variableInfo==NULL){
+                    delete s;
+                }
+            }
+        }
+};
+
+class Variable:public NonTerminal{
+    public:
+        SymbolInfo * symbol=NULL;
+};

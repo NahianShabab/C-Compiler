@@ -122,6 +122,8 @@ void compareFunction(SymbolInfo * newFunction,SymbolInfo * oldFunction){
 	NonTerminal * nonTerminal;
 	Parameter * parameter;
 	DeclarationList * declarationList;
+	Expression * expression;
+	Variable * variable;
 }
 
 %token LPAREN RPAREN SEMICOLON COMMA LCURL RCURL INT FLOAT 
@@ -134,11 +136,12 @@ void compareFunction(SymbolInfo * newFunction,SymbolInfo * oldFunction){
 %type <nonTerminal> start program unit var_declaration func_declaration 
 %type <nonTerminal> func_definition type_specifier
 %type <nonTerminal> compound_statement statements statement expression_statement
-%type <nonTerminal> variable argument_list arguments 
+%type <nonTerminal> argument_list arguments 
 %type <nonTerminal> expression logic_expression rel_expression simple_expression 
 %type <nonTerminal> unary_expression  term  factor
 %type <parameter> parameter_list
-%type <declarationList> declaration_list 
+%type <declarationList> declaration_list
+%type <variable> variable
 
 %%
 
@@ -687,9 +690,9 @@ statement : var_declaration
 			$$->text+=");";
 			logRule("statement :  PRINTLN LPAREN ID RPAREN SEMICOLON");
 			logPieceOfCode($$->text);
-			
-			
-			//symbol delete
+			if(table->lookup($3->getName())==NULL){
+				yyerror("Undeclared Variable "+$3->getName());
+			}
 			delete $3;
 		}
 	  | RETURN expression SEMICOLON
@@ -733,29 +736,48 @@ variable : ID
 		{
 			
 
-			$$=new NonTerminal();
+			$$=new Variable();
 			$$->text+=$1->getName();
 			logRule("variable : ID ");
 			logPieceOfCode($$->text);
-			
-			
-			//symbol delete
+			SymbolInfo * symbol=table->lookup($1->getName());
+			if(symbol==NULL){
+				yyerror("Undeclared Variable "+$1->getName());
+			}else if(symbol->variableInfo==NULL){
+				yyerror($1->getName()+" is not a variable");
+			}
+			else if(symbol->variableInfo->arrayInfo!=NULL){
+				yyerror($1->getName()+" is an array, cannot be used without indexing");
+			}else{
+				$$->symbol=symbol;
+			}
+
 			delete $1;
 
 		}		
 	 | ID LTHIRD expression RTHIRD 
 		{
-			$$=new NonTerminal();
+			$$=new Variable();
 			$$->text+=$1->getName();
 			$$->text+="[";
 			$$->text+=$3->text;
 			$$->text+="]";
 			logRule("variable : ID LTHIRD expression RTHIRD ");
 			logPieceOfCode($$->text);
-			
-			delete $3;
+			// task: check if expression evaluates to int
 
-			//symbol delete
+			SymbolInfo * symbol=table->lookup($1->getName());
+			if(symbol==NULL){
+				yyerror("Undeclared Variable "+$1->getName());
+			}else if(symbol->variableInfo==NULL){
+				yyerror($1->getName()+" is not a variable");
+			}
+			else if(symbol->variableInfo->arrayInfo==NULL){
+				yyerror($1->getName()+" is not an array");
+			}else{
+				$$->symbol=symbol;
+			}
+			delete $3;
 			delete $1;
 
 		}

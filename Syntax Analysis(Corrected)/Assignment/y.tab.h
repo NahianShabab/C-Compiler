@@ -131,8 +131,10 @@ union YYSTYPE
 	NonTerminal * nonTerminal;
 	Parameter * parameter;
 	DeclarationList * declarationList;
+	Expression * expression;
+	Variable * variable;
 
-#line 136 "y.tab.h"
+#line 138 "y.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
