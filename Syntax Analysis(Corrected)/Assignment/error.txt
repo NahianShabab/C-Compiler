@@ -1,1 +1,23 @@
-Error at Line 3 : syntax error
+Error at Line 20 : Multiple Declaration of a
+Error at Line 26 : Return type of function foo3 does not match declaration
+Error at Line 30 : function z conflicts with prevoius non-function symbol
+Error at Line 34 : Parameter count mismatch of function var with declaration
+Error at Line 42 : Variable type cannot be void
+Error at Line 43 : Multiple declaration of a
+Error at Line 43 : Multiple declaration of c
+Error at Line 45 : Argument no 0 type mismatch
+Error at Line 45 : Argument no 1 type mismatch
+Error at Line 48 : c is an array, cannot be used without indexing
+Error at Line 48 : Argument no 1 type mismatch
+Error at Line 49 : Argument Size Mismatch
+Error at Line 51 : Undeclared Variable k
+Error at Line 52 : b is not an array
+Error at Line 53 : Type of array index must be integer
+Error at Line 54 : void-returning function cannot be part of expression
+Error at Line 54 : void-returning function cannot be part of expression
+Error at Line 54 : void-returning function cannot be part of expression
+Error at Line 57 : void-returning function cannot be part of expression
+Error at Line 58 : Type Mismatch, assigning float value to variable of type int
+Error at Line 60 : Modulus operator needs integer operands
+Error at Line 62 : foo5 is undeclared
+Error at Line 67 : Undeclared Variable h

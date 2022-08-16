@@ -131,6 +131,15 @@ string getTypeOfExpression(Expression * expression){
 	return dataType;
 }
 
+bool expHasVoidFunc(Expression * expression){
+	for(SymbolInfo * s:expression->symbols){
+		if(s->functionInfo!=NULL && s->functionInfo->returnType=="void"){
+			return true;
+		}
+	}
+	return false;
+}
+
 
 %}
 
@@ -689,6 +698,9 @@ statement : var_declaration
 			$$->text+=$5->text;
 			logRule("statement : IF LPAREN expression RPAREN statement");
 			logPieceOfCode($$->text);
+			if(expHasVoidFunc($3) ){
+				yyerror("void-returning function cannot be part of expression");
+			}
 			for(SymbolInfo * s:$3->symbols){
 				if(s->functionInfo==NULL && s->variableInfo==NULL){
 					delete s;
@@ -710,6 +722,10 @@ statement : var_declaration
 			$$->text+=$7->text;
 			logRule("statement :  IF LPAREN expression RPAREN statement ELSE statement");
 			logPieceOfCode($$->text);
+			if(expHasVoidFunc($3) ){
+				yyerror("void-returning function cannot be part of expression");
+			}
+
 			for(SymbolInfo * s:$3->symbols){
 				if(s->functionInfo==NULL && s->variableInfo==NULL){
 					delete s;
@@ -728,6 +744,9 @@ statement : var_declaration
 			$$->text+=$5->text;
 			logRule("statement :  WHILE LPAREN expression RPAREN statement");
 			logPieceOfCode($$->text);
+			if(expHasVoidFunc($3) ){
+				yyerror("void-returning function cannot be part of expression");
+			}
 			for(SymbolInfo * s:$3->symbols){
 				if(s->functionInfo==NULL && s->variableInfo==NULL){
 					delete s;
@@ -758,6 +777,10 @@ statement : var_declaration
 			$$->text+=";";
 			logRule("statement : RETURN expression SEMICOLON");
 			logPieceOfCode($$->text);
+			if(expHasVoidFunc($2)){
+				yyerror("void-returning function cannot be part of expression");
+			}
+
 			for(SymbolInfo * s:$2->symbols){
 				if(s->functionInfo==NULL && s->variableInfo==NULL){
 					delete s;
@@ -840,7 +863,9 @@ variable : ID
 			}else{
 				$$->symbol=symbol;
 			}
-
+			if(expHasVoidFunc($3) ){
+				yyerror("void-returning function cannot be part of expression");
+			}
 			for(SymbolInfo * s:$3->symbols){
 				if(s->functionInfo==NULL && s->variableInfo==NULL){
 					delete s;
@@ -883,6 +908,9 @@ variable : ID
 				}
 				
 			}
+			if(expHasVoidFunc($3)){
+				yyerror("void-returning function cannot be part of expression");
+			}
 			$$->symbols=$3->symbols;
 			$$->forceInteger=$3->forceInteger;
 
@@ -917,6 +945,9 @@ logic_expression : rel_expression
 				$$->symbols.push_back(s);
 			}
 			$$->forceInteger=true;
+			if(expHasVoidFunc($1) ||expHasVoidFunc($3) ){
+				yyerror("void-returning function cannot be part of expression");
+			}
 			
 			delete $1;
 			delete $3;
@@ -952,6 +983,9 @@ rel_expression	: simple_expression
 				$$->symbols.push_back(s);
 			}
 			$$->forceInteger=true;
+			if(expHasVoidFunc($1) ||expHasVoidFunc($3) ){
+				yyerror("void-returning function cannot be part of expression");
+			}
 			
 			delete $1;delete $3;
 
@@ -985,6 +1019,10 @@ simple_expression : term
 				$$->symbols.push_back(s);
 			}
 			$$->forceInteger=$1->forceInteger && $3->forceInteger;
+
+			if(expHasVoidFunc($1) ||expHasVoidFunc($3) ){
+				yyerror("void-returning function cannot be part of expression");
+			}
 			
 			delete $1;
 			delete $3;
@@ -1022,6 +1060,10 @@ term :	unary_expression
 				$$->forceInteger=$1->forceInteger && $3->forceInteger;
 			else
 				$$->forceInteger=true;
+
+			if(expHasVoidFunc($1) ||expHasVoidFunc($3) ){
+				yyerror("void-returning function cannot be part of expression");
+			}
 			delete $1;
 			delete $3;
 			delete $2;
@@ -1038,6 +1080,10 @@ unary_expression : ADDOP unary_expression
 
 			$$->symbols=$2->symbols;
 			$$->forceInteger=$2->forceInteger;
+
+			if(expHasVoidFunc($2)){
+				yyerror("void-returning function cannot be part of expression");
+			}
 			
 			delete $2;
 			delete $1;
@@ -1051,6 +1097,10 @@ unary_expression : ADDOP unary_expression
 			logPieceOfCode($$->text);
 			$$->symbols=$2->symbols;
 			$$->forceInteger=$2->forceInteger;
+
+			if(expHasVoidFunc($2)){
+				yyerror("void-returning function cannot be part of expression");
+			}
 
 
 			delete $2;
@@ -1095,9 +1145,10 @@ factor	: variable
 				yyerror($1->getName()+" is undeclared");
 			}else if(symbol->functionInfo==NULL){
 				yyerror($1->getName()+" is not a function");
-			}else if(symbol->functionInfo->returnType=="void"){
-					yyerror("void-returning function "+symbol->getName()+" cannot be part of expression");
 			}
+			//else if(symbol->functionInfo->returnType=="void"){
+			// 		yyerror("void-returning function "+symbol->getName()+" cannot be part of expression");
+			// }
 			else if($3->dataTypes.size()!=symbol->functionInfo->paramDataTypes.size()){
 				yyerror("Argument Size Mismatch");
 				$$->symbols.push_back(symbol);
