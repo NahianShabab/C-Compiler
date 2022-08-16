@@ -184,9 +184,26 @@ void compareFunction(SymbolInfo * newFunction,SymbolInfo * oldFunction){
 
 }
 
+string getTypeOfExpression(Expression * expression){
+	string dataType="int";
+	if(expression->forceInteger==true){
+		return "int";
+	}
+	for(SymbolInfo * s:expression->symbols){
+		if(s->functionInfo!=NULL && s->functionInfo->returnType=="float"){
+			dataType="float";
+		}else if(s->variableInfo!=NULL && s->variableInfo->dataType=="float"){
+			dataType="float";
+		}else if(s->getType()=="CONST_FLOAT"){
+			dataType="float";
+		}
+	}
+	return dataType;
+}
 
 
-#line 190 "y.tab.c"
+
+#line 207 "y.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -301,7 +318,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 120 "1805031.y"
+#line 137 "1805031.y"
 
 	SymbolInfo * symbol;
 	NonTerminal * nonTerminal;
@@ -309,8 +326,9 @@ union YYSTYPE
 	DeclarationList * declarationList;
 	Expression * expression;
 	Variable * variable;
+	Argument * argument;
 
-#line 314 "y.tab.c"
+#line 332 "y.tab.c"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -774,13 +792,13 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,   148,   148,   154,   166,   179,   188,   197,   210,   239,
-     265,   296,   324,   353,   372,   391,   408,   423,   433,   466,
-     474,   482,   492,   509,   539,   549,   572,   581,   597,   606,
-     615,   624,   641,   657,   672,   684,   698,   711,   723,   735,
-     758,   786,   797,   811,   820,   837,   846,   864,   873,   892,
-     901,   918,   931,   941,   952,   961,   978,   989,  1000,  1011,
-    1022,  1034,  1044,  1051,  1063
+       0,   166,   166,   172,   184,   197,   206,   215,   228,   257,
+     283,   314,   342,   371,   390,   409,   426,   441,   451,   484,
+     492,   500,   510,   527,   557,   567,   590,   599,   615,   624,
+     637,   646,   681,   702,   722,   739,   753,   771,   781,   795,
+     818,   856,   869,   896,   907,   929,   940,   963,   973,   995,
+    1005,  1031,  1045,  1058,  1070,  1082,  1115,  1128,  1136,  1145,
+    1159,  1173,  1183,  1190,  1208
 };
 #endif
 
@@ -1427,15 +1445,15 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* start: program  */
-#line 149 "1805031.y"
+#line 167 "1805031.y"
         {
 		//write your code in this block in all the similar blocks below
 	}
-#line 1435 "y.tab.c"
+#line 1453 "y.tab.c"
     break;
 
   case 3: /* program: program unit  */
-#line 155 "1805031.y"
+#line 173 "1805031.y"
         {
 		(yyval.nonTerminal)=new NonTerminal();
 		(yyval.nonTerminal)->text+=(yyvsp[-1].nonTerminal)->text;
@@ -1447,11 +1465,11 @@ yyreduce:
 		delete (yyvsp[-1].nonTerminal);
 		delete (yyvsp[0].nonTerminal);
 	}
-#line 1451 "y.tab.c"
+#line 1469 "y.tab.c"
     break;
 
   case 4: /* program: unit  */
-#line 167 "1805031.y"
+#line 185 "1805031.y"
         {
 		
 
@@ -1462,11 +1480,11 @@ yyreduce:
 		
 		delete (yyvsp[0].nonTerminal);
 	}
-#line 1466 "y.tab.c"
+#line 1484 "y.tab.c"
     break;
 
   case 5: /* unit: var_declaration  */
-#line 180 "1805031.y"
+#line 198 "1805031.y"
         {
 		(yyval.nonTerminal)=new NonTerminal();
 		(yyval.nonTerminal)->text+=(yyvsp[0].nonTerminal)->text;
@@ -1475,11 +1493,11 @@ yyreduce:
 		
 		delete (yyvsp[0].nonTerminal);
 	}
-#line 1479 "y.tab.c"
+#line 1497 "y.tab.c"
     break;
 
   case 6: /* unit: func_declaration  */
-#line 189 "1805031.y"
+#line 207 "1805031.y"
          {
 		(yyval.nonTerminal)=new NonTerminal();
 		(yyval.nonTerminal)->text+=(yyvsp[0].nonTerminal)->text;
@@ -1488,11 +1506,11 @@ yyreduce:
 		
 		delete (yyvsp[0].nonTerminal);
 	 }
-#line 1492 "y.tab.c"
+#line 1510 "y.tab.c"
     break;
 
   case 7: /* unit: func_definition  */
-#line 198 "1805031.y"
+#line 216 "1805031.y"
          {
 		(yyval.nonTerminal)=new NonTerminal();
 		(yyval.nonTerminal)->text+=(yyvsp[0].nonTerminal)->text;
@@ -1501,11 +1519,11 @@ yyreduce:
 		
 		delete (yyvsp[0].nonTerminal);
 	 }
-#line 1505 "y.tab.c"
+#line 1523 "y.tab.c"
     break;
 
   case 8: /* func_declaration: type_specifier ID LPAREN parameter_list RPAREN SEMICOLON  */
-#line 211 "1805031.y"
+#line 229 "1805031.y"
                 {
 			(yyval.nonTerminal)=new NonTerminal();
 			(yyval.nonTerminal)->text+=(yyvsp[-5].nonTerminal)->text;
@@ -1534,11 +1552,11 @@ yyreduce:
 			delete (yyvsp[-2].parameter);
 
 		}
-#line 1538 "y.tab.c"
+#line 1556 "y.tab.c"
     break;
 
   case 9: /* func_declaration: type_specifier ID LPAREN RPAREN SEMICOLON  */
-#line 240 "1805031.y"
+#line 258 "1805031.y"
                 {
 			(yyval.nonTerminal)=new NonTerminal();
 			(yyval.nonTerminal)->text+=(yyvsp[-4].nonTerminal)->text;
@@ -1562,11 +1580,11 @@ yyreduce:
 			delete (yyvsp[-4].nonTerminal);
 
 		}
-#line 1566 "y.tab.c"
+#line 1584 "y.tab.c"
     break;
 
   case 10: /* func_definition: type_specifier ID LPAREN parameter_list RPAREN compound_statement  */
-#line 266 "1805031.y"
+#line 284 "1805031.y"
                 {
 			
 
@@ -1597,11 +1615,11 @@ yyreduce:
 			delete (yyvsp[-2].parameter);
 			delete (yyvsp[0].nonTerminal);
 		}
-#line 1601 "y.tab.c"
+#line 1619 "y.tab.c"
     break;
 
   case 11: /* func_definition: type_specifier ID LPAREN RPAREN compound_statement  */
-#line 297 "1805031.y"
+#line 315 "1805031.y"
                 {
 			(yyval.nonTerminal)=new NonTerminal();
 			(yyval.nonTerminal)->text+=(yyvsp[-4].nonTerminal)->text;
@@ -1626,11 +1644,11 @@ yyreduce:
 			delete (yyvsp[-4].nonTerminal);
 			delete (yyvsp[0].nonTerminal);
 		}
-#line 1630 "y.tab.c"
+#line 1648 "y.tab.c"
     break;
 
   case 12: /* parameter_list: parameter_list COMMA type_specifier ID  */
-#line 325 "1805031.y"
+#line 343 "1805031.y"
                 {
 			
 
@@ -1659,11 +1677,11 @@ yyreduce:
 			delete (yyvsp[0].symbol);
 
 		}
-#line 1663 "y.tab.c"
+#line 1681 "y.tab.c"
     break;
 
   case 13: /* parameter_list: parameter_list COMMA type_specifier  */
-#line 354 "1805031.y"
+#line 372 "1805031.y"
                 {
 			(yyval.parameter)=new Parameter();
 			(yyval.parameter)->text+=(yyvsp[-2].parameter)->text;
@@ -1682,11 +1700,11 @@ yyreduce:
 			delete (yyvsp[-2].parameter);
 			delete (yyvsp[0].nonTerminal);
 		}
-#line 1686 "y.tab.c"
+#line 1704 "y.tab.c"
     break;
 
   case 14: /* parameter_list: type_specifier ID  */
-#line 373 "1805031.y"
+#line 391 "1805031.y"
                 {
 			(yyval.parameter)=new Parameter();
 			(yyval.parameter)->text+=(yyvsp[-1].nonTerminal)->text;
@@ -1705,11 +1723,11 @@ yyreduce:
 			//symbol delete
 			delete (yyvsp[0].symbol);
 		}
-#line 1709 "y.tab.c"
+#line 1727 "y.tab.c"
     break;
 
   case 15: /* parameter_list: type_specifier  */
-#line 392 "1805031.y"
+#line 410 "1805031.y"
                 {
 			(yyval.parameter)=new Parameter();
 			(yyval.parameter)->text+=(yyvsp[0].nonTerminal)->text;
@@ -1723,11 +1741,11 @@ yyreduce:
 
 			delete (yyvsp[0].nonTerminal);
 		}
-#line 1727 "y.tab.c"
+#line 1745 "y.tab.c"
     break;
 
   case 16: /* compound_statement: LCURL statements RCURL  */
-#line 409 "1805031.y"
+#line 427 "1805031.y"
                 {
 			
 
@@ -1742,11 +1760,11 @@ yyreduce:
 			delete (yyvsp[-1].nonTerminal);
 
 		}
-#line 1746 "y.tab.c"
+#line 1764 "y.tab.c"
     break;
 
   case 17: /* compound_statement: LCURL RCURL  */
-#line 424 "1805031.y"
+#line 442 "1805031.y"
                 {
 			(yyval.nonTerminal)=new NonTerminal();
 			(yyval.nonTerminal)->text+="{\n}";
@@ -1754,11 +1772,11 @@ yyreduce:
 			logPieceOfCode((yyval.nonTerminal)->text);
 			
 		}
-#line 1758 "y.tab.c"
+#line 1776 "y.tab.c"
     break;
 
   case 18: /* var_declaration: type_specifier declaration_list SEMICOLON  */
-#line 434 "1805031.y"
+#line 452 "1805031.y"
                 {
 			(yyval.nonTerminal)=new NonTerminal();
 			(yyval.nonTerminal)->text+=(yyvsp[-2].nonTerminal)->text;
@@ -1789,11 +1807,11 @@ yyreduce:
 			delete (yyvsp[-2].nonTerminal);
 			delete (yyvsp[-1].declarationList);
 		}
-#line 1793 "y.tab.c"
+#line 1811 "y.tab.c"
     break;
 
   case 19: /* type_specifier: INT  */
-#line 467 "1805031.y"
+#line 485 "1805031.y"
                 {
 			(yyval.nonTerminal)=new NonTerminal();
 			(yyval.nonTerminal)->text="int";
@@ -1801,11 +1819,11 @@ yyreduce:
 			logPieceOfCode((yyval.nonTerminal)->text);
 			
 		}
-#line 1805 "y.tab.c"
+#line 1823 "y.tab.c"
     break;
 
   case 20: /* type_specifier: FLOAT  */
-#line 475 "1805031.y"
+#line 493 "1805031.y"
                 {
 			(yyval.nonTerminal)=new NonTerminal();
 			(yyval.nonTerminal)->text="float";
@@ -1813,11 +1831,11 @@ yyreduce:
 			logPieceOfCode((yyval.nonTerminal)->text);
 			
 		}
-#line 1817 "y.tab.c"
+#line 1835 "y.tab.c"
     break;
 
   case 21: /* type_specifier: VOID  */
-#line 483 "1805031.y"
+#line 501 "1805031.y"
                 {
 			(yyval.nonTerminal)=new NonTerminal();
 			(yyval.nonTerminal)->text="void";
@@ -1825,11 +1843,11 @@ yyreduce:
 			logPieceOfCode((yyval.nonTerminal)->text);
 			
 		}
-#line 1829 "y.tab.c"
+#line 1847 "y.tab.c"
     break;
 
   case 22: /* declaration_list: declaration_list COMMA ID  */
-#line 493 "1805031.y"
+#line 511 "1805031.y"
                 {
 			(yyval.declarationList)=new DeclarationList();
 			(yyval.declarationList)->text+=(yyvsp[-2].declarationList)->text;
@@ -1846,11 +1864,11 @@ yyreduce:
 
 			delete (yyvsp[-2].declarationList);
 		}
-#line 1850 "y.tab.c"
+#line 1868 "y.tab.c"
     break;
 
   case 23: /* declaration_list: declaration_list COMMA ID LTHIRD CONST_INT RTHIRD  */
-#line 510 "1805031.y"
+#line 528 "1805031.y"
                 {
 			
 
@@ -1880,11 +1898,11 @@ yyreduce:
 			//symbol delete
 			delete (yyvsp[-1].symbol);//const_int
 		}
-#line 1884 "y.tab.c"
+#line 1902 "y.tab.c"
     break;
 
   case 24: /* declaration_list: ID  */
-#line 540 "1805031.y"
+#line 558 "1805031.y"
                 {
 			(yyval.declarationList)=new DeclarationList();
 			(yyval.declarationList)->text+=(yyvsp[0].symbol)->getName();
@@ -1894,11 +1912,11 @@ yyreduce:
 			(yyvsp[0].symbol)->variableInfo=new VariableInfo("int");
 			(yyval.declarationList)->symbols.push_back((yyvsp[0].symbol));
 		}
-#line 1898 "y.tab.c"
+#line 1916 "y.tab.c"
     break;
 
   case 25: /* declaration_list: ID LTHIRD CONST_INT RTHIRD  */
-#line 550 "1805031.y"
+#line 568 "1805031.y"
                 {
 			(yyval.declarationList)=new DeclarationList();
 			(yyval.declarationList)->text+=(yyvsp[-3].symbol)->getName();
@@ -1919,11 +1937,11 @@ yyreduce:
 			//symbol delete
 			delete (yyvsp[-1].symbol); //const_int
 		}
-#line 1923 "y.tab.c"
+#line 1941 "y.tab.c"
     break;
 
   case 26: /* statements: statement  */
-#line 573 "1805031.y"
+#line 591 "1805031.y"
                 {
 			(yyval.nonTerminal)=new NonTerminal();
 			(yyval.nonTerminal)->text+=(yyvsp[0].nonTerminal)->text;
@@ -1932,11 +1950,11 @@ yyreduce:
 			
 			delete (yyvsp[0].nonTerminal);
 		}
-#line 1936 "y.tab.c"
+#line 1954 "y.tab.c"
     break;
 
   case 27: /* statements: statements statement  */
-#line 582 "1805031.y"
+#line 600 "1805031.y"
            {
 			
 
@@ -1950,11 +1968,11 @@ yyreduce:
 			delete (yyvsp[-1].nonTerminal);
 			delete (yyvsp[0].nonTerminal);
 	   }
-#line 1954 "y.tab.c"
+#line 1972 "y.tab.c"
     break;
 
   case 28: /* statement: var_declaration  */
-#line 598 "1805031.y"
+#line 616 "1805031.y"
                 {
 			(yyval.nonTerminal)=new NonTerminal();
 			(yyval.nonTerminal)->text+=(yyvsp[0].nonTerminal)->text;
@@ -1963,24 +1981,28 @@ yyreduce:
 			
 			delete (yyvsp[0].nonTerminal);
 		}
-#line 1967 "y.tab.c"
+#line 1985 "y.tab.c"
     break;
 
   case 29: /* statement: expression_statement  */
-#line 607 "1805031.y"
+#line 625 "1805031.y"
                 {
 			(yyval.nonTerminal)=new NonTerminal();
-			(yyval.nonTerminal)->text+=(yyvsp[0].nonTerminal)->text;
+			(yyval.nonTerminal)->text+=(yyvsp[0].expression)->text;
 			logRule("statement : expression_statement");
 			logPieceOfCode((yyval.nonTerminal)->text);
-			
-			delete (yyvsp[0].nonTerminal);
+			for(SymbolInfo * s:(yyvsp[0].expression)->symbols){
+				if(s->functionInfo==NULL && s->variableInfo==NULL){
+					delete s;
+				}
+			}
+			delete (yyvsp[0].expression);
 		}
-#line 1980 "y.tab.c"
+#line 2002 "y.tab.c"
     break;
 
   case 30: /* statement: compound_statement  */
-#line 616 "1805031.y"
+#line 638 "1805031.y"
                 {
 			(yyval.nonTerminal)=new NonTerminal();
 			(yyval.nonTerminal)->text+=(yyvsp[0].nonTerminal)->text;
@@ -1989,87 +2011,120 @@ yyreduce:
 			
 			delete (yyvsp[0].nonTerminal);
 		}
-#line 1993 "y.tab.c"
+#line 2015 "y.tab.c"
     break;
 
   case 31: /* statement: FOR LPAREN expression_statement expression_statement expression RPAREN statement  */
-#line 625 "1805031.y"
+#line 647 "1805031.y"
                 {
 			(yyval.nonTerminal)=new NonTerminal();
 			(yyval.nonTerminal)->text+="for(";
-			(yyval.nonTerminal)->text+=(yyvsp[-4].nonTerminal)->text;
-			(yyval.nonTerminal)->text+=(yyvsp[-3].nonTerminal)->text;
-			(yyval.nonTerminal)->text+=(yyvsp[-2].nonTerminal)->text;
+			(yyval.nonTerminal)->text+=(yyvsp[-4].expression)->text;
+			(yyval.nonTerminal)->text+=(yyvsp[-3].expression)->text;
+			(yyval.nonTerminal)->text+=(yyvsp[-2].expression)->text;
 			(yyval.nonTerminal)->text+=")\n";
 			(yyval.nonTerminal)->text+=(yyvsp[0].nonTerminal)->text;
 			logRule("statement : FOR LPAREN expression_statement expression_statement expression RPAREN statement");
 			logPieceOfCode((yyval.nonTerminal)->text);
+
+
+			for(SymbolInfo * s:(yyvsp[-4].expression)->symbols){
+				if(s->functionInfo==NULL && s->variableInfo==NULL){
+					delete s;
+				}
+			}
+
+			for(SymbolInfo * s:(yyvsp[-3].expression)->symbols){
+				if(s->functionInfo==NULL && s->variableInfo==NULL){
+					delete s;
+				}
+			}
+			for(SymbolInfo * s:(yyvsp[-2].expression)->symbols){
+				if(s->functionInfo==NULL && s->variableInfo==NULL){
+					delete s;
+				}
+			}
 			
-			delete (yyvsp[-4].nonTerminal);
-			delete (yyvsp[-3].nonTerminal);
-			delete (yyvsp[-2].nonTerminal);
+			delete (yyvsp[-4].expression);
+			delete (yyvsp[-3].expression);
+			delete (yyvsp[-2].expression);
 			delete (yyvsp[0].nonTerminal);
 		}
-#line 2014 "y.tab.c"
+#line 2054 "y.tab.c"
     break;
 
   case 32: /* statement: IF LPAREN expression RPAREN statement  */
-#line 642 "1805031.y"
+#line 682 "1805031.y"
                 {
 			
 
 			(yyval.nonTerminal)=new NonTerminal();
 			(yyval.nonTerminal)->text+="if(";
-			(yyval.nonTerminal)->text+=(yyvsp[-2].nonTerminal)->text;
+			(yyval.nonTerminal)->text+=(yyvsp[-2].expression)->text;
 			(yyval.nonTerminal)->text+=")\n";
 			(yyval.nonTerminal)->text+=(yyvsp[0].nonTerminal)->text;
 			logRule("statement : IF LPAREN expression RPAREN statement");
 			logPieceOfCode((yyval.nonTerminal)->text);
+			for(SymbolInfo * s:(yyvsp[-2].expression)->symbols){
+				if(s->functionInfo==NULL && s->variableInfo==NULL){
+					delete s;
+				}
+			}
 			
-			delete (yyvsp[-2].nonTerminal);
+			delete (yyvsp[-2].expression);
 			delete (yyvsp[0].nonTerminal);
 
 		}
-#line 2034 "y.tab.c"
+#line 2079 "y.tab.c"
     break;
 
   case 33: /* statement: IF LPAREN expression RPAREN statement ELSE statement  */
-#line 658 "1805031.y"
+#line 703 "1805031.y"
                 {
 			(yyval.nonTerminal)=new NonTerminal();
 			(yyval.nonTerminal)->text+="if(";
-			(yyval.nonTerminal)->text+=(yyvsp[-4].nonTerminal)->text;
+			(yyval.nonTerminal)->text+=(yyvsp[-4].expression)->text;
 			(yyval.nonTerminal)->text+=")\n";
 			(yyval.nonTerminal)->text+=(yyvsp[-2].nonTerminal)->text;
 			(yyval.nonTerminal)->text+="else\n";
 			(yyval.nonTerminal)->text+=(yyvsp[0].nonTerminal)->text;
 			logRule("statement :  IF LPAREN expression RPAREN statement ELSE statement");
 			logPieceOfCode((yyval.nonTerminal)->text);
+			for(SymbolInfo * s:(yyvsp[-4].expression)->symbols){
+				if(s->functionInfo==NULL && s->variableInfo==NULL){
+					delete s;
+				}
+			}
 			
-			delete (yyvsp[-4].nonTerminal);delete (yyvsp[-2].nonTerminal);delete (yyvsp[0].nonTerminal);
+			delete (yyvsp[-4].expression);delete (yyvsp[-2].nonTerminal);delete (yyvsp[0].nonTerminal);
 
 		}
-#line 2053 "y.tab.c"
+#line 2103 "y.tab.c"
     break;
 
   case 34: /* statement: WHILE LPAREN expression RPAREN statement  */
-#line 673 "1805031.y"
+#line 723 "1805031.y"
                 {
 			(yyval.nonTerminal)=new NonTerminal();
 			(yyval.nonTerminal)->text+="while(";
-			(yyval.nonTerminal)->text+=(yyvsp[-2].nonTerminal)->text;
+			(yyval.nonTerminal)->text+=(yyvsp[-2].expression)->text;
 			(yyval.nonTerminal)->text+=")\n";
 			(yyval.nonTerminal)->text+=(yyvsp[0].nonTerminal)->text;
 			logRule("statement :  WHILE LPAREN expression RPAREN statement");
 			logPieceOfCode((yyval.nonTerminal)->text);
+			for(SymbolInfo * s:(yyvsp[-2].expression)->symbols){
+				if(s->functionInfo==NULL && s->variableInfo==NULL){
+					delete s;
+				}
+			}
 			
-			delete (yyvsp[-2].nonTerminal);delete (yyvsp[0].nonTerminal);
+			delete (yyvsp[-2].expression);delete (yyvsp[0].nonTerminal);
 		}
-#line 2069 "y.tab.c"
+#line 2124 "y.tab.c"
     break;
 
   case 35: /* statement: PRINTLN LPAREN ID RPAREN SEMICOLON  */
-#line 685 "1805031.y"
+#line 740 "1805031.y"
                 {
 			
 			(yyval.nonTerminal)=new NonTerminal();
@@ -2083,56 +2138,61 @@ yyreduce:
 			}
 			delete (yyvsp[-2].symbol);
 		}
-#line 2087 "y.tab.c"
+#line 2142 "y.tab.c"
     break;
 
   case 36: /* statement: RETURN expression SEMICOLON  */
-#line 699 "1805031.y"
+#line 754 "1805031.y"
                 {
 			(yyval.nonTerminal)=new NonTerminal();
 			(yyval.nonTerminal)->text+="return ";
-			(yyval.nonTerminal)->text+=(yyvsp[-1].nonTerminal)->text;
+			(yyval.nonTerminal)->text+=(yyvsp[-1].expression)->text;
 			(yyval.nonTerminal)->text+=";";
 			logRule("statement : RETURN expression SEMICOLON");
 			logPieceOfCode((yyval.nonTerminal)->text);
+			for(SymbolInfo * s:(yyvsp[-1].expression)->symbols){
+				if(s->functionInfo==NULL && s->variableInfo==NULL){
+					delete s;
+				}
+			}
 			
-			delete (yyvsp[-1].nonTerminal);
+			delete (yyvsp[-1].expression);
 		}
-#line 2102 "y.tab.c"
+#line 2162 "y.tab.c"
     break;
 
   case 37: /* expression_statement: SEMICOLON  */
-#line 712 "1805031.y"
+#line 772 "1805031.y"
                 {
 			
 
-			(yyval.nonTerminal)=new NonTerminal();
-			(yyval.nonTerminal)->text+=";";
+			(yyval.expression)=new Expression();
+			(yyval.expression)->text+=";";
 			logRule("expression_statement : SEMICOLON	");
-			logPieceOfCode((yyval.nonTerminal)->text);
-			
-
+			logPieceOfCode((yyval.expression)->text);
 
 		}
-#line 2118 "y.tab.c"
+#line 2176 "y.tab.c"
     break;
 
   case 38: /* expression_statement: expression SEMICOLON  */
-#line 724 "1805031.y"
+#line 782 "1805031.y"
                 {
-			(yyval.nonTerminal)=new NonTerminal();
-			(yyval.nonTerminal)->text+=(yyvsp[-1].nonTerminal)->text;
-			(yyval.nonTerminal)->text+=";";
+			(yyval.expression)=new Expression();
+			(yyval.expression)->text+=(yyvsp[-1].expression)->text;
+			(yyval.expression)->text+=";";
 			logRule("expression_statement : expression SEMICOLON ");
-			logPieceOfCode((yyval.nonTerminal)->text);
-			
-			delete (yyvsp[-1].nonTerminal);
+			logPieceOfCode((yyval.expression)->text);
+			(yyval.expression)->symbols=(yyvsp[-1].expression)->symbols;
+			(yyval.expression)->forceInteger=(yyvsp[-1].expression)->forceInteger;
+
+			delete (yyvsp[-1].expression);
 		}
-#line 2132 "y.tab.c"
+#line 2192 "y.tab.c"
     break;
 
   case 39: /* variable: ID  */
-#line 736 "1805031.y"
+#line 796 "1805031.y"
                 {
 			
 
@@ -2155,20 +2215,23 @@ yyreduce:
 			delete (yyvsp[0].symbol);
 
 		}
-#line 2159 "y.tab.c"
+#line 2219 "y.tab.c"
     break;
 
   case 40: /* variable: ID LTHIRD expression RTHIRD  */
-#line 759 "1805031.y"
+#line 819 "1805031.y"
                 {
 			(yyval.variable)=new Variable();
 			(yyval.variable)->text+=(yyvsp[-3].symbol)->getName();
 			(yyval.variable)->text+="[";
-			(yyval.variable)->text+=(yyvsp[-1].nonTerminal)->text;
+			(yyval.variable)->text+=(yyvsp[-1].expression)->text;
 			(yyval.variable)->text+="]";
 			logRule("variable : ID LTHIRD expression RTHIRD ");
 			logPieceOfCode((yyval.variable)->text);
 			// task: check if expression evaluates to int
+			if(getTypeOfExpression((yyvsp[-1].expression))!="int"){
+				yyerror("Type of array index must be integer");
+			}
 
 			SymbolInfo * symbol=table->lookup((yyvsp[-3].symbol)->getName());
 			if(symbol==NULL){
@@ -2181,382 +2244,465 @@ yyreduce:
 			}else{
 				(yyval.variable)->symbol=symbol;
 			}
-			delete (yyvsp[-1].nonTerminal);
+
+			for(SymbolInfo * s:(yyvsp[-1].expression)->symbols){
+				if(s->functionInfo==NULL && s->variableInfo==NULL){
+					delete s;
+				}
+			}
+
+			delete (yyvsp[-1].expression);
 			delete (yyvsp[-3].symbol);
 
 		}
-#line 2189 "y.tab.c"
+#line 2259 "y.tab.c"
     break;
 
   case 41: /* expression: logic_expression  */
-#line 787 "1805031.y"
+#line 857 "1805031.y"
                 {
 			
 
-			(yyval.nonTerminal)=new NonTerminal();
-			(yyval.nonTerminal)->text+=(yyvsp[0].nonTerminal)->text;
+			(yyval.expression)=new Expression();
+			(yyval.expression)->text+=(yyvsp[0].expression)->text;
 			logRule("expression : logic_expression	");
-			logPieceOfCode((yyval.nonTerminal)->text);
-			
-			delete (yyvsp[0].nonTerminal);
+			logPieceOfCode((yyval.expression)->text);
+			(yyval.expression)->symbols=(yyvsp[0].expression)->symbols;
+			(yyval.expression)->forceInteger=(yyvsp[0].expression)->forceInteger;
+
+			delete (yyvsp[0].expression);
 		}
-#line 2204 "y.tab.c"
+#line 2276 "y.tab.c"
     break;
 
   case 42: /* expression: variable ASSIGNOP logic_expression  */
-#line 798 "1805031.y"
+#line 870 "1805031.y"
                 {
-			(yyval.nonTerminal)=new NonTerminal();
-			(yyval.nonTerminal)->text+=(yyvsp[-2].variable)->text;
-			(yyval.nonTerminal)->text+="=";
-			(yyval.nonTerminal)->text+=(yyvsp[0].nonTerminal)->text;
+			(yyval.expression)=new Expression();
+			(yyval.expression)->text+=(yyvsp[-2].variable)->text;
+			(yyval.expression)->text+="=";
+			(yyval.expression)->text+=(yyvsp[0].expression)->text;
 			logRule("expression : variable ASSIGNOP logic_expression");
-			logPieceOfCode((yyval.nonTerminal)->text);
+			logPieceOfCode((yyval.expression)->text);
+
+			if((yyvsp[-2].variable)->symbol!=NULL){
+				if((yyvsp[-2].variable)->symbol->variableInfo->dataType=="int" && getTypeOfExpression((yyvsp[0].expression))=="float"){
+					yyerror("Type Mismatch, assigning "+
+					getTypeOfExpression((yyvsp[0].expression))+" value to variable of type "
+					+(yyvsp[-2].variable)->symbol->variableInfo->dataType);
+				}
+				
+			}
+			(yyval.expression)->symbols=(yyvsp[0].expression)->symbols;
+			(yyval.expression)->forceInteger=(yyvsp[0].expression)->forceInteger;
+
+
 			
 			delete (yyvsp[-2].variable);
-			delete (yyvsp[0].nonTerminal);
+			delete (yyvsp[0].expression);
 		}
-#line 2220 "y.tab.c"
+#line 2305 "y.tab.c"
     break;
 
   case 43: /* logic_expression: rel_expression  */
-#line 812 "1805031.y"
+#line 897 "1805031.y"
                 {
-			(yyval.nonTerminal)=new NonTerminal();
-			(yyval.nonTerminal)->text+=(yyvsp[0].nonTerminal)->text;
+			(yyval.expression)=new Expression();
+			(yyval.expression)->text+=(yyvsp[0].expression)->text;
 			logRule("logic_expression : rel_expression");
-			logPieceOfCode((yyval.nonTerminal)->text);
-			
-			delete (yyvsp[0].nonTerminal);
+			logPieceOfCode((yyval.expression)->text);
+			(yyval.expression)->symbols=(yyvsp[0].expression)->symbols;
+			(yyval.expression)->forceInteger=(yyvsp[0].expression)->forceInteger;
+
+			delete (yyvsp[0].expression);
 		}
-#line 2233 "y.tab.c"
+#line 2320 "y.tab.c"
     break;
 
   case 44: /* logic_expression: rel_expression LOGICOP rel_expression  */
-#line 821 "1805031.y"
+#line 908 "1805031.y"
                 {
-			(yyval.nonTerminal)=new NonTerminal();
-			(yyval.nonTerminal)->text+=(yyvsp[-2].nonTerminal)->text;
-			(yyval.nonTerminal)->text+=(yyvsp[-1].symbol)->getName();
-			(yyval.nonTerminal)->text+=(yyvsp[0].nonTerminal)->text;
+			(yyval.expression)=new Expression();
+			(yyval.expression)->text+=(yyvsp[-2].expression)->text;
+			(yyval.expression)->text+=(yyvsp[-1].symbol)->getName();
+			(yyval.expression)->text+=(yyvsp[0].expression)->text;
 			logRule("logic_expression : rel_expression LOGICOP rel_expression");
-			logPieceOfCode((yyval.nonTerminal)->text);
+			logPieceOfCode((yyval.expression)->text);
+			(yyval.expression)->symbols=(yyvsp[-2].expression)->symbols;
+			for(SymbolInfo * s:(yyvsp[0].expression)->symbols){
+				(yyval.expression)->symbols.push_back(s);
+			}
+			(yyval.expression)->forceInteger=true;
 			
-			delete (yyvsp[-2].nonTerminal);
-			delete (yyvsp[0].nonTerminal);
+			delete (yyvsp[-2].expression);
+			delete (yyvsp[0].expression);
 
 			//symbol delete
 			delete (yyvsp[-1].symbol);
 		}
-#line 2252 "y.tab.c"
+#line 2344 "y.tab.c"
     break;
 
   case 45: /* rel_expression: simple_expression  */
-#line 838 "1805031.y"
+#line 930 "1805031.y"
                 {
-			(yyval.nonTerminal)=new NonTerminal();
-			(yyval.nonTerminal)->text+=(yyvsp[0].nonTerminal)->text;
+			(yyval.expression)=new Expression();
+			(yyval.expression)->text+=(yyvsp[0].expression)->text;
 			logRule("rel_expression	: simple_expression ");
-			logPieceOfCode((yyval.nonTerminal)->text);
-			
-			delete (yyvsp[0].nonTerminal);
+			logPieceOfCode((yyval.expression)->text);
+			(yyval.expression)->symbols=(yyvsp[0].expression)->symbols;
+			(yyval.expression)->forceInteger=(yyvsp[0].expression)->forceInteger;
+
+			delete (yyvsp[0].expression);
 		}
-#line 2265 "y.tab.c"
+#line 2359 "y.tab.c"
     break;
 
   case 46: /* rel_expression: simple_expression RELOP simple_expression  */
-#line 847 "1805031.y"
+#line 941 "1805031.y"
                 {
 			
 
-			(yyval.nonTerminal)=new NonTerminal();
-			(yyval.nonTerminal)->text+=(yyvsp[-2].nonTerminal)->text;
-			(yyval.nonTerminal)->text+=(yyvsp[-1].symbol)->getName();
-			(yyval.nonTerminal)->text+=(yyvsp[0].nonTerminal)->text;
+			(yyval.expression)=new Expression();
+			(yyval.expression)->text+=(yyvsp[-2].expression)->text;
+			(yyval.expression)->text+=(yyvsp[-1].symbol)->getName();
+			(yyval.expression)->text+=(yyvsp[0].expression)->text;
 			logRule("rel_expression	: simple_expression RELOP simple_expression	");
-			logPieceOfCode((yyval.nonTerminal)->text);
+			logPieceOfCode((yyval.expression)->text);
+			(yyval.expression)->symbols=(yyvsp[-2].expression)->symbols;
+			for(SymbolInfo * s:(yyvsp[0].expression)->symbols){
+				(yyval.expression)->symbols.push_back(s);
+			}
+			(yyval.expression)->forceInteger=true;
 			
-			delete (yyvsp[-2].nonTerminal);delete (yyvsp[0].nonTerminal);
+			delete (yyvsp[-2].expression);delete (yyvsp[0].expression);
 
 			//symbol delete 
 			delete (yyvsp[-1].symbol);
 		}
-#line 2285 "y.tab.c"
+#line 2384 "y.tab.c"
     break;
 
   case 47: /* simple_expression: term  */
-#line 865 "1805031.y"
+#line 964 "1805031.y"
                 {
-			(yyval.nonTerminal)=new NonTerminal();
-			(yyval.nonTerminal)->text+=(yyvsp[0].nonTerminal)->text;
+			(yyval.expression)=new Expression();
+			(yyval.expression)->text+=(yyvsp[0].expression)->text;
 			logRule("simple_expression : term ");
-			logPieceOfCode((yyval.nonTerminal)->text);
-			
-			delete (yyvsp[0].nonTerminal);
+			logPieceOfCode((yyval.expression)->text);
+			(yyval.expression)->symbols=(yyvsp[0].expression)->symbols;
+			(yyval.expression)->forceInteger=(yyvsp[0].expression)->forceInteger;
+			delete (yyvsp[0].expression);
 		}
-#line 2298 "y.tab.c"
+#line 2398 "y.tab.c"
     break;
 
   case 48: /* simple_expression: simple_expression ADDOP term  */
-#line 874 "1805031.y"
+#line 974 "1805031.y"
                 {
 			
 
-			(yyval.nonTerminal)=new NonTerminal();
-			(yyval.nonTerminal)->text+=(yyvsp[-2].nonTerminal)->text;
-			(yyval.nonTerminal)->text+=(yyvsp[-1].symbol)->getName();
-			(yyval.nonTerminal)->text+=(yyvsp[0].nonTerminal)->text;
+			(yyval.expression)=new Expression();
+			(yyval.expression)->text+=(yyvsp[-2].expression)->text;
+			(yyval.expression)->text+=(yyvsp[-1].symbol)->getName();
+			(yyval.expression)->text+=(yyvsp[0].expression)->text;
 			logRule("simple_expression : simple_expression ADDOP term");
-			logPieceOfCode((yyval.nonTerminal)->text);
+			logPieceOfCode((yyval.expression)->text);
+			(yyval.expression)->symbols=(yyvsp[-2].expression)->symbols;
+			for(SymbolInfo * s:(yyvsp[0].expression)->symbols){
+				(yyval.expression)->symbols.push_back(s);
+			}
+			(yyval.expression)->forceInteger=(yyvsp[-2].expression)->forceInteger && (yyvsp[0].expression)->forceInteger;
 			
-			delete (yyvsp[-2].nonTerminal);
-			delete (yyvsp[0].nonTerminal);
-
-			//symbol delete
+			delete (yyvsp[-2].expression);
+			delete (yyvsp[0].expression);
 			delete (yyvsp[-1].symbol);
 		}
-#line 2319 "y.tab.c"
+#line 2422 "y.tab.c"
     break;
 
   case 49: /* term: unary_expression  */
-#line 893 "1805031.y"
+#line 996 "1805031.y"
                 {
-			(yyval.nonTerminal)=new NonTerminal();
-			(yyval.nonTerminal)->text+=(yyvsp[0].nonTerminal)->text;
+			(yyval.expression)=new Expression();
+			(yyval.expression)->text+=(yyvsp[0].expression)->text;
 			logRule("term :	unary_expression");
-			logPieceOfCode((yyval.nonTerminal)->text);
-			
-			delete (yyvsp[0].nonTerminal);
+			logPieceOfCode((yyval.expression)->text);
+			(yyval.expression)->symbols=(yyvsp[0].expression)->symbols;
+			(yyval.expression)->forceInteger=(yyvsp[0].expression)->forceInteger;
+			delete (yyvsp[0].expression);
 		}
-#line 2332 "y.tab.c"
+#line 2436 "y.tab.c"
     break;
 
   case 50: /* term: term MULOP unary_expression  */
-#line 902 "1805031.y"
+#line 1006 "1805031.y"
                 {
-			(yyval.nonTerminal)=new NonTerminal();
-			(yyval.nonTerminal)->text+=(yyvsp[-2].nonTerminal)->text;
-			(yyval.nonTerminal)->text+=(yyvsp[-1].symbol)->getName();
-			(yyval.nonTerminal)->text+=(yyvsp[0].nonTerminal)->text;
+			(yyval.expression)=new Expression();
+			(yyval.expression)->text+=(yyvsp[-2].expression)->text;
+			(yyval.expression)->text+=(yyvsp[-1].symbol)->getName();
+			(yyval.expression)->text+=(yyvsp[0].expression)->text;
 			logRule("term : term MULOP unary_expression");
-			logPieceOfCode((yyval.nonTerminal)->text);
-			
-			delete (yyvsp[-2].nonTerminal);
-			delete (yyvsp[0].nonTerminal);
-
-			//symbol delete 
+			logPieceOfCode((yyval.expression)->text);
+			if((yyvsp[-1].symbol)->getName()=="%" &&(getTypeOfExpression((yyvsp[-2].expression))!="int" || 
+			getTypeOfExpression((yyvsp[0].expression))!="int")){
+				yyerror("Modulus operator needs integer operands");
+			}
+			(yyval.expression)->symbols=(yyvsp[-2].expression)->symbols;
+			for(SymbolInfo * s:(yyvsp[0].expression)->symbols){
+				(yyval.expression)->symbols.push_back(s);
+			}
+			if((yyvsp[-1].symbol)->getName()=="*")
+				(yyval.expression)->forceInteger=(yyvsp[-2].expression)->forceInteger && (yyvsp[0].expression)->forceInteger;
+			else
+				(yyval.expression)->forceInteger=true;
+			delete (yyvsp[-2].expression);
+			delete (yyvsp[0].expression);
 			delete (yyvsp[-1].symbol);
 		}
-#line 2351 "y.tab.c"
+#line 2464 "y.tab.c"
     break;
 
   case 51: /* unary_expression: ADDOP unary_expression  */
-#line 919 "1805031.y"
+#line 1032 "1805031.y"
                 {
-			(yyval.nonTerminal)=new NonTerminal();
-			(yyval.nonTerminal)->text+=(yyvsp[-1].symbol)->getName();
-			(yyval.nonTerminal)->text+=(yyvsp[0].nonTerminal)->text;
+			(yyval.expression)=new Expression();
+			(yyval.expression)->text+=(yyvsp[-1].symbol)->getName();
+			(yyval.expression)->text+=(yyvsp[0].expression)->text;
 			logRule("unary_expression : ADDOP unary_expression ");
-			logPieceOfCode((yyval.nonTerminal)->text);
-			
-			delete (yyvsp[0].nonTerminal);
+			logPieceOfCode((yyval.expression)->text);
 
-			//symbol delete
+			(yyval.expression)->symbols=(yyvsp[0].expression)->symbols;
+			(yyval.expression)->forceInteger=(yyvsp[0].expression)->forceInteger;
+			
+			delete (yyvsp[0].expression);
 			delete (yyvsp[-1].symbol);
 		}
-#line 2368 "y.tab.c"
+#line 2482 "y.tab.c"
     break;
 
   case 52: /* unary_expression: NOT unary_expression  */
-#line 932 "1805031.y"
+#line 1046 "1805031.y"
                 {
-			(yyval.nonTerminal)=new NonTerminal();
-			(yyval.nonTerminal)->text+="!";
-			(yyval.nonTerminal)->text+=(yyvsp[0].nonTerminal)->text;
+			(yyval.expression)=new Expression();
+			(yyval.expression)->text+="!";
+			(yyval.expression)->text+=(yyvsp[0].expression)->text;
 			logRule("unary_expression : NOT unary_expression ");
-			logPieceOfCode((yyval.nonTerminal)->text);
-			
-			delete (yyvsp[0].nonTerminal);
+			logPieceOfCode((yyval.expression)->text);
+			(yyval.expression)->symbols=(yyvsp[0].expression)->symbols;
+			(yyval.expression)->forceInteger=(yyvsp[0].expression)->forceInteger;
+
+
+			delete (yyvsp[0].expression);
 		}
-#line 2382 "y.tab.c"
+#line 2499 "y.tab.c"
     break;
 
   case 53: /* unary_expression: factor  */
-#line 942 "1805031.y"
+#line 1059 "1805031.y"
                 {
-			(yyval.nonTerminal)=new NonTerminal();
-			(yyval.nonTerminal)->text+=(yyvsp[0].nonTerminal)->text;
+			(yyval.expression)=new Expression();
+			(yyval.expression)->text+=(yyvsp[0].expression)->text;
 			logRule("unary_expression : factor");
-			logPieceOfCode((yyval.nonTerminal)->text);
-			
-			delete (yyvsp[0].nonTerminal);
+			logPieceOfCode((yyval.expression)->text);
+			(yyval.expression)->symbols=(yyvsp[0].expression)->symbols;
+
+			delete (yyvsp[0].expression);
 		}
-#line 2395 "y.tab.c"
+#line 2513 "y.tab.c"
     break;
 
   case 54: /* factor: variable  */
-#line 953 "1805031.y"
+#line 1071 "1805031.y"
                 {
-			(yyval.nonTerminal)=new NonTerminal();
-			(yyval.nonTerminal)->text+=(yyvsp[0].variable)->text;
+			(yyval.expression)=new Expression();
+			(yyval.expression)->text+=(yyvsp[0].variable)->text;
 			logRule("factor	: variable ");
-			logPieceOfCode((yyval.nonTerminal)->text);
-			
+			logPieceOfCode((yyval.expression)->text);
+			if((yyvsp[0].variable)->symbol!=NULL){
+				(yyval.expression)->symbols.push_back((yyvsp[0].variable)->symbol);
+			}
+
 			delete (yyvsp[0].variable);
 		}
-#line 2408 "y.tab.c"
+#line 2529 "y.tab.c"
     break;
 
   case 55: /* factor: ID LPAREN argument_list RPAREN  */
-#line 962 "1805031.y"
+#line 1083 "1805031.y"
                 {
 			
 
-			(yyval.nonTerminal)=new NonTerminal();
-			(yyval.nonTerminal)->text+=(yyvsp[-3].symbol)->getName();
-			(yyval.nonTerminal)->text+="(";
-			(yyval.nonTerminal)->text+=(yyvsp[-1].nonTerminal)->text;
-			(yyval.nonTerminal)->text+=")";
+			(yyval.expression)=new Expression();
+			(yyval.expression)->text+=(yyvsp[-3].symbol)->getName();
+			(yyval.expression)->text+="(";
+			(yyval.expression)->text+=(yyvsp[-1].argument)->text;
+			(yyval.expression)->text+=")";
 			logRule("factor : ID LPAREN argument_list RPAREN");
-			logPieceOfCode((yyval.nonTerminal)->text);
-			
-			delete (yyvsp[-1].nonTerminal);
-
-			//symbol delete
+			logPieceOfCode((yyval.expression)->text);
+			SymbolInfo * symbol=table->lookup((yyvsp[-3].symbol)->getName());
+			if(symbol==NULL){
+				yyerror((yyvsp[-3].symbol)->getName()+" is undeclared");
+			}else if(symbol->functionInfo==NULL){
+				yyerror((yyvsp[-3].symbol)->getName()+" is not a function");
+			}else if(symbol->functionInfo->returnType=="void"){
+					yyerror("void-returning function "+symbol->getName()+" cannot be part of expression");
+			}
+			else if((yyvsp[-1].argument)->dataTypes.size()!=symbol->functionInfo->paramDataTypes.size()){
+				yyerror("Argument Size Mismatch");
+				(yyval.expression)->symbols.push_back(symbol);
+			}else{
+				for(int i=0;i<(yyvsp[-1].argument)->dataTypes.size();i++){
+					if((yyvsp[-1].argument)->dataTypes.at(i)!=symbol->functionInfo->paramDataTypes.at(i)){
+						yyerror("Argument no "+to_string(i)+" type mismatch");
+					}
+				}
+				(yyval.expression)->symbols.push_back(symbol);
+			}
+			delete (yyvsp[-1].argument);
 			delete (yyvsp[-3].symbol);
 		}
-#line 2429 "y.tab.c"
+#line 2566 "y.tab.c"
     break;
 
   case 56: /* factor: LPAREN expression RPAREN  */
-#line 979 "1805031.y"
+#line 1116 "1805031.y"
                 {
-			(yyval.nonTerminal)=new NonTerminal();
-			(yyval.nonTerminal)->text+="(";
-			(yyval.nonTerminal)->text+=(yyvsp[-1].nonTerminal)->text;
-			(yyval.nonTerminal)->text+=")";
+			(yyval.expression)=new Expression();
+			(yyval.expression)->text+="(";
+			(yyval.expression)->text+=(yyvsp[-1].expression)->text;
+			(yyval.expression)->text+=")";
 			logRule("factor : LPAREN expression RPAREN");
-			logPieceOfCode((yyval.nonTerminal)->text);
+			logPieceOfCode((yyval.expression)->text);
+			(yyval.expression)->symbols=(yyvsp[-1].expression)->symbols;
+			(yyval.expression)->forceInteger=(yyvsp[-1].expression)->forceInteger;
 			
-			delete (yyvsp[-1].nonTerminal);
+			delete (yyvsp[-1].expression);
 		}
-#line 2444 "y.tab.c"
+#line 2583 "y.tab.c"
     break;
 
   case 57: /* factor: CONST_INT  */
-#line 990 "1805031.y"
+#line 1129 "1805031.y"
                 {
-			(yyval.nonTerminal)=new NonTerminal();
-			(yyval.nonTerminal)->text+=(yyvsp[0].symbol)->getName();
+			(yyval.expression)=new Expression();
+			(yyval.expression)->text+=(yyvsp[0].symbol)->getName();
 			logRule("factor	: CONST_INT");
-			logPieceOfCode((yyval.nonTerminal)->text);
-			
-
-			//symbol delete
-			delete (yyvsp[0].symbol);
+			logPieceOfCode((yyval.expression)->text);
+			(yyval.expression)->symbols.push_back((yyvsp[0].symbol));
 		}
-#line 2459 "y.tab.c"
+#line 2595 "y.tab.c"
     break;
 
   case 58: /* factor: CONST_FLOAT  */
-#line 1001 "1805031.y"
+#line 1137 "1805031.y"
                 {
-			(yyval.nonTerminal)=new NonTerminal();
-			(yyval.nonTerminal)->text+=(yyvsp[0].symbol)->getName();
+			(yyval.expression)=new Expression();
+			(yyval.expression)->text+=(yyvsp[0].symbol)->getName();
 			logRule("factor	: CONST_FLOAT");
-			logPieceOfCode((yyval.nonTerminal)->text);
-			
+			logPieceOfCode((yyval.expression)->text);
+			(yyval.expression)->symbols.push_back((yyvsp[0].symbol));
 
-			//symbol delete
-			delete (yyvsp[0].symbol);
 		}
-#line 2474 "y.tab.c"
+#line 2608 "y.tab.c"
     break;
 
   case 59: /* factor: variable INCOP  */
-#line 1012 "1805031.y"
+#line 1146 "1805031.y"
                 {
-			(yyval.nonTerminal)=new NonTerminal();
-			(yyval.nonTerminal)->text+=(yyvsp[-1].variable)->text;
-			(yyval.nonTerminal)->text+="++";
+			(yyval.expression)=new Expression();
+			(yyval.expression)->text+=(yyvsp[-1].variable)->text;
+			(yyval.expression)->text+="++";
 			logRule("factor	: variable INCOP");
-			logPieceOfCode((yyval.nonTerminal)->text);
-			
+			logPieceOfCode((yyval.expression)->text);
+			if((yyvsp[-1].variable)->symbol!=NULL){
+				(yyval.expression)->symbols.push_back((yyvsp[-1].variable)->symbol);
+			}
+
 			delete (yyvsp[-1].variable);
 
 		}
-#line 2489 "y.tab.c"
+#line 2626 "y.tab.c"
     break;
 
   case 60: /* factor: variable DECOP  */
-#line 1023 "1805031.y"
+#line 1160 "1805031.y"
                 {
-			(yyval.nonTerminal)=new NonTerminal();
-			(yyval.nonTerminal)->text+=(yyvsp[-1].variable)->text;
-			(yyval.nonTerminal)->text+="--";
+			(yyval.expression)=new Expression();
+			(yyval.expression)->text+=(yyvsp[-1].variable)->text;
+			(yyval.expression)->text+="--";
 			logRule("factor	: variable DECOP");
-			logPieceOfCode((yyval.nonTerminal)->text);
-			
+			logPieceOfCode((yyval.expression)->text);
+			if((yyvsp[-1].variable)->symbol!=NULL){
+				(yyval.expression)->symbols.push_back((yyvsp[-1].variable)->symbol);
+			}
 			delete (yyvsp[-1].variable);
 		}
-#line 2503 "y.tab.c"
+#line 2642 "y.tab.c"
     break;
 
   case 61: /* argument_list: arguments  */
-#line 1035 "1805031.y"
+#line 1174 "1805031.y"
                 {
-			(yyval.nonTerminal)=new NonTerminal();
-			(yyval.nonTerminal)->text+=(yyvsp[0].nonTerminal)->text;
+			(yyval.argument)=new Argument();
+			(yyval.argument)->text+=(yyvsp[0].argument)->text;
 			logRule("argument_list : arguments");
-			logPieceOfCode((yyval.nonTerminal)->text);
-			
-			delete (yyvsp[0].nonTerminal);
+			logPieceOfCode((yyval.argument)->text);
+			(yyval.argument)->dataTypes=(yyvsp[0].argument)->dataTypes;
+			delete (yyvsp[0].argument);
 		}
-#line 2516 "y.tab.c"
+#line 2655 "y.tab.c"
     break;
 
   case 62: /* argument_list: %empty  */
-#line 1044 "1805031.y"
+#line 1183 "1805031.y"
                 {
-			(yyval.nonTerminal)=new NonTerminal();
+			(yyval.argument)=new Argument();
 			logRule("argument_list : empty");
-			logPieceOfCode((yyval.nonTerminal)->text);
+			logPieceOfCode((yyval.argument)->text);
 			
 		}
-#line 2527 "y.tab.c"
+#line 2666 "y.tab.c"
     break;
 
   case 63: /* arguments: arguments COMMA logic_expression  */
-#line 1052 "1805031.y"
+#line 1191 "1805031.y"
                 {
-			(yyval.nonTerminal)=new NonTerminal();
-			(yyval.nonTerminal)->text+=(yyvsp[-2].nonTerminal)->text;
-			(yyval.nonTerminal)->text+=",";
-			(yyval.nonTerminal)->text+=(yyvsp[0].nonTerminal)->text;
+			(yyval.argument)=new Argument();
+			(yyval.argument)->text+=(yyvsp[-2].argument)->text;
+			(yyval.argument)->text+=",";
+			(yyval.argument)->text+=(yyvsp[0].expression)->text;
 			logRule("arguments : arguments COMMA logic_expression");
-			logPieceOfCode((yyval.nonTerminal)->text);
-			
-			delete (yyvsp[-2].nonTerminal);
-			delete (yyvsp[0].nonTerminal);
+			logPieceOfCode((yyval.argument)->text);
+			(yyval.argument)->dataTypes=(yyvsp[-2].argument)->dataTypes;
+			(yyval.argument)->dataTypes.push_back(getTypeOfExpression((yyvsp[0].expression)));
+
+			//task : before deleting expression, free symbols that are not 
+			//in the symbol table
+
+			delete (yyvsp[-2].argument);
+			delete (yyvsp[0].expression);
+
 		}
-#line 2543 "y.tab.c"
+#line 2688 "y.tab.c"
     break;
 
   case 64: /* arguments: logic_expression  */
-#line 1064 "1805031.y"
+#line 1209 "1805031.y"
                 {
-			(yyval.nonTerminal)=new NonTerminal();
-			(yyval.nonTerminal)->text+=(yyvsp[0].nonTerminal)->text;
+			(yyval.argument)=new Argument();
+			(yyval.argument)->text+=(yyvsp[0].expression)->text;
 			logRule("arguments : logic_expression");
-			logPieceOfCode((yyval.nonTerminal)->text);
-			
-			delete (yyvsp[0].nonTerminal);
+			logPieceOfCode((yyval.argument)->text);
+			(yyval.argument)->dataTypes.push_back(getTypeOfExpression((yyvsp[0].expression)));
+
+			delete (yyvsp[0].expression);
 		}
-#line 2556 "y.tab.c"
+#line 2702 "y.tab.c"
     break;
 
 
-#line 2560 "y.tab.c"
+#line 2706 "y.tab.c"
 
       default: break;
     }
@@ -2749,7 +2895,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 1075 "1805031.y"
+#line 1221 "1805031.y"
 
 int main(int argc,char *argv[])
 {

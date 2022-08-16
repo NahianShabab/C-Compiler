@@ -114,6 +114,23 @@ void compareFunction(SymbolInfo * newFunction,SymbolInfo * oldFunction){
 
 }
 
+string getTypeOfExpression(Expression * expression){
+	string dataType="int";
+	if(expression->forceInteger==true){
+		return "int";
+	}
+	for(SymbolInfo * s:expression->symbols){
+		if(s->functionInfo!=NULL && s->functionInfo->returnType=="float"){
+			dataType="float";
+		}else if(s->variableInfo!=NULL && s->variableInfo->dataType=="float"){
+			dataType="float";
+		}else if(s->getType()=="CONST_FLOAT"){
+			dataType="float";
+		}
+	}
+	return dataType;
+}
+
 
 %}
 
@@ -124,6 +141,7 @@ void compareFunction(SymbolInfo * newFunction,SymbolInfo * oldFunction){
 	DeclarationList * declarationList;
 	Expression * expression;
 	Variable * variable;
+	Argument * argument;
 }
 
 %token LPAREN RPAREN SEMICOLON COMMA LCURL RCURL INT FLOAT 
@@ -135,13 +153,13 @@ void compareFunction(SymbolInfo * newFunction,SymbolInfo * oldFunction){
 
 %type <nonTerminal> start program unit var_declaration func_declaration 
 %type <nonTerminal> func_definition type_specifier
-%type <nonTerminal> compound_statement statements statement expression_statement
-%type <nonTerminal> argument_list arguments 
-%type <nonTerminal> expression logic_expression rel_expression simple_expression 
-%type <nonTerminal> unary_expression  term  factor
+%type <nonTerminal> compound_statement statements statement 
 %type <parameter> parameter_list
 %type <declarationList> declaration_list
 %type <variable> variable
+%type <expression> unary_expression term  factor expression logic_expression 
+%type <expression> rel_expression simple_expression expression_statement
+%type <argument> argument_list arguments
 
 %%
 
@@ -609,7 +627,11 @@ statement : var_declaration
 			$$->text+=$1->text;
 			logRule("statement : expression_statement");
 			logPieceOfCode($$->text);
-			
+			for(SymbolInfo * s:$1->symbols){
+				if(s->functionInfo==NULL && s->variableInfo==NULL){
+					delete s;
+				}
+			}
 			delete $1;
 		}
 	  | compound_statement
@@ -632,6 +654,24 @@ statement : var_declaration
 			$$->text+=$7->text;
 			logRule("statement : FOR LPAREN expression_statement expression_statement expression RPAREN statement");
 			logPieceOfCode($$->text);
+
+
+			for(SymbolInfo * s:$3->symbols){
+				if(s->functionInfo==NULL && s->variableInfo==NULL){
+					delete s;
+				}
+			}
+
+			for(SymbolInfo * s:$4->symbols){
+				if(s->functionInfo==NULL && s->variableInfo==NULL){
+					delete s;
+				}
+			}
+			for(SymbolInfo * s:$5->symbols){
+				if(s->functionInfo==NULL && s->variableInfo==NULL){
+					delete s;
+				}
+			}
 			
 			delete $3;
 			delete $4;
@@ -649,6 +689,11 @@ statement : var_declaration
 			$$->text+=$5->text;
 			logRule("statement : IF LPAREN expression RPAREN statement");
 			logPieceOfCode($$->text);
+			for(SymbolInfo * s:$3->symbols){
+				if(s->functionInfo==NULL && s->variableInfo==NULL){
+					delete s;
+				}
+			}
 			
 			delete $3;
 			delete $5;
@@ -665,6 +710,11 @@ statement : var_declaration
 			$$->text+=$7->text;
 			logRule("statement :  IF LPAREN expression RPAREN statement ELSE statement");
 			logPieceOfCode($$->text);
+			for(SymbolInfo * s:$3->symbols){
+				if(s->functionInfo==NULL && s->variableInfo==NULL){
+					delete s;
+				}
+			}
 			
 			delete $3;delete $5;delete $7;
 
@@ -678,6 +728,11 @@ statement : var_declaration
 			$$->text+=$5->text;
 			logRule("statement :  WHILE LPAREN expression RPAREN statement");
 			logPieceOfCode($$->text);
+			for(SymbolInfo * s:$3->symbols){
+				if(s->functionInfo==NULL && s->variableInfo==NULL){
+					delete s;
+				}
+			}
 			
 			delete $3;delete $5;
 		}
@@ -703,6 +758,11 @@ statement : var_declaration
 			$$->text+=";";
 			logRule("statement : RETURN expression SEMICOLON");
 			logPieceOfCode($$->text);
+			for(SymbolInfo * s:$2->symbols){
+				if(s->functionInfo==NULL && s->variableInfo==NULL){
+					delete s;
+				}
+			}
 			
 			delete $2;
 		}
@@ -712,22 +772,22 @@ expression_statement 	: SEMICOLON
 		{
 			
 
-			$$=new NonTerminal();
+			$$=new Expression();
 			$$->text+=";";
 			logRule("expression_statement : SEMICOLON	");
 			logPieceOfCode($$->text);
-			
-
 
 		}		
 			| expression SEMICOLON 
 		{
-			$$=new NonTerminal();
+			$$=new Expression();
 			$$->text+=$1->text;
 			$$->text+=";";
 			logRule("expression_statement : expression SEMICOLON ");
 			logPieceOfCode($$->text);
-			
+			$$->symbols=$1->symbols;
+			$$->forceInteger=$1->forceInteger;
+
 			delete $1;
 		}
 			;
@@ -765,6 +825,9 @@ variable : ID
 			logRule("variable : ID LTHIRD expression RTHIRD ");
 			logPieceOfCode($$->text);
 			// task: check if expression evaluates to int
+			if(getTypeOfExpression($3)!="int"){
+				yyerror("Type of array index must be integer");
+			}
 
 			SymbolInfo * symbol=table->lookup($1->getName());
 			if(symbol==NULL){
@@ -777,6 +840,13 @@ variable : ID
 			}else{
 				$$->symbol=symbol;
 			}
+
+			for(SymbolInfo * s:$3->symbols){
+				if(s->functionInfo==NULL && s->variableInfo==NULL){
+					delete s;
+				}
+			}
+
 			delete $3;
 			delete $1;
 
@@ -787,21 +857,36 @@ variable : ID
 		{
 			
 
-			$$=new NonTerminal();
+			$$=new Expression();
 			$$->text+=$1->text;
 			logRule("expression : logic_expression	");
 			logPieceOfCode($$->text);
-			
+			$$->symbols=$1->symbols;
+			$$->forceInteger=$1->forceInteger;
+
 			delete $1;
 		}
 	   | variable ASSIGNOP logic_expression 
 		{
-			$$=new NonTerminal();
+			$$=new Expression();
 			$$->text+=$1->text;
 			$$->text+="=";
 			$$->text+=$3->text;
 			logRule("expression : variable ASSIGNOP logic_expression");
 			logPieceOfCode($$->text);
+
+			if($1->symbol!=NULL){
+				if($1->symbol->variableInfo->dataType=="int" && getTypeOfExpression($3)=="float"){
+					yyerror("Type Mismatch, assigning "+
+					getTypeOfExpression($3)+" value to variable of type "
+					+$1->symbol->variableInfo->dataType);
+				}
+				
+			}
+			$$->symbols=$3->symbols;
+			$$->forceInteger=$3->forceInteger;
+
+
 			
 			delete $1;
 			delete $3;
@@ -810,21 +895,28 @@ variable : ID
 			
 logic_expression : rel_expression 	
 		{
-			$$=new NonTerminal();
+			$$=new Expression();
 			$$->text+=$1->text;
 			logRule("logic_expression : rel_expression");
 			logPieceOfCode($$->text);
-			
+			$$->symbols=$1->symbols;
+			$$->forceInteger=$1->forceInteger;
+
 			delete $1;
 		}
 		 | rel_expression LOGICOP rel_expression 
 		{
-			$$=new NonTerminal();
+			$$=new Expression();
 			$$->text+=$1->text;
 			$$->text+=$2->getName();
 			$$->text+=$3->text;
 			logRule("logic_expression : rel_expression LOGICOP rel_expression");
 			logPieceOfCode($$->text);
+			$$->symbols=$1->symbols;
+			for(SymbolInfo * s:$3->symbols){
+				$$->symbols.push_back(s);
+			}
+			$$->forceInteger=true;
 			
 			delete $1;
 			delete $3;
@@ -836,23 +928,30 @@ logic_expression : rel_expression
 			
 rel_expression	: simple_expression 
 		{
-			$$=new NonTerminal();
+			$$=new Expression();
 			$$->text+=$1->text;
 			logRule("rel_expression	: simple_expression ");
 			logPieceOfCode($$->text);
-			
+			$$->symbols=$1->symbols;
+			$$->forceInteger=$1->forceInteger;
+
 			delete $1;
 		}
 		| simple_expression RELOP simple_expression	
 		{
 			
 
-			$$=new NonTerminal();
+			$$=new Expression();
 			$$->text+=$1->text;
 			$$->text+=$2->getName();
 			$$->text+=$3->text;
 			logRule("rel_expression	: simple_expression RELOP simple_expression	");
 			logPieceOfCode($$->text);
+			$$->symbols=$1->symbols;
+			for(SymbolInfo * s:$3->symbols){
+				$$->symbols.push_back(s);
+			}
+			$$->forceInteger=true;
 			
 			delete $1;delete $3;
 
@@ -863,186 +962,226 @@ rel_expression	: simple_expression
 				
 simple_expression : term 
 		{
-			$$=new NonTerminal();
+			$$=new Expression();
 			$$->text+=$1->text;
 			logRule("simple_expression : term ");
 			logPieceOfCode($$->text);
-			
+			$$->symbols=$1->symbols;
+			$$->forceInteger=$1->forceInteger;
 			delete $1;
 		}
 		  | simple_expression ADDOP term 
 		{
 			
 
-			$$=new NonTerminal();
+			$$=new Expression();
 			$$->text+=$1->text;
 			$$->text+=$2->getName();
 			$$->text+=$3->text;
 			logRule("simple_expression : simple_expression ADDOP term");
 			logPieceOfCode($$->text);
+			$$->symbols=$1->symbols;
+			for(SymbolInfo * s:$3->symbols){
+				$$->symbols.push_back(s);
+			}
+			$$->forceInteger=$1->forceInteger && $3->forceInteger;
 			
 			delete $1;
 			delete $3;
-
-			//symbol delete
 			delete $2;
 		}
 		  ;
 					
 term :	unary_expression
 		{
-			$$=new NonTerminal();
+			$$=new Expression();
 			$$->text+=$1->text;
 			logRule("term :	unary_expression");
 			logPieceOfCode($$->text);
-			
+			$$->symbols=$1->symbols;
+			$$->forceInteger=$1->forceInteger;
 			delete $1;
 		}
      |  term MULOP unary_expression
 		{
-			$$=new NonTerminal();
+			$$=new Expression();
 			$$->text+=$1->text;
 			$$->text+=$2->getName();
 			$$->text+=$3->text;
 			logRule("term : term MULOP unary_expression");
 			logPieceOfCode($$->text);
-			
+			if($2->getName()=="%" &&(getTypeOfExpression($1)!="int" || 
+			getTypeOfExpression($3)!="int")){
+				yyerror("Modulus operator needs integer operands");
+			}
+			$$->symbols=$1->symbols;
+			for(SymbolInfo * s:$3->symbols){
+				$$->symbols.push_back(s);
+			}
+			if($2->getName()=="*")
+				$$->forceInteger=$1->forceInteger && $3->forceInteger;
+			else
+				$$->forceInteger=true;
 			delete $1;
 			delete $3;
-
-			//symbol delete 
 			delete $2;
 		}
      ;
 
 unary_expression : ADDOP unary_expression  
 		{
-			$$=new NonTerminal();
+			$$=new Expression();
 			$$->text+=$1->getName();
 			$$->text+=$2->text;
 			logRule("unary_expression : ADDOP unary_expression ");
 			logPieceOfCode($$->text);
+
+			$$->symbols=$2->symbols;
+			$$->forceInteger=$2->forceInteger;
 			
 			delete $2;
-
-			//symbol delete
 			delete $1;
 		}
 		 | NOT unary_expression 
 		{
-			$$=new NonTerminal();
+			$$=new Expression();
 			$$->text+="!";
 			$$->text+=$2->text;
 			logRule("unary_expression : NOT unary_expression ");
 			logPieceOfCode($$->text);
-			
+			$$->symbols=$2->symbols;
+			$$->forceInteger=$2->forceInteger;
+
+
 			delete $2;
 		}
 		 | factor 
 		{
-			$$=new NonTerminal();
+			$$=new Expression();
 			$$->text+=$1->text;
 			logRule("unary_expression : factor");
 			logPieceOfCode($$->text);
-			
+			$$->symbols=$1->symbols;
+
 			delete $1;
 		}
 		 ;
 	
 factor	: variable 
 		{
-			$$=new NonTerminal();
+			$$=new Expression();
 			$$->text+=$1->text;
 			logRule("factor	: variable ");
 			logPieceOfCode($$->text);
-			
+			if($1->symbol!=NULL){
+				$$->symbols.push_back($1->symbol);
+			}
+
 			delete $1;
 		}
 	| ID LPAREN argument_list RPAREN
 		{
 			
 
-			$$=new NonTerminal();
+			$$=new Expression();
 			$$->text+=$1->getName();
 			$$->text+="(";
 			$$->text+=$3->text;
 			$$->text+=")";
 			logRule("factor : ID LPAREN argument_list RPAREN");
 			logPieceOfCode($$->text);
-			
+			SymbolInfo * symbol=table->lookup($1->getName());
+			if(symbol==NULL){
+				yyerror($1->getName()+" is undeclared");
+			}else if(symbol->functionInfo==NULL){
+				yyerror($1->getName()+" is not a function");
+			}else if(symbol->functionInfo->returnType=="void"){
+					yyerror("void-returning function "+symbol->getName()+" cannot be part of expression");
+			}
+			else if($3->dataTypes.size()!=symbol->functionInfo->paramDataTypes.size()){
+				yyerror("Argument Size Mismatch");
+				$$->symbols.push_back(symbol);
+			}else{
+				for(int i=0;i<$3->dataTypes.size();i++){
+					if($3->dataTypes.at(i)!=symbol->functionInfo->paramDataTypes.at(i)){
+						yyerror("Argument no "+to_string(i)+" type mismatch");
+					}
+				}
+				$$->symbols.push_back(symbol);
+			}
 			delete $3;
-
-			//symbol delete
 			delete $1;
 		}
 	| LPAREN expression RPAREN
 		{
-			$$=new NonTerminal();
+			$$=new Expression();
 			$$->text+="(";
 			$$->text+=$2->text;
 			$$->text+=")";
 			logRule("factor : LPAREN expression RPAREN");
 			logPieceOfCode($$->text);
+			$$->symbols=$2->symbols;
+			$$->forceInteger=$2->forceInteger;
 			
 			delete $2;
 		}
 	| CONST_INT
 		{
-			$$=new NonTerminal();
+			$$=new Expression();
 			$$->text+=$1->getName();
 			logRule("factor	: CONST_INT");
 			logPieceOfCode($$->text);
-			
-
-			//symbol delete
-			delete $1;
+			$$->symbols.push_back($1);
 		} 
 	| CONST_FLOAT
 		{
-			$$=new NonTerminal();
+			$$=new Expression();
 			$$->text+=$1->getName();
 			logRule("factor	: CONST_FLOAT");
 			logPieceOfCode($$->text);
-			
+			$$->symbols.push_back($1);
 
-			//symbol delete
-			delete $1;
 		}
 	| variable INCOP 
 		{
-			$$=new NonTerminal();
+			$$=new Expression();
 			$$->text+=$1->text;
 			$$->text+="++";
 			logRule("factor	: variable INCOP");
 			logPieceOfCode($$->text);
-			
+			if($1->symbol!=NULL){
+				$$->symbols.push_back($1->symbol);
+			}
+
 			delete $1;
 
 		}
 	| variable DECOP
 		{
-			$$=new NonTerminal();
+			$$=new Expression();
 			$$->text+=$1->text;
 			$$->text+="--";
 			logRule("factor	: variable DECOP");
 			logPieceOfCode($$->text);
-			
+			if($1->symbol!=NULL){
+				$$->symbols.push_back($1->symbol);
+			}
 			delete $1;
 		}
 	;
 	
 argument_list : arguments
 		{
-			$$=new NonTerminal();
+			$$=new Argument();
 			$$->text+=$1->text;
 			logRule("argument_list : arguments");
 			logPieceOfCode($$->text);
-			
+			$$->dataTypes=$1->dataTypes;
 			delete $1;
 		}
 			  |
 		{
-			$$=new NonTerminal();
+			$$=new Argument();
 			logRule("argument_list : empty");
 			logPieceOfCode($$->text);
 			
@@ -1050,23 +1189,30 @@ argument_list : arguments
 	
 arguments : arguments COMMA logic_expression
 		{
-			$$=new NonTerminal();
+			$$=new Argument();
 			$$->text+=$1->text;
 			$$->text+=",";
 			$$->text+=$3->text;
 			logRule("arguments : arguments COMMA logic_expression");
 			logPieceOfCode($$->text);
-			
+			$$->dataTypes=$1->dataTypes;
+			$$->dataTypes.push_back(getTypeOfExpression($3));
+
+			//task : before deleting expression, free symbols that are not 
+			//in the symbol table
+
 			delete $1;
 			delete $3;
+
 		}
 	      | logic_expression
 		{
-			$$=new NonTerminal();
+			$$=new Argument();
 			$$->text+=$1->text;
 			logRule("arguments : logic_expression");
 			logPieceOfCode($$->text);
-			
+			$$->dataTypes.push_back(getTypeOfExpression($1));
+
 			delete $1;
 		}
 	      ;

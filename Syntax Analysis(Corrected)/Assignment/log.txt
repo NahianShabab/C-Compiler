@@ -1,200 +1,70 @@
+Line 1: type_specifier	: INT
+
+int
+
+Line 1: declaration_list : ID
+
+x
+
+Line 1: declaration_list : declaration_list COMMA ID
+
+x,y
+
+Line 1: declaration_list : declaration_list COMMA ID
+
+x,y,z
+
+Line 1: var_declaration : type_specifier declaration_list SEMICOLON
+
+int x,y,z;
+
+Line 1: unit : var_declaration
+
+int x,y,z;
+
+Line 1: program : unit
+
+int x,y,z;
+
+Line 1: type_specifier	: FLOAT
+
+float
+
+Line 1: declaration_list : ID
+
+a
+
+Line 1: var_declaration : type_specifier declaration_list SEMICOLON
+
+float a;
+
+Line 1: unit : var_declaration
+
+float a;
+
+Line 1: program : program unit
+
+int x,y,z;
+float a;
+
 Line 3: type_specifier	: INT
 
 int
 
-ScopeTable # 1.1
-
-ScopeTable # 1
-
-Line 4: type_specifier	: INT
+Line 3: type_specifier	: INT
 
 int
 
-Line 4: declaration_list : ID
+Line 3: parameter_list : type_specifier
 
-a
+int
 
-Line 4: var_declaration : type_specifier declaration_list SEMICOLON
-
-int a;
-
-Line 4: statement : var_declaration
-
-int a;
-
-Line 4: statements : statement
-
-int a;
-
-Line 5: variable : ID 
-
-a
-
-Line 5: factor	: variable 
-
-a
-
-Line 5: unary_expression : factor
-
-a
-
-Line 5: term :	unary_expression
-
-a
-
-Line 5: simple_expression : term 
-
-a
-
-Line 5: factor	: CONST_INT
-
-2
-
-Line 5: unary_expression : factor
-
-2
-
-Line 5: term :	unary_expression
-
-2
-
-Line 5: simple_expression : simple_expression ADDOP term
-
-a+2
-
-Line 5: rel_expression	: simple_expression 
-
-a+2
-
-Line 5: logic_expression : rel_expression
-
-a+2
-
-Line 5: expression : logic_expression	
-
-a+2
-
-Line 5: variable : ID LTHIRD expression RTHIRD 
-
-a[a+2]
-
-Error at Line 5 : a is not an array
-Line 5: factor	: CONST_INT
-
-3
-
-Line 5: unary_expression : factor
-
-3
-
-Line 5: term :	unary_expression
-
-3
-
-Line 5: simple_expression : term 
-
-3
-
-Line 5: rel_expression	: simple_expression 
-
-3
-
-Line 5: logic_expression : rel_expression
-
-3
-
-Line 5: expression : variable ASSIGNOP logic_expression
-
-a[a+2]=3
-
-Line 5: expression_statement : expression SEMICOLON 
-
-a[a+2]=3;
-
-Line 5: statement : expression_statement
-
-a[a+2]=3;
-
-Line 5: statements : statements statement
-
-int a;
-a[a+2]=3;
-
-Line 6: factor	: CONST_INT
-
-0
-
-Line 6: unary_expression : factor
-
-0
-
-Line 6: term :	unary_expression
-
-0
-
-Line 6: simple_expression : term 
-
-0
-
-Line 6: rel_expression	: simple_expression 
-
-0
-
-Line 6: logic_expression : rel_expression
-
-0
-
-Line 6: expression : logic_expression	
-
-0
-
-Line 6: statement : RETURN expression SEMICOLON
-
-return 0;
-
-Line 6: statements : statements statement
-
-int a;
-a[a+2]=3;
-return 0;
-
-ScopeTable # 1.1
-6 -->  [a : VARIABLE,int] 
-
-Line 7: compound_statement : LCURL statements RCURL
-
-{
-int a;
-a[a+2]=3;
-return 0;
-}
-
-Line 7: func_definition : type_specifier ID LPAREN RPAREN compound_statement
-
-int main(){
-int a;
-a[a+2]=3;
-return 0;
-}
-
-Line 7: unit : func_definition
-
-int main(){
-int a;
-a[a+2]=3;
-return 0;
-}
-
-Line 7: program : unit
-
-int main(){
-int a;
-a[a+2]=3;
-return 0;
-}
-
+Error at Line 3 : syntax error
 ScopeTable # 1
-5 -->  [main : FUNCTION,RETURNS int] 
+1 -->  [x : VARIABLE,int] 
+2 -->  [y : VARIABLE,int] 
+3 -->  [z : VARIABLE,int] 
+6 -->  [a : VARIABLE,float] 
 
-Total Lines : 7
+Total Lines : 3
 Total Errors : 1

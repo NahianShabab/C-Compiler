@@ -25,17 +25,23 @@ class DeclarationList:public NonTerminal{
 
 class Expression:public NonTerminal{
     public:
+        bool forceInteger=false;
         vector<SymbolInfo *> symbols=vector<SymbolInfo *>();
-        ~Expression(){
-            for(SymbolInfo * s:symbols){
-                if(s->functionInfo==NULL && s->variableInfo==NULL){
-                    delete s;
-                }
-            }
-        }
+        // ~Expression(){
+        //     for(SymbolInfo * s:symbols){
+        //         if(s->functionInfo==NULL && s->variableInfo==NULL){
+        //             delete s;
+        //         }
+        //     }
+        // }
 };
 
 class Variable:public NonTerminal{
     public:
         SymbolInfo * symbol=NULL;
+};
+
+class Argument:public NonTerminal{
+    public:
+        vector<string> dataTypes=vector<string>();
 };
