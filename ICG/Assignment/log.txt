@@ -1,135 +1,255 @@
-Line 1: type_specifier	: INT
-
-int
-
-Line 1: type_specifier	: INT
-
-int
-
-Line 1: parameter_list  : type_specifier ID
-
-int a
-
-ScopeTable # 1.1
-6 -->  [a : VARIABLE,int, StackEntry: 1] 
-
-ScopeTable # 1
-
 Line 2: type_specifier	: INT
 
 int
 
-Line 2: declaration_list : ID
+Line 3: type_specifier	: INT
+
+int
+
+Line 3: declaration_list : ID
 
 b
 
-Line 2: declaration_list : declaration_list COMMA ID
+Line 3: var_declaration : type_specifier declaration_list SEMICOLON
 
-b,c
+int b;
 
-Line 2: var_declaration : type_specifier declaration_list SEMICOLON
+Line 3: statement : var_declaration
 
-int b,c;
+int b;
 
-Line 2: statement : var_declaration
+Line 3: statements : statement
 
-int b,c;
+int b;
 
-Line 2: statements : statement
+Line 4: variable : ID 
 
-int b,c;
+b
 
-Line 3: compound_statement : LCURL statements RCURL
+Line 4: factor	: CONST_INT
 
-{
-int b,c;
-}
+5
 
-Line 3: func_definition : type_specifier ID LPAREN parameter_list RPAREN compound_statement
+Line 4: unary_expression : factor
 
-int main(int a){
-int b,c;
-}
+5
 
-ScopeTable # 1.1
-0 -->  [b : VARIABLE,int, StackEntry: 2] 
-1 -->  [c : VARIABLE,int, StackEntry: 3] 
-6 -->  [a : VARIABLE,int, StackEntry: 1] 
+Line 4: term :	unary_expression
 
-Line 3: unit : func_definition
+5
 
-int main(int a){
-int b,c;
-}
+Line 4: simple_expression : term 
 
-Line 3: program : unit
+5
 
-int main(int a){
-int b,c;
-}
+Line 4: rel_expression	: simple_expression 
+
+5
+
+Line 4: logic_expression : rel_expression
+
+5
+
+Line 4: expression : variable ASSIGNOP logic_expression
+
+b=5
+
+Line 4: expression_statement : expression SEMICOLON 
+
+b=5;
+
+Line 4: statement : expression_statement
+
+b=5;
+
+Line 4: statements : statements statement
+
+int b;
+b=5;
 
 Line 5: type_specifier	: INT
 
 int
 
-Line 6: type_specifier	: INT
-
-int
-
-Line 6: declaration_list : ID
+Line 5: declaration_list : ID
 
 c
 
-Line 6: declaration_list : declaration_list COMMA ID
+Line 5: var_declaration : type_specifier declaration_list SEMICOLON
 
-c,d
+int c;
 
-Line 6: var_declaration : type_specifier declaration_list SEMICOLON
+Line 5: statement : var_declaration
 
-int c,d;
+int c;
 
-Line 6: statement : var_declaration
+Line 5: statements : statements statement
 
-int c,d;
+int b;
+b=5;
+int c;
 
-Line 6: statements : statement
+Line 6: variable : ID 
 
-int c,d;
+c
 
-Line 7: compound_statement : LCURL statements RCURL
+Line 6: factor	: CONST_INT
+
+6
+
+Line 6: unary_expression : factor
+
+6
+
+Line 6: term :	unary_expression
+
+6
+
+Line 6: simple_expression : term 
+
+6
+
+Line 6: rel_expression	: simple_expression 
+
+6
+
+Line 6: logic_expression : rel_expression
+
+6
+
+Line 6: expression : variable ASSIGNOP logic_expression
+
+c=6
+
+Line 6: expression_statement : expression SEMICOLON 
+
+c=6;
+
+Line 6: statement : expression_statement
+
+c=6;
+
+Line 6: statements : statements statement
+
+int b;
+b=5;
+int c;
+c=6;
+
+Line 7: variable : ID 
+
+b
+
+Line 7: variable : ID 
+
+b
+
+Line 7: factor	: variable 
+
+b
+
+Line 7: unary_expression : factor
+
+b
+
+Line 7: term :	unary_expression
+
+b
+
+Line 7: variable : ID 
+
+c
+
+Line 7: factor	: variable 
+
+c
+
+Line 7: unary_expression : factor
+
+c
+
+Line 7: term : term MULOP unary_expression
+
+b*c
+
+Line 7: simple_expression : term 
+
+b*c
+
+Line 7: rel_expression	: simple_expression 
+
+b*c
+
+Line 7: logic_expression : rel_expression
+
+b*c
+
+Line 7: expression : variable ASSIGNOP logic_expression
+
+b=b*c
+
+Line 7: expression_statement : expression SEMICOLON 
+
+b=b*c;
+
+Line 7: statement : expression_statement
+
+b=b*c;
+
+Line 7: statements : statements statement
+
+int b;
+b=5;
+int c;
+c=6;
+b=b*c;
+
+Line 8: compound_statement : LCURL statements RCURL
 
 {
-int c,d;
+int b;
+b=5;
+int c;
+c=6;
+b=b*c;
 }
 
-Line 7: func_definition : type_specifier ID LPAREN parameter_list RPAREN compound_statement
+Line 8: func_definition : type_specifier ID LPAREN parameter_list RPAREN compound_statement
 
-int main2(){
-int c,d;
+int main(){
+int b;
+b=5;
+int c;
+c=6;
+b=b*c;
 }
 
-ScopeTable # 1.2
-1 -->  [c : VARIABLE,int, StackEntry: 1] 
-2 -->  [d : VARIABLE,int, StackEntry: 2] 
+ScopeTable # 1.1
+0 -->  [b : VARIABLE,int, StackEntry: 1] 
+1 -->  [c : VARIABLE,int, StackEntry: 2] 
 
-Line 7: unit : func_definition
+Line 8: unit : func_definition
 
-int main2(){
-int c,d;
+int main(){
+int b;
+b=5;
+int c;
+c=6;
+b=b*c;
 }
 
-Line 7: program : program unit
+Line 8: program : unit
 
-int main(int a){
-int b,c;
-}
-int main2(){
-int c,d;
+int main(){
+int b;
+b=5;
+int c;
+c=6;
+b=b*c;
 }
 
 ScopeTable # 1
-3 -->  [main2 : FUNCTION,RETURNS int] 
 5 -->  [main : FUNCTION,RETURNS int] 
 
-Total Lines : 7
+Total Lines : 8
 Total Errors : 0

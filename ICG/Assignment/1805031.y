@@ -45,6 +45,9 @@ void logPieceOfCode(string s){ /*logs a rule instance i.e. piece of code */
 	fLog<<s<<endl;
 	fLog<<endl;
 }
+string stkPos(int stackEntry ){
+	return to_string((stackCount-stackEntry)*2);
+}
 
 // //temp function
 // void printParameterList(Parameter * p,string fName){
@@ -824,6 +827,7 @@ statement : var_declaration
 			if(table->lookup($3->getName())==NULL){
 				yyerror("Undeclared Variable "+$3->getName());
 			}
+
 			delete $3;
 		}
 	  | RETURN expression SEMICOLON
@@ -867,6 +871,9 @@ expression_statement 	: SEMICOLON
 			logPieceOfCode($$->text);
 			$$->symbols=$1->symbols;
 			$$->forceInteger=$1->forceInteger;
+
+			writeASM("POP AX");
+			--stackCount;
 
 			delete $1;
 		}
@@ -945,6 +952,7 @@ variable : ID
 			logPieceOfCode($$->text);
 			$$->symbols=$1->symbols;
 			$$->forceInteger=$1->forceInteger;
+			$$->stackEntry=$1->stackEntry;
 
 			delete $1;
 		}
@@ -970,7 +978,12 @@ variable : ID
 			}
 			$$->symbols=$3->symbols;
 			$$->forceInteger=$3->forceInteger;
-
+			writeASM("POP AX \n MOV BP,SP");
+			stackCount--;
+			writeASM("MOV [BP+"+stkPos($1->symbol->variableInfo->stackEntry)
+			+"],AX \n PUSH AX");
+			stackCount++;
+			$$->stackEntry=$3->stackEntry;
 
 			
 			delete $1;
@@ -986,6 +999,7 @@ logic_expression : rel_expression
 			logPieceOfCode($$->text);
 			$$->symbols=$1->symbols;
 			$$->forceInteger=$1->forceInteger;
+			$$->stackEntry=$1->stackEntry;
 
 			delete $1;
 		}
@@ -1022,6 +1036,7 @@ rel_expression	: simple_expression
 			logPieceOfCode($$->text);
 			$$->symbols=$1->symbols;
 			$$->forceInteger=$1->forceInteger;
+			$$->stackEntry=$1->stackEntry;
 
 			delete $1;
 		}
@@ -1059,6 +1074,7 @@ simple_expression : term
 			logPieceOfCode($$->text);
 			$$->symbols=$1->symbols;
 			$$->forceInteger=$1->forceInteger;
+			$$->stackEntry=$1->stackEntry;
 			delete $1;
 		}
 		  | simple_expression ADDOP term 
@@ -1080,6 +1096,13 @@ simple_expression : term
 			if(expHasVoidFunc($1) ||expHasVoidFunc($3) ){
 				yyerror("void-returning function cannot be part of expression");
 			}
+			if($2->getName()=="+"){
+				writeASM("POP AX \nPOP BX\nADD AX,BX \nPUSH AX");
+				
+			}else{
+				writeASM("POP AX \nPOP BX\nSUB BX,AX \nPUSH BX");
+			}
+			$$->stackEntry=--stackCount;
 			
 			delete $1;
 			delete $3;
@@ -1095,6 +1118,7 @@ term :	unary_expression
 			logPieceOfCode($$->text);
 			$$->symbols=$1->symbols;
 			$$->forceInteger=$1->forceInteger;
+			$$->stackEntry=$1->stackEntry;
 			delete $1;
 		}
      |  term MULOP unary_expression
@@ -1113,7 +1137,7 @@ term :	unary_expression
 			for(SymbolInfo * s:$3->symbols){
 				$$->symbols.push_back(s);
 			}
-			if($2->getName()=="*")
+			if($2->getName()!="%")
 				$$->forceInteger=$1->forceInteger && $3->forceInteger;
 			else
 				$$->forceInteger=true;
@@ -1121,6 +1145,11 @@ term :	unary_expression
 			if(expHasVoidFunc($1) ||expHasVoidFunc($3) ){
 				yyerror("void-returning function cannot be part of expression");
 			}
+			if($2->getName()=="*"){
+				writeASM("POP AX \nPOP BX \nMUL BX \nPUSH AX");
+				$$->stackEntry=--stackCount;
+			}
+
 			delete $1;
 			delete $3;
 			delete $2;
@@ -1137,6 +1166,10 @@ unary_expression : ADDOP unary_expression
 
 			$$->symbols=$2->symbols;
 			$$->forceInteger=$2->forceInteger;
+			if($1->getName()=="-"){
+				writeASM("POP AX \n NEG AX \n PUSH AX");
+			}
+			$$->stackEntry=$2->stackEntry;
 
 			if(expHasVoidFunc($2)){
 				yyerror("void-returning function cannot be part of expression");
@@ -1169,6 +1202,7 @@ unary_expression : ADDOP unary_expression
 			logRule("unary_expression : factor");
 			logPieceOfCode($$->text);
 			$$->symbols=$1->symbols;
+			$$->stackEntry=$1->stackEntry;
 
 			delete $1;
 		}
@@ -1182,6 +1216,9 @@ factor	: variable
 			logPieceOfCode($$->text);
 			if($1->symbol!=NULL){
 				$$->symbols.push_back($1->symbol);
+				writeASM("MOV BP,SP\nMOV AX,[BP+"+stkPos($1->symbol->variableInfo->stackEntry)
+				+"]\nPUSH AX");
+				$$->stackEntry=++stackCount;
 			}
 
 			delete $1;
@@ -1230,7 +1267,8 @@ factor	: variable
 			logPieceOfCode($$->text);
 			$$->symbols=$2->symbols;
 			$$->forceInteger=$2->forceInteger;
-			
+			$$->stackEntry=$2->stackEntry;
+
 			delete $2;
 		}
 	| CONST_INT
@@ -1240,6 +1278,8 @@ factor	: variable
 			logRule("factor	: CONST_INT");
 			logPieceOfCode($$->text);
 			$$->symbols.push_back($1);
+			writeASM("MOV AX,"+$1->getName()+"\nPUSH AX");
+			$$->stackEntry=++stackCount;
 		} 
 	| CONST_FLOAT
 		{
@@ -1248,6 +1288,7 @@ factor	: variable
 			logRule("factor	: CONST_FLOAT");
 			logPieceOfCode($$->text);
 			$$->symbols.push_back($1);
+
 
 		}
 	| variable INCOP 
@@ -1259,6 +1300,9 @@ factor	: variable
 			logPieceOfCode($$->text);
 			if($1->symbol!=NULL){
 				$$->symbols.push_back($1->symbol);
+				writeASM("MOV BP,SP\nMOV AX,[BP+"+stkPos($1->symbol->variableInfo->stackEntry)+
+				"]\nINC AX\nPUSH AX");
+				$$->stackEntry=++stackCount;
 			}
 
 			delete $1;
@@ -1273,6 +1317,9 @@ factor	: variable
 			logPieceOfCode($$->text);
 			if($1->symbol!=NULL){
 				$$->symbols.push_back($1->symbol);
+				writeASM("MOV BP,SP\nMOV AX,[BP+"+stkPos($1->symbol->variableInfo->stackEntry)+
+				"]\nDEC AX\nPUSH AX");
+				$$->stackEntry=++stackCount;
 			}
 			delete $1;
 		}

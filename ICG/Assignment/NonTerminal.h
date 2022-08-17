@@ -27,6 +27,7 @@ class Expression:public NonTerminal{
     public:
         bool forceInteger=false;
         vector<SymbolInfo *> symbols=vector<SymbolInfo *>();
+        int stackEntry;
         // ~Expression(){
         //     for(SymbolInfo * s:symbols){
         //         if(s->functionInfo==NULL && s->variableInfo==NULL){
