@@ -1,4 +1,4 @@
-yacc -d -y 1805031.y
+yacc -d -y -Wcounterexamples 1805031.y
 echo 'Generated the parser C file as well the header file'
 g++ -w -c -o y.o y.tab.c
 echo 'Generated the parser object file'
@@ -15,6 +15,8 @@ g++ -w -c -o SymbolTable.o SymbolTable.cpp
 echo 'Generated the other object files'
 
 g++ *.o -lfl -o 1805031
+
+rm *.o y.tab.c y.tab.h lex.yy.c
 
 echo 'All ready, running'
 ./1805031 $1

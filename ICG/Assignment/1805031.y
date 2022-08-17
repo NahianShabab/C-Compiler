@@ -19,6 +19,7 @@ extern int yylineno;
 int errorCount=0;
 SymbolTable * table;
 Parameter * currentParameterList=NULL;
+int stackCount=0;
 
 ofstream fLog("log.txt");
 ofstream fError("error.txt");
@@ -141,6 +142,10 @@ bool expHasVoidFunc(Expression * expression){
 	return false;
 }
 
+void writeASM(string s){
+	fCode<<s<<endl;
+}
+
 
 %}
 
@@ -173,7 +178,7 @@ bool expHasVoidFunc(Expression * expression){
 
 %%
 
-start : program
+start :program
 	{
 		//write your code in this block in all the similar blocks below
 	}
@@ -290,10 +295,35 @@ func_declaration : type_specifier ID LPAREN parameter_list RPAREN SEMICOLON
 		}
 		;
 		 
-func_definition : type_specifier ID LPAREN parameter_list RPAREN compound_statement
-		{
-			
-
+func_definition : type_specifier ID LPAREN parameter_list RPAREN
+{
+	writeASM($2->getName()+" PROC"+"\n");
+	table->enterScope();
+        if(currentParameterList!=NULL){
+            //insert parameters here
+            for(int i=0;i<currentParameterList->dataTypes.size();i++){
+                if(currentParameterList->dataTypes.at(i)=="void"){
+                        yyerror("void data type at parameter no "+to_string(i));
+                        continue;
+                }
+                if(currentParameterList->names.at(i)==""){
+                        continue;
+                }
+                SymbolInfo * s=new SymbolInfo(currentParameterList->names.at(i),"ID");
+                s->variableInfo=new VariableInfo(currentParameterList->dataTypes.at(i));
+                if(table->insert(s)==false){
+                        yyerror("Multiple Declaration of "+s->getName());
+                }else{
+					s->variableInfo->stackEntry=++stackCount;
+					writeASM("PUSH AX");
+				}
+            }
+        }
+        table->printAllScopeTable(fLog);
+        currentParameterList=NULL;
+}
+compound_statement
+{
 			$$=new NonTerminal();
 			$$->text+=$1->text;
 			$$->text+=" ";
@@ -301,10 +331,17 @@ func_definition : type_specifier ID LPAREN parameter_list RPAREN compound_statem
 			$$->text+="(";
 			$$->text+=$4->text;
 			$$->text+=")";
-			$$->text+=$6->text;
+			$$->text+=$7->text;
 			logRule("func_definition : type_specifier ID LPAREN parameter_list RPAREN compound_statement");
 			logPieceOfCode($$->text);
-			currentParameterList=NULL;
+			if(table->isRootScope()){
+                yyerror("Invalid Scope");
+        	}else{
+                table->printCurrentScopeTable(fLog);
+                table->exitScope();
+        	}
+			
+			writeASM("\n"+$2->getName()+" ENDP\n");
 
 			$2->functionInfo=new FunctionInfo($1->text,true,$4->dataTypes);
 			SymbolInfo * oldSymbol=table->lookup($2->getName());
@@ -319,18 +356,34 @@ func_definition : type_specifier ID LPAREN parameter_list RPAREN compound_statem
 			
 			delete $1;
 			delete $4;
-			delete $6;
+			delete $7;
 		}
-		| type_specifier ID LPAREN RPAREN compound_statement
+		| type_specifier ID LPAREN RPAREN
+		
+		{
+		writeASM($2->getName()+" PROC\n");
+		table->enterScope();
+		}
+
+		 compound_statement
 		{
 			$$=new NonTerminal();
 			$$->text+=$1->text;
 			$$->text+=" ";
 			$$->text+=$2->getName();
-			$$->text+="()";
-			$$->text+=$5->text;
-			logRule("func_definition : type_specifier ID LPAREN RPAREN compound_statement");
+			$$->text+="(";
+			$$->text+=")";
+			$$->text+=$6->text;
+			logRule("func_definition : type_specifier ID LPAREN parameter_list RPAREN compound_statement");
 			logPieceOfCode($$->text);
+			if(table->isRootScope()){
+                yyerror("Invalid Scope");
+        	}else{
+                table->printCurrentScopeTable(fLog);
+                table->exitScope();
+        	}
+			
+			writeASM("\n"+$2->getName()+" ENDP\n");
 
 			$2->functionInfo=new FunctionInfo($1->text,true);
 			SymbolInfo * oldSymbol=table->lookup($2->getName());
@@ -344,7 +397,7 @@ func_definition : type_specifier ID LPAREN parameter_list RPAREN compound_statem
 				compareFunction($2,oldSymbol);
 			
 			delete $1;
-			delete $5;
+			delete $6;
 		}
  		;				
 
@@ -481,6 +534,9 @@ var_declaration : type_specifier declaration_list SEMICOLON
 					if(table->insert(s)==false){
 						yyerror("Multiple declaration of "+s->getName());
 						delete s;
+					}else{
+						s->variableInfo->stackEntry=++stackCount;
+						writeASM("PUSH AX");
 					}
 				}
 			}

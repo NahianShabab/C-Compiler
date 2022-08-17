@@ -1,0 +1,20 @@
+main PROC
+
+PUSH AX
+PUSH AX
+PUSH AX
+POP AX
+POP AX
+POP AX
+
+main ENDP
+
+main2 PROC
+
+PUSH AX
+PUSH AX
+POP AX
+POP AX
+
+main2 ENDP
+

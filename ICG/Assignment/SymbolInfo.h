@@ -28,6 +28,7 @@ class VariableInfo{
     public:
     string dataType;
     ArrayInfo * arrayInfo=NULL;
+    int stackEntry;
     VariableInfo(string dataType,ArrayInfo * arrayInfo=NULL){
         this->dataType=dataType;
         this->arrayInfo=arrayInfo;

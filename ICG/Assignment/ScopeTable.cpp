@@ -6,7 +6,8 @@
 using std::string;
 using std::cout;
 using std::ofstream;
-
+extern void writeASM(string);
+extern int stackCount;
 ScopeTable::ScopeTable(int size,string id,ScopeTable * parent=NULL){
     this->size=size;
     table=new  SymbolInfo*[size];
@@ -112,7 +113,7 @@ void ScopeTable::print(ofstream & fout){
                 if(current->variableInfo->arrayInfo!=NULL){
                     fout<<current->variableInfo->dataType<<" ARRAY] ";
                 }else{
-                    fout<<current->variableInfo->dataType<<"] ";
+                    fout<<current->variableInfo->dataType<<", StackEntry: "<<current->variableInfo->stackEntry<<"] ";
                 }
             }else{
                 fout<<"OTHER] ";
@@ -131,6 +132,10 @@ ScopeTable::~ScopeTable(){
         SymbolInfo * current=table[i];
         while (current!=NULL){
             SymbolInfo * temp=current->next;
+            if(current->variableInfo!=NULL){
+                --stackCount;
+                writeASM("POP AX");
+            }
             delete current;
             current=temp;
         }

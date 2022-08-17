@@ -2,6 +2,7 @@
 #include<string>
 using std::string;
 
+
 SymbolInfo::SymbolInfo(string name,string type){
     this->name=name;
     this->type=type;
