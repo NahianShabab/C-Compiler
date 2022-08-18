@@ -48,7 +48,7 @@ void {return VOID;}
 else {return ELSE;}
 while {return WHILE;}
 return {return RETURN;}
-printf {return PRINTLN;}
+println {return PRINTLN;}
 
 {Identifier} {
         yylval.symbol=new SymbolInfo(yytext,"ID");

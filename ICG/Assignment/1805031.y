@@ -20,6 +20,7 @@ int errorCount=0;
 SymbolTable * table;
 Parameter * currentParameterList=NULL;
 int stackCount=0;
+int labelCount=0;
 
 ofstream fLog("log.txt");
 ofstream fError("error.txt");
@@ -47,6 +48,12 @@ void logPieceOfCode(string s){ /*logs a rule instance i.e. piece of code */
 }
 string stkPos(int stackEntry ){
 	return to_string((stackCount-stackEntry)*2);
+}
+
+string newLabel()
+{
+	string lb="L"+to_string(++labelCount);
+	return lb;
 }
 
 // //temp function
@@ -160,11 +167,13 @@ void writeASM(string s){
 	Expression * expression;
 	Variable * variable;
 	Argument * argument;
+	While * whileControl;
 }
 
 %token LPAREN RPAREN SEMICOLON COMMA LCURL RCURL INT FLOAT 
-%token VOID LTHIRD RTHIRD FOR IF WHILE RETURN NOT INCOP DECOP
+%token VOID LTHIRD RTHIRD FOR IF  RETURN NOT INCOP DECOP
 %token <symbol> ID CONST_INT PRINTLN ASSIGNOP LOGICOP RELOP ADDOP MULOP CONST_FLOAT
+%token <whileControl> WHILE
 
 %nonassoc LESS_THAN_ELSE
 %nonassoc ELSE
@@ -795,25 +804,39 @@ statement : var_declaration
 			delete $3;delete $5;delete $7;
 
 		}
-	  | WHILE LPAREN expression RPAREN statement
+	  | WHILE {
+			string label=newLabel();
+			writeASM(label+": ");
+			$1=new While();
+			$1->whileLabel=label;
+			$1->nextLabel=newLabel();
+
+	  } LPAREN expression RPAREN 
+	  {
+		writeASM("POP AX\n CMP AX,0\n JE "+$1->nextLabel);
+		--stackCount;
+	  }
+	  
+	  statement
 		{
 			$$=new NonTerminal();
 			$$->text+="while(";
-			$$->text+=$3->text;
+			$$->text+=$4->text;
 			$$->text+=")\n";
-			$$->text+=$5->text;
+			$$->text+=$7->text;
 			logRule("statement :  WHILE LPAREN expression RPAREN statement");
 			logPieceOfCode($$->text);
-			if(expHasVoidFunc($3) ){
+			if(expHasVoidFunc($4) ){
 				yyerror("void-returning function cannot be part of expression");
 			}
-			for(SymbolInfo * s:$3->symbols){
+			for(SymbolInfo * s:$4->symbols){
 				if(s->functionInfo==NULL && s->variableInfo==NULL){
 					delete s;
 				}
 			}
-			
-			delete $3;delete $5;
+			writeASM("JMP "+$1->whileLabel+"\n"+$1->nextLabel+":");
+			delete $1;
+			delete $4;delete $7;
 		}
 	  | PRINTLN LPAREN ID RPAREN SEMICOLON
 		{
@@ -1148,7 +1171,7 @@ term :	unary_expression
 			if($2->getName()=="*"){
 				writeASM("POP AX \nPOP BX \nMUL BX \nPUSH AX");
 				$$->stackEntry=--stackCount;
-			}
+			}// finish div and modulus
 
 			delete $1;
 			delete $3;
@@ -1318,7 +1341,8 @@ factor	: variable
 			if($1->symbol!=NULL){
 				$$->symbols.push_back($1->symbol);
 				writeASM("MOV BP,SP\nMOV AX,[BP+"+stkPos($1->symbol->variableInfo->stackEntry)+
-				"]\nDEC AX\nPUSH AX");
+				"]\nDEC AX\nMOV [BP+"+stkPos($1->symbol->variableInfo->stackEntry)+"],AX");
+				writeASM("PUSH AX");
 				$$->stackEntry=++stackCount;
 			}
 			delete $1;

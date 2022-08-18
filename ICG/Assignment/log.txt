@@ -8,64 +8,64 @@ int
 
 Line 3: declaration_list : ID
 
-b
+d
 
 Line 3: var_declaration : type_specifier declaration_list SEMICOLON
 
-int b;
+int d;
 
 Line 3: statement : var_declaration
 
-int b;
+int d;
 
 Line 3: statements : statement
 
-int b;
+int d;
 
 Line 4: variable : ID 
 
-b
+d
 
 Line 4: factor	: CONST_INT
 
-5
+0
 
 Line 4: unary_expression : factor
 
-5
+0
 
 Line 4: term :	unary_expression
 
-5
+0
 
 Line 4: simple_expression : term 
 
-5
+0
 
 Line 4: rel_expression	: simple_expression 
 
-5
+0
 
 Line 4: logic_expression : rel_expression
 
-5
+0
 
 Line 4: expression : variable ASSIGNOP logic_expression
 
-b=5
+d=0
 
 Line 4: expression_statement : expression SEMICOLON 
 
-b=5;
+d=0;
 
 Line 4: statement : expression_statement
 
-b=5;
+d=0;
 
 Line 4: statements : statements statement
 
-int b;
-b=5;
+int d;
+d=0;
 
 Line 5: type_specifier	: INT
 
@@ -73,183 +73,537 @@ int
 
 Line 5: declaration_list : ID
 
-c
+b
 
 Line 5: var_declaration : type_specifier declaration_list SEMICOLON
 
-int c;
+int b;
 
 Line 5: statement : var_declaration
 
-int c;
+int b;
 
 Line 5: statements : statements statement
 
+int d;
+d=0;
 int b;
-b=5;
-int c;
 
 Line 6: variable : ID 
 
-c
+b
 
 Line 6: factor	: CONST_INT
 
-6
+10
 
 Line 6: unary_expression : factor
 
-6
+10
 
 Line 6: term :	unary_expression
 
-6
+10
 
 Line 6: simple_expression : term 
 
-6
+10
 
 Line 6: rel_expression	: simple_expression 
 
-6
+10
 
 Line 6: logic_expression : rel_expression
 
-6
+10
 
 Line 6: expression : variable ASSIGNOP logic_expression
 
-c=6
+b=10
 
 Line 6: expression_statement : expression SEMICOLON 
 
-c=6;
+b=10;
 
 Line 6: statement : expression_statement
 
-c=6;
+b=10;
 
 Line 6: statements : statements statement
 
+int d;
+d=0;
 int b;
-b=5;
+b=10;
+
+Line 7: type_specifier	: INT
+
+int
+
+Line 7: declaration_list : ID
+
+c
+
+Line 7: var_declaration : type_specifier declaration_list SEMICOLON
+
 int c;
-c=6;
 
-Line 7: variable : ID 
+Line 7: statement : var_declaration
 
-b
-
-Line 7: variable : ID 
-
-b
-
-Line 7: factor	: variable 
-
-b
-
-Line 7: unary_expression : factor
-
-b
-
-Line 7: term :	unary_expression
-
-b
-
-Line 7: variable : ID 
-
-c
-
-Line 7: factor	: variable 
-
-c
-
-Line 7: unary_expression : factor
-
-c
-
-Line 7: term : term MULOP unary_expression
-
-b*c
-
-Line 7: simple_expression : term 
-
-b*c
-
-Line 7: rel_expression	: simple_expression 
-
-b*c
-
-Line 7: logic_expression : rel_expression
-
-b*c
-
-Line 7: expression : variable ASSIGNOP logic_expression
-
-b=b*c
-
-Line 7: expression_statement : expression SEMICOLON 
-
-b=b*c;
-
-Line 7: statement : expression_statement
-
-b=b*c;
+int c;
 
 Line 7: statements : statements statement
 
+int d;
+d=0;
 int b;
-b=5;
+b=10;
 int c;
-c=6;
-b=b*c;
 
-Line 8: compound_statement : LCURL statements RCURL
+Line 8: variable : ID 
+
+b
+
+Line 8: factor	: variable 
+
+b
+
+Line 8: unary_expression : factor
+
+b
+
+Line 8: term :	unary_expression
+
+b
+
+Line 8: simple_expression : term 
+
+b
+
+Line 8: rel_expression	: simple_expression 
+
+b
+
+Line 8: logic_expression : rel_expression
+
+b
+
+Line 8: expression : logic_expression	
+
+b
+
+Line 9: variable : ID 
+
+c
+
+Line 9: factor	: CONST_INT
+
+5
+
+Line 9: unary_expression : factor
+
+5
+
+Line 9: term :	unary_expression
+
+5
+
+Line 9: simple_expression : term 
+
+5
+
+Line 9: rel_expression	: simple_expression 
+
+5
+
+Line 9: logic_expression : rel_expression
+
+5
+
+Line 9: expression : variable ASSIGNOP logic_expression
+
+c=5
+
+Line 9: expression_statement : expression SEMICOLON 
+
+c=5;
+
+Line 9: statement : expression_statement
+
+c=5;
+
+Line 9: statements : statement
+
+c=5;
+
+Line 10: variable : ID 
+
+c
+
+Line 10: factor	: variable 
+
+c
+
+Line 10: unary_expression : factor
+
+c
+
+Line 10: term :	unary_expression
+
+c
+
+Line 10: simple_expression : term 
+
+c
+
+Line 10: rel_expression	: simple_expression 
+
+c
+
+Line 10: logic_expression : rel_expression
+
+c
+
+Line 10: expression : logic_expression	
+
+c
+
+Line 11: variable : ID 
+
+d
+
+Line 11: variable : ID 
+
+d
+
+Line 11: factor	: variable 
+
+d
+
+Line 11: unary_expression : factor
+
+d
+
+Line 11: term :	unary_expression
+
+d
+
+Line 11: simple_expression : term 
+
+d
+
+Line 11: variable : ID 
+
+c
+
+Line 11: factor	: variable 
+
+c
+
+Line 11: unary_expression : factor
+
+c
+
+Line 11: term :	unary_expression
+
+c
+
+Line 11: simple_expression : simple_expression ADDOP term
+
+d+c
+
+Line 11: rel_expression	: simple_expression 
+
+d+c
+
+Line 11: logic_expression : rel_expression
+
+d+c
+
+Line 11: expression : variable ASSIGNOP logic_expression
+
+d=d+c
+
+Line 11: expression_statement : expression SEMICOLON 
+
+d=d+c;
+
+Line 11: statement : expression_statement
+
+d=d+c;
+
+Line 11: statements : statement
+
+d=d+c;
+
+Line 12: variable : ID 
+
+c
+
+Line 12: factor	: variable DECOP
+
+c--
+
+Line 12: unary_expression : factor
+
+c--
+
+Line 12: term :	unary_expression
+
+c--
+
+Line 12: simple_expression : term 
+
+c--
+
+Line 12: rel_expression	: simple_expression 
+
+c--
+
+Line 12: logic_expression : rel_expression
+
+c--
+
+Line 12: expression : logic_expression	
+
+c--
+
+Line 12: expression_statement : expression SEMICOLON 
+
+c--;
+
+Line 12: statement : expression_statement
+
+c--;
+
+Line 12: statements : statements statement
+
+d=d+c;
+c--;
+
+Line 13: compound_statement : LCURL statements RCURL
 
 {
-int b;
-b=5;
-int c;
-c=6;
-b=b*c;
+d=d+c;
+c--;
 }
 
-Line 8: func_definition : type_specifier ID LPAREN parameter_list RPAREN compound_statement
+Line 13: statement : compound_statement
+
+{
+d=d+c;
+c--;
+}
+
+Line 13: statement :  WHILE LPAREN expression RPAREN statement
+
+while(c)
+{
+d=d+c;
+c--;
+}
+
+Line 13: statements : statements statement
+
+c=5;
+while(c)
+{
+d=d+c;
+c--;
+}
+
+Line 14: variable : ID 
+
+b
+
+Line 14: factor	: variable DECOP
+
+b--
+
+Line 14: unary_expression : factor
+
+b--
+
+Line 14: term :	unary_expression
+
+b--
+
+Line 14: simple_expression : term 
+
+b--
+
+Line 14: rel_expression	: simple_expression 
+
+b--
+
+Line 14: logic_expression : rel_expression
+
+b--
+
+Line 14: expression : logic_expression	
+
+b--
+
+Line 14: expression_statement : expression SEMICOLON 
+
+b--;
+
+Line 14: statement : expression_statement
+
+b--;
+
+Line 14: statements : statements statement
+
+c=5;
+while(c)
+{
+d=d+c;
+c--;
+}
+b--;
+
+Line 15: compound_statement : LCURL statements RCURL
+
+{
+c=5;
+while(c)
+{
+d=d+c;
+c--;
+}
+b--;
+}
+
+Line 15: statement : compound_statement
+
+{
+c=5;
+while(c)
+{
+d=d+c;
+c--;
+}
+b--;
+}
+
+Line 15: statement :  WHILE LPAREN expression RPAREN statement
+
+while(b)
+{
+c=5;
+while(c)
+{
+d=d+c;
+c--;
+}
+b--;
+}
+
+Line 15: statements : statements statement
+
+int d;
+d=0;
+int b;
+b=10;
+int c;
+while(b)
+{
+c=5;
+while(c)
+{
+d=d+c;
+c--;
+}
+b--;
+}
+
+Line 16: compound_statement : LCURL statements RCURL
+
+{
+int d;
+d=0;
+int b;
+b=10;
+int c;
+while(b)
+{
+c=5;
+while(c)
+{
+d=d+c;
+c--;
+}
+b--;
+}
+}
+
+Line 16: func_definition : type_specifier ID LPAREN parameter_list RPAREN compound_statement
 
 int main(){
+int d;
+d=0;
 int b;
-b=5;
+b=10;
 int c;
-c=6;
-b=b*c;
+while(b)
+{
+c=5;
+while(c)
+{
+d=d+c;
+c--;
+}
+b--;
+}
 }
 
 ScopeTable # 1.1
-0 -->  [b : VARIABLE,int, StackEntry: 1] 
-1 -->  [c : VARIABLE,int, StackEntry: 2] 
+0 -->  [b : VARIABLE,int, StackEntry: 2] 
+1 -->  [c : VARIABLE,int, StackEntry: 3] 
+2 -->  [d : VARIABLE,int, StackEntry: 1] 
 
-Line 8: unit : func_definition
+Line 16: unit : func_definition
 
 int main(){
+int d;
+d=0;
 int b;
-b=5;
+b=10;
 int c;
-c=6;
-b=b*c;
+while(b)
+{
+c=5;
+while(c)
+{
+d=d+c;
+c--;
+}
+b--;
+}
 }
 
-Line 8: program : unit
+Line 16: program : unit
 
 int main(){
+int d;
+d=0;
 int b;
-b=5;
+b=10;
 int c;
-c=6;
-b=b*c;
+while(b)
+{
+c=5;
+while(c)
+{
+d=d+c;
+c--;
+}
+b--;
+}
 }
 
 ScopeTable # 1
 5 -->  [main : FUNCTION,RETURNS int] 
 
-Total Lines : 8
+Total Lines : 16
 Total Errors : 0

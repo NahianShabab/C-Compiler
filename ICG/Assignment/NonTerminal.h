@@ -46,3 +46,9 @@ class Argument:public NonTerminal{
     public:
         vector<string> dataTypes=vector<string>();
 };
+
+class While{
+    public:
+    string whileLabel;
+    string nextLabel;
+};
