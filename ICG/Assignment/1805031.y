@@ -168,12 +168,14 @@ void writeASM(string s){
 	Variable * variable;
 	Argument * argument;
 	While * whileControl;
+	If * ifControl;
 }
 
 %token LPAREN RPAREN SEMICOLON COMMA LCURL RCURL INT FLOAT 
-%token VOID LTHIRD RTHIRD FOR IF  RETURN NOT INCOP DECOP
+%token VOID LTHIRD RTHIRD FOR RETURN NOT INCOP DECOP
 %token <symbol> ID CONST_INT PRINTLN ASSIGNOP LOGICOP RELOP ADDOP MULOP CONST_FLOAT
 %token <whileControl> WHILE
+%token <ifControl> IF
 
 %nonassoc LESS_THAN_ELSE
 %nonassoc ELSE
@@ -182,6 +184,7 @@ void writeASM(string s){
 %type <nonTerminal> func_definition type_specifier
 %type <nonTerminal> compound_statement statements statement 
 %type <parameter> parameter_list
+%type <ifControl> if_expression
 %type <declarationList> declaration_list
 %type <variable> variable
 %type <expression> unary_expression term  factor expression logic_expression 
@@ -252,7 +255,7 @@ unit : var_declaration
 
 
 
-func_declaration : type_specifier ID LPAREN parameter_list RPAREN SEMICOLON
+func_declaration : type_specifier ID LPAREN  parameter_list RPAREN SEMICOLON
 		{
 			$$=new NonTerminal();
 			$$->text+=$1->text;
@@ -689,7 +692,37 @@ statements : statement
 			delete $2;
 	   }
 	   ;
-	   
+if_expression: IF  LPAREN expression RPAREN 
+{
+	$1=new If();
+	$1->elseLabel=newLabel();
+	$1->nextLabel=newLabel();
+	writeASM("POP AX\nCMP AX,0\nJE "+$1->elseLabel+"\n");
+	--stackCount;
+}
+statement
+{	
+	$$=new If();
+	$$->elseLabel=$1->elseLabel;
+	$$->nextLabel=$1->nextLabel;
+	$$->text+="if(";
+	$$->text+=$3->text;
+	$$->text+=")\n";
+	$$->text+=$6->text;
+	if(expHasVoidFunc($3) ){
+		yyerror("void-returning function cannot be part of expression");
+	}
+	for(SymbolInfo * s:$3->symbols){
+		if(s->functionInfo==NULL && s->variableInfo==NULL){
+			delete s;
+		}
+	}
+	writeASM("JMP "+$$->nextLabel+"\n"+$$->elseLabel+":\n");
+	delete $1;
+	delete $3;
+	delete $6;
+};
+
 statement : var_declaration
 		{
 			$$=new NonTerminal();
@@ -756,52 +789,30 @@ statement : var_declaration
 			delete $5;
 			delete $7;
 		}
-	  | IF LPAREN expression RPAREN statement %prec LESS_THAN_ELSE
+	  | if_expression %prec LESS_THAN_ELSE
 		{
 			
 
 			$$=new NonTerminal();
-			$$->text+="if(";
-			$$->text+=$3->text;
-			$$->text+=")\n";
-			$$->text+=$5->text;
+			$$->text=$1->text;
 			logRule("statement : IF LPAREN expression RPAREN statement");
 			logPieceOfCode($$->text);
-			if(expHasVoidFunc($3) ){
-				yyerror("void-returning function cannot be part of expression");
-			}
-			for(SymbolInfo * s:$3->symbols){
-				if(s->functionInfo==NULL && s->variableInfo==NULL){
-					delete s;
-				}
-			}
+			writeASM($1->nextLabel+":\n");
 			
-			delete $3;
-			delete $5;
+			delete $1;
 
 		}
-	  | IF LPAREN expression RPAREN statement ELSE statement
+	  | if_expression ELSE statement 
 		{
 			$$=new NonTerminal();
-			$$->text+="if(";
-			$$->text+=$3->text;
-			$$->text+=")\n";
-			$$->text+=$5->text;
+			$$->text=$1->text;
 			$$->text+="else\n";
-			$$->text+=$7->text;
+			$$->text+=$3->text;
 			logRule("statement :  IF LPAREN expression RPAREN statement ELSE statement");
 			logPieceOfCode($$->text);
-			if(expHasVoidFunc($3) ){
-				yyerror("void-returning function cannot be part of expression");
-			}
-
-			for(SymbolInfo * s:$3->symbols){
-				if(s->functionInfo==NULL && s->variableInfo==NULL){
-					delete s;
-				}
-			}
+			writeASM($1->nextLabel+":\n");
 			
-			delete $3;delete $5;delete $7;
+			delete $1;delete $3;
 
 		}
 	  | WHILE {

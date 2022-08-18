@@ -1,16 +1,22 @@
 // problem: what do to about function arguments?
 int main(){
 	int d;
-	d=0;
-	int b;
-	b=10;
 	int c;
-	while(b){
-		c=5;
-		while(c){
-			d=d+c;
-			c--;
+	int b;
+	b=1;
+	c=1;
+	if(b){
+		if(c){
+			d=3;
+		}else{
+			d=2;
 		}
-		b--;
+	}else{
+		if(c){
+			d=1;
+		}else{
+			d=0;
+		}
 	}
+	
 }

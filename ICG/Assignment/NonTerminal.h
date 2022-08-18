@@ -52,3 +52,9 @@ class While{
     string whileLabel;
     string nextLabel;
 };
+
+class If:public NonTerminal{
+    public:
+    string elseLabel;
+    string nextLabel;
+};
