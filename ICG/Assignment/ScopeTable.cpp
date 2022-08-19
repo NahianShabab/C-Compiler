@@ -110,10 +110,16 @@ void ScopeTable::print(ofstream & fout){
                 fout<<"FUNCTION,"<<"RETURNS "<<current->functionInfo->returnType<<"] ";
             }else if(current->variableInfo!=NULL){
                 fout<<"VARIABLE,";
+                fout<<current->variableInfo->dataType;
                 if(current->variableInfo->arrayInfo!=NULL){
-                    fout<<current->variableInfo->dataType<<" ARRAY] ";
+                    fout<<current->variableInfo->dataType<<" ARRAY,";
                 }else{
-                    fout<<current->variableInfo->dataType<<", StackEntry: "<<current->variableInfo->stackEntry<<"] ";
+                    fout<<",";
+                }
+                if(current->variableInfo->global==false){
+                    fout<<" StackEntry: "<<current->variableInfo->stackEntry<<"]";
+                }else{
+                    fout<<" TempName: "<<current->variableInfo->tempName<<"]";
                 }
             }else{
                 fout<<"OTHER] ";
@@ -132,9 +138,17 @@ ScopeTable::~ScopeTable(){
         SymbolInfo * current=table[i];
         while (current!=NULL){
             SymbolInfo * temp=current->next;
-            if(current->variableInfo!=NULL){
-                --stackCount;
-                writeASM("POP AX");
+            if(current->variableInfo!=NULL && current->variableInfo->global==false){
+                if(current->variableInfo->arrayInfo!=NULL){
+                    for(int i=1;i<=current->variableInfo->arrayInfo->size;i++){
+                        writeASM("POP AX");
+                        --stackCount;
+                    }
+                }
+                else{
+                    --stackCount;
+                    writeASM("POP AX");
+                }
             }
             delete current;
             current=temp;

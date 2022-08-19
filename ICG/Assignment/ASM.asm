@@ -1,51 +1,3 @@
-.MODEL SMALL
-.STACK 100H
-
-.DATA
-T1 DW 10 DUP (?)
-T2 DW ?
-
-.CODE
-
-PRINTLN PROC 
-    POP BX  ; IP POPPED
-    POP AX  ; NUMBER POPPED
-    PUSH BX ; IP PUSHED
-    CMP AX,0
-    JGE POS
-    NEG AX
-    MOV BX,AX
-    MOV AH,2
-    MOV DX,'-'
-    INT 21H
-    MOV AX,BX
-POS:
-    XOR CX,CX
-    MOV BX,10
-    MOV DX,0
-WHILE_LOOP:
-    MOV DX,0
-    DIV BX
-    INC CX
-    PUSH DX
-    CMP AX,0
-    JE END_WHILE
-    JMP WHILE_LOOP
-END_WHILE:
-    MOV AH,2
-TOP:
-    POP DX
-    ADD DX,'0'
-    INT 21H
-    LOOP TOP
-    MOV DX,0AH
-    INT 21H
-    MOV DX,0DH
-    INT 21H
-    RET
-PRINTLN ENDP
-
-
 main PROC
 
 MOV AX,@DATA
@@ -471,4 +423,3 @@ INT 21H
 main ENDP
 
 END main
-

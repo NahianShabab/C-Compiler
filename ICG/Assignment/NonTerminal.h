@@ -40,6 +40,7 @@ class Expression:public NonTerminal{
 class Variable:public NonTerminal{
     public:
         SymbolInfo * symbol=NULL;
+        // int elementNo; // if the variable is array, the element being addressed
 };
 
 class Argument:public NonTerminal{

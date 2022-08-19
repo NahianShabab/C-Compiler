@@ -29,6 +29,8 @@ class VariableInfo{
     string dataType;
     ArrayInfo * arrayInfo=NULL;
     int stackEntry;
+    bool global=false;
+    string tempName;
     VariableInfo(string dataType,ArrayInfo * arrayInfo=NULL){
         this->dataType=dataType;
         this->arrayInfo=arrayInfo;

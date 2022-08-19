@@ -21,10 +21,13 @@ SymbolTable * table;
 Parameter * currentParameterList=NULL;
 int stackCount=0;
 int labelCount=0;
+int tempCount=0;
 
 ofstream fLog("log.txt");
 ofstream fError("error.txt");
 ofstream fCode("code.asm");
+ofstream fASM("ASM.asm");
+ofstream fData("data.asm"); // for storing global data
 
 void yyerror(const char *s)
 {
@@ -49,11 +52,26 @@ void logPieceOfCode(string s){ /*logs a rule instance i.e. piece of code */
 string stkPos(int stackEntry ){
 	return to_string((stackCount-stackEntry)*2);
 }
+string arrStkPos(int stackEntry,int elementNo){
+	return to_string((stackCount-stackEntry)*2+elementNo*2);
+}
 
 string newLabel()
 {
 	string lb="L"+to_string(++labelCount);
 	return lb;
+}
+
+string newTemp(){
+	string temp="T"+to_string(++tempCount);
+	return temp;
+}
+
+void addGlobal(string name,int arrSize=-1){ //if arrSize negative then it's just one variable
+	if(arrSize==-1)
+		fData<<name<<" DW ?"<<endl;
+	else
+		fData<<name<<" DW "<<arrSize<<" DUP (?)"<<endl;
 }
 
 // //temp function
@@ -153,7 +171,7 @@ bool expHasVoidFunc(Expression * expression){
 }
 
 void writeASM(string s){
-	fCode<<s<<endl;
+	fASM<<s<<endl;
 }
 
 
@@ -313,6 +331,9 @@ func_declaration : type_specifier ID LPAREN  parameter_list RPAREN SEMICOLON
 func_definition : type_specifier ID LPAREN parameter_list RPAREN
 {
 	writeASM($2->getName()+" PROC"+"\n");
+	if($2->getName()=="main"){
+		writeASM("MOV AX,@DATA\nMOV DS,AX");
+	}
 	table->enterScope();
         if(currentParameterList!=NULL){
             //insert parameters here
@@ -357,6 +378,9 @@ compound_statement
         	}
 			
 			writeASM("\n"+$2->getName()+" ENDP\n");
+			if($2->getName()=="main"){
+				writeASM("END main");
+			}
 
 			$2->functionInfo=new FunctionInfo($1->text,true,$4->dataTypes);
 			SymbolInfo * oldSymbol=table->lookup($2->getName());
@@ -377,6 +401,9 @@ compound_statement
 		
 		{
 		writeASM($2->getName()+" PROC\n");
+		if($2->getName()=="main"){
+		writeASM("MOV AX,@DATA\nMOV DS,AX");
+		}
 		table->enterScope();
 		}
 
@@ -398,8 +425,16 @@ compound_statement
                 table->exitScope();
         	}
 			
+			
+			if($2->getName()=="main"){
+				writeASM("MOV AX,4CH\nINT 21H\n");
+				
+			}
 			writeASM("\n"+$2->getName()+" ENDP\n");
-
+			if($2->getName()=="main"){
+				writeASM("END main");
+			}
+			
 			$2->functionInfo=new FunctionInfo($1->text,true);
 			SymbolInfo * oldSymbol=table->lookup($2->getName());
 			if(oldSymbol==NULL)
@@ -550,8 +585,26 @@ var_declaration : type_specifier declaration_list SEMICOLON
 						yyerror("Multiple declaration of "+s->getName());
 						delete s;
 					}else{
-						s->variableInfo->stackEntry=++stackCount;
-						writeASM("PUSH AX");
+						//to do: handle array
+						if(table->isRootScope()){
+							s->variableInfo->global=true;
+							s->variableInfo->tempName=newTemp();
+							if(s->variableInfo->arrayInfo==NULL)
+								addGlobal(s->variableInfo->tempName);
+							else
+								addGlobal(s->variableInfo->tempName,s->variableInfo->arrayInfo->size);
+						}else{
+							if(s->variableInfo->arrayInfo!=NULL){ //its an array
+								for(int i=1;i<=s->variableInfo->arrayInfo->size;i++){
+									writeASM("PUSH AX");
+									++stackCount;
+								}
+								s->variableInfo->stackEntry=stackCount;
+							}else{
+								writeASM("PUSH AX");
+								s->variableInfo->stackEntry=++stackCount;
+							}
+						}
 					}
 				}
 			}
@@ -858,10 +911,24 @@ statement : var_declaration
 			$$->text+=");";
 			logRule("statement :  PRINTLN LPAREN ID RPAREN SEMICOLON");
 			logPieceOfCode($$->text);
-			if(table->lookup($3->getName())==NULL){
+			SymbolInfo * s=table->lookup($3->getName());
+			if(s==NULL){
 				yyerror("Undeclared Variable "+$3->getName());
+			}else if(s->variableInfo==NULL){
+				yyerror(s->getName()+" is not a variable");
+			}else if(s->variableInfo->arrayInfo!=NULL){
+				yyerror(s->getName()+" is an array, cannot print array");
+			}else{
+				if(s->variableInfo->global){
+					writeASM("PUSH "+s->variableInfo->tempName);
+					writeASM("CALL PRINTLN");
+				}else{
+					writeASM("MOV BP,SP");
+					writeASM("MOV AX,[BP+"+stkPos(s->variableInfo->stackEntry)+"]");
+					writeASM("PUSH AX");
+					writeASM("CALL PRINTLN");
+				}
 			}
-
 			delete $3;
 		}
 	  | RETURN expression SEMICOLON
@@ -1012,12 +1079,54 @@ variable : ID
 			}
 			$$->symbols=$3->symbols;
 			$$->forceInteger=$3->forceInteger;
-			writeASM("POP AX \n MOV BP,SP");
-			stackCount--;
-			writeASM("MOV [BP+"+stkPos($1->symbol->variableInfo->stackEntry)
-			+"],AX \n PUSH AX");
-			stackCount++;
-			$$->stackEntry=$3->stackEntry;
+			if($1->symbol->variableInfo->global==false){
+				if($1->symbol->variableInfo->arrayInfo!=NULL){
+					writeASM("POP CX"); //expression is cx
+					writeASM("POP AX"); // index in ax
+					stackCount-=2;
+					writeASM("MOV BP,SP");
+					writeASM("MOV BX,2");
+					writeASM("MUL BX");
+					writeASM("ADD AX,"+stkPos($1->symbol->variableInfo->stackEntry));
+					writeASM("ADD BP,AX");
+					writeASM("MOV [BP],CX");
+					writeASM("PUSH CX");
+					$$->stackEntry=++stackCount;
+				}else{
+					writeASM("POP AX");
+					--stackCount;
+					writeASM("MOV BP,SP");
+					writeASM("MOV [BP+"+stkPos($1->symbol->variableInfo->stackEntry)+"],AX");
+					writeASM("PUSH AX");
+					$$->stackEntry=++stackCount;
+				}
+			}else{
+				if($1->symbol->variableInfo->arrayInfo!=NULL){
+					writeASM("POP CX"); //cx has right side expression value
+					--stackCount;
+					writeASM("POP AX"); //ax has array index no
+					--stackCount;
+					writeASM("MOV BX,2");
+					writeASM("MUL BX");
+					writeASM("LEA SI,"+$1->symbol->variableInfo->tempName);
+
+					writeASM("ADD SI,AX");
+					writeASM("MOV [SI],CX");
+					writeASM("PUSH CX");
+					$$->stackEntry=++stackCount;
+				}else{
+					writeASM("POP AX");
+					writeASM("MOV "+$1->symbol->variableInfo->tempName+",AX");
+					writeASM("PUSH "+$1->symbol->variableInfo->tempName);
+					$$->stackEntry=stackCount;
+				}
+			}
+			// writeASM("POP AX \n MOV BP,SP");
+			// stackCount--;
+			// writeASM("MOV [BP+"+stkPos($1->symbol->variableInfo->stackEntry)
+			// +"],AX \n PUSH AX");
+			// stackCount++;
+			// $$->stackEntry=$3->stackEntry;
 
 			
 			delete $1;
@@ -1076,8 +1185,6 @@ rel_expression	: simple_expression
 		}
 		| simple_expression RELOP simple_expression	
 		{
-			
-
 			$$=new Expression();
 			$$->text+=$1->text;
 			$$->text+=$2->getName();
@@ -1225,7 +1332,18 @@ unary_expression : ADDOP unary_expression
 			if(expHasVoidFunc($2)){
 				yyerror("void-returning function cannot be part of expression");
 			}
-
+			writeASM("POP AX");
+			string zeroLabel=newLabel();
+			string nextLabel=newLabel();
+			writeASM("CMP AX,0");
+			writeASM("JE "+zeroLabel);
+			writeASM("MOV AX,0");
+			writeASM("JMP "+nextLabel);
+			writeASM(zeroLabel+": ");
+			writeASM("MOV AX,1");
+			writeASM(nextLabel+": ");
+			writeASM("PUSH AX");
+			$$->stackEntry=stackCount;
 
 			delete $2;
 		}
@@ -1250,9 +1368,33 @@ factor	: variable
 			logPieceOfCode($$->text);
 			if($1->symbol!=NULL){
 				$$->symbols.push_back($1->symbol);
-				writeASM("MOV BP,SP\nMOV AX,[BP+"+stkPos($1->symbol->variableInfo->stackEntry)
-				+"]\nPUSH AX");
-				$$->stackEntry=++stackCount;
+				if($1->symbol->variableInfo->global==false){
+					if($1->symbol->variableInfo->arrayInfo!=NULL){
+						writeASM("POP AX \nMOV BX,2 \nMUL BX");
+						--stackCount;
+						writeASM("ADD AX,"+stkPos($1->
+						symbol->variableInfo->stackEntry)+"\nMOV BP,SP\nADD BP,AX\n"+
+						"MOV AX,[BP]\nPUSH AX");
+						$$->stackEntry=++stackCount;
+					}else{
+						writeASM("MOV BP,SP\nMOV AX,[BP+"+stkPos($1->symbol->variableInfo->stackEntry)
+						+"]\nPUSH AX");
+						$$->stackEntry=++stackCount;
+					}
+				}else{
+					if($1->symbol->variableInfo->arrayInfo!=NULL){
+						writeASM("POP AX \nMOV BX,2 \nMUL BX \nLEA SI,"+
+						$1->symbol->variableInfo->tempName+" \nADD SI,AX \nMOV AX,[SI] \nPUSH AX");
+						$$->stackEntry=stackCount;
+					}else{
+						writeASM("PUSH "+$1->symbol->variableInfo->tempName);
+						$$->stackEntry=++stackCount;
+					}
+
+				}
+				// writeASM("MOV BP,SP\nMOV AX,[BP+"+stkPos($1->symbol->variableInfo->stackEntry)
+				// +"]\nPUSH AX");
+				// $$->stackEntry=++stackCount;
 			}
 
 			delete $1;
@@ -1334,13 +1476,34 @@ factor	: variable
 			logPieceOfCode($$->text);
 			if($1->symbol!=NULL){
 				$$->symbols.push_back($1->symbol);
-				writeASM("MOV BP,SP\nMOV AX,[BP+"+stkPos($1->symbol->variableInfo->stackEntry)+
-				"]\nINC AX\nPUSH AX");
-				$$->stackEntry=++stackCount;
+				if($1->symbol->variableInfo->global==false){
+					if($1->symbol->variableInfo->arrayInfo!=NULL){
+						writeASM("POP AX \nMOV BX,2 \nMUL BX");
+						--stackCount;
+						writeASM("ADD AX,"+stkPos($1->
+						symbol->variableInfo->stackEntry)+"\nMOV BP,SP\nADD BP,AX\n"+
+						"MOV AX,[BP] \nINC AX \nMOV [BP],AX \nPUSH AX");
+						$$->stackEntry=++stackCount;
+					}else{
+						writeASM("MOV BP,SP\nMOV AX,[BP+"+stkPos($1->symbol->variableInfo->stackEntry)
+						+"]\n INC AX \nMOV [BP+"+stkPos($1->symbol->variableInfo->stackEntry)
+						+"],AX \nPUSH AX");
+						$$->stackEntry=++stackCount;
+					}
+				}else{
+					if($1->symbol->variableInfo->arrayInfo!=NULL){
+						writeASM("POP AX \nMOV BX,2 \nMUL BX \nLEA SI,"+
+						$1->symbol->variableInfo->tempName+" \nADD SI,AX \n INC [SI] \nPUSH [SI]");
+						$$->stackEntry=stackCount;	
+					}else{
+						writeASM("INC "+$1->symbol->variableInfo->tempName);
+						writeASM("PUSH "+$1->symbol->variableInfo->tempName);
+						$$->stackEntry=++stackCount;
+					}
+
+				}
 			}
-
 			delete $1;
-
 		}
 	| variable DECOP
 		{
@@ -1351,10 +1514,32 @@ factor	: variable
 			logPieceOfCode($$->text);
 			if($1->symbol!=NULL){
 				$$->symbols.push_back($1->symbol);
-				writeASM("MOV BP,SP\nMOV AX,[BP+"+stkPos($1->symbol->variableInfo->stackEntry)+
-				"]\nDEC AX\nMOV [BP+"+stkPos($1->symbol->variableInfo->stackEntry)+"],AX");
-				writeASM("PUSH AX");
-				$$->stackEntry=++stackCount;
+				if($1->symbol->variableInfo->global==false){
+					if($1->symbol->variableInfo->arrayInfo!=NULL){
+						writeASM("POP AX \nMOV BX,2 \nMUL BX");
+						--stackCount;
+						writeASM("ADD AX,"+stkPos($1->
+						symbol->variableInfo->stackEntry)+"\nMOV BP,SP\nADD BP,AX\n"+
+						"MOV AX,[BP] \nDEC AX \nMOV [BP],AX \nPUSH AX");
+						$$->stackEntry=++stackCount;
+					}else{
+						writeASM("MOV BP,SP\nMOV AX,[BP+"+stkPos($1->symbol->variableInfo->stackEntry)
+						+"]\n DEC AX \nMOV [BP+"+stkPos($1->symbol->variableInfo->stackEntry)
+						+"],AX \nPUSH AX");
+						$$->stackEntry=++stackCount;
+					}
+				}else{
+					if($1->symbol->variableInfo->arrayInfo!=NULL){
+						writeASM("POP AX \nMOV BX,2 \nMUL BX \nLEA SI,"+
+						$1->symbol->variableInfo->tempName+" \nADD SI,AX \n DEC [SI] \nPUSH [SI]");
+						$$->stackEntry=stackCount;	
+					}else{
+						writeASM("DEC "+$1->symbol->variableInfo->tempName);
+						writeASM("PUSH "+$1->symbol->variableInfo->tempName);
+						$$->stackEntry=++stackCount;
+					}
+
+				}
 			}
 			delete $1;
 		}
@@ -1420,6 +1605,7 @@ int main(int argc,char *argv[])
 	}
 	table=new SymbolTable(7);	
 	yyin=fp;
+	fData<<".DATA"<<endl;
 	yyparse();
 
 	//symbol table print
@@ -1434,6 +1620,41 @@ int main(int argc,char *argv[])
 	/*close opended files*/
 	fLog.close();
 	fError.close();
+	fData.close();
+	fASM.close();
+
+	fCode<<".MODEL SMALL\n.STACK 100H\n"<<endl;
+	//append data.asm to code.asm
+	ifstream fDataIn("data.asm");
+	while(!fDataIn.eof()){
+		char c;
+		fDataIn>>noskipws>>c;
+		fCode<<c;
+	}
+	fDataIn.close();
+
+	//append ASM.asm to code.asm
+	fCode<<".CODE\n";
+	// append println function
+	ifstream fPrintlnIn("println.asm");
+	fCode<<"\n";
+	while(!fPrintlnIn.eof()){
+		char c;
+		fPrintlnIn>>noskipws>>c;
+		fCode<<c;
+	}
+	fPrintlnIn.close();
+
+	ifstream fASMIn("ASM.asm");
+	while(!fASMIn.eof()){
+		char c;
+		fASMIn>>noskipws>>c;
+		fCode<<c;
+	}
+	fASMIn.close();
+
+	fCode.close();
+	
 	fclose(fp);
 
 	return 0;
