@@ -22,6 +22,7 @@ Parameter * currentParameterList=NULL;
 int stackCount=0;
 int labelCount=0;
 int tempCount=0;
+int asmLineCount=0;
 
 ofstream fLog("log.txt");
 ofstream fError("error.txt");
@@ -172,6 +173,7 @@ bool expHasVoidFunc(Expression * expression){
 
 void writeASM(string s){
 	fASM<<s<<endl;
+	asmLineCount++;
 }
 
 
@@ -187,13 +189,15 @@ void writeASM(string s){
 	Argument * argument;
 	While * whileControl;
 	If * ifControl;
+	For * forControl;
 }
 
 %token LPAREN RPAREN SEMICOLON COMMA LCURL RCURL INT FLOAT 
-%token VOID LTHIRD RTHIRD FOR RETURN NOT INCOP DECOP
+%token VOID LTHIRD RTHIRD RETURN NOT INCOP DECOP
 %token <symbol> ID CONST_INT PRINTLN ASSIGNOP LOGICOP RELOP ADDOP MULOP CONST_FLOAT PRINTCHAR
 %token <whileControl> WHILE
 %token <ifControl> IF
+%token <forControl> FOR
 
 %nonassoc LESS_THAN_ELSE
 %nonassoc ELSE
@@ -330,9 +334,10 @@ func_declaration : type_specifier ID LPAREN  parameter_list RPAREN SEMICOLON
 		 
 func_definition : type_specifier ID LPAREN parameter_list RPAREN
 {
-	writeASM($2->getName()+" PROC"+"\n");
+	writeASM($2->getName()+" PROC");writeASM("");
 	if($2->getName()=="main"){
-		writeASM("MOV AX,@DATA\nMOV DS,AX");
+		writeASM("MOV AX,@DATA");
+		writeASM("MOV DS,AX");
 	}
 	table->enterScope();
         if(currentParameterList!=NULL){
@@ -376,8 +381,9 @@ compound_statement
                 table->printCurrentScopeTable(fLog);
                 table->exitScope();
         	}
-			
-			writeASM("\n"+$2->getName()+" ENDP\n");
+			writeASM("");
+			writeASM($2->getName()+" ENDP");
+			writeASM("");
 			if($2->getName()=="main"){
 				writeASM("END main");
 			}
@@ -400,9 +406,11 @@ compound_statement
 		| type_specifier ID LPAREN RPAREN
 		
 		{
-		writeASM($2->getName()+" PROC\n");
+		writeASM($2->getName()+" PROC");
+		writeASM("");
 		if($2->getName()=="main"){
-		writeASM("MOV AX,@DATA\nMOV DS,AX");
+		writeASM("MOV AX,@DATA");
+		writeASM("MOV DS,AX");
 		}
 		table->enterScope();
 		}
@@ -427,10 +435,12 @@ compound_statement
 			
 			
 			if($2->getName()=="main"){
-				writeASM("MOV AX,4CH\nINT 21H\n");
-				
+				writeASM("MOV AX,4CH");
+				writeASM("INT 21H");
 			}
-			writeASM("\n"+$2->getName()+" ENDP\n");
+			writeASM("");
+			writeASM($2->getName()+" ENDP");
+			writeASM("");
 			if($2->getName()=="main"){
 				writeASM("END main");
 			}
@@ -750,7 +760,8 @@ if_expression: IF  LPAREN expression RPAREN
 	$1=new If();
 	$1->elseLabel=newLabel();
 	$1->nextLabel=newLabel();
-	writeASM("POP AX\nCMP AX,0\nJE "+$1->elseLabel+"\n");
+	writeASM("POP AX");writeASM("CMP AX,0");
+	writeASM("JE "+$1->elseLabel);
 	--stackCount;
 }
 statement
@@ -770,7 +781,9 @@ statement
 			delete s;
 		}
 	}
-	writeASM("JMP "+$$->nextLabel+"\n"+$$->elseLabel+":\n");
+	writeASM("JMP "+$$->nextLabel);
+	writeASM($$->elseLabel+":");
+	writeASM("");
 	delete $1;
 	delete $3;
 	delete $6;
@@ -808,40 +821,69 @@ statement : var_declaration
 			delete $1;
 		}
 		//YOURE NEXT 
-	  | FOR LPAREN expression_statement expression_statement expression RPAREN statement
-		{
+	  | FOR {
+		$1=new For();
+		$1->nextLabel=newLabel();
+		$1->checkLabel=newLabel();
+		$1->incrementLabel=newLabel();
+		$1->statementLabel=newLabel();
+		// writeASM(forLabel+": ");
+	  } 
+	   LPAREN expression_statement{
+		writeASM($1->checkLabel+":");
+	   } expression_statement
+	   {	
+			//this expression statement's value was popped in bx.
+			// writeASM("CMP BX,0");
+			// writeASM("JE "+$1->nextLabel);
+			writeASM("CMP BX,0");
+			writeASM("JE "+$1->nextLabel);
+			writeASM("JMP "+$1->statementLabel);
+			writeASM($1->incrementLabel+":");
+	   } expression{
+		writeASM("POP AX");
+		--stackCount;
+		writeASM("JMP "+$1->checkLabel);
+		writeASM($1->statementLabel+":");
+	   }RPAREN statement
+	  {
 			$$=new NonTerminal();
 			$$->text+="for(";
-			$$->text+=$3->text;
 			$$->text+=$4->text;
-			$$->text+=$5->text;
+			$$->text+=$6->text;
+			$$->text+=$8->text;
 			$$->text+=")\n";
-			$$->text+=$7->text;
+			$$->text+=$11->text;
 			logRule("statement : FOR LPAREN expression_statement expression_statement expression RPAREN statement");
 			logPieceOfCode($$->text);
 
-
-			for(SymbolInfo * s:$3->symbols){
-				if(s->functionInfo==NULL && s->variableInfo==NULL){
-					delete s;
-				}
-			}
 
 			for(SymbolInfo * s:$4->symbols){
 				if(s->functionInfo==NULL && s->variableInfo==NULL){
 					delete s;
 				}
 			}
-			for(SymbolInfo * s:$5->symbols){
+
+			for(SymbolInfo * s:$6->symbols){
 				if(s->functionInfo==NULL && s->variableInfo==NULL){
 					delete s;
 				}
 			}
-			
-			delete $3;
+			for(SymbolInfo * s:$8->symbols){
+				if(s->functionInfo==NULL && s->variableInfo==NULL){
+					delete s;
+				}
+			}
+			//expression's 
+			// writeASM("POP AX");
+			writeASM("JMP "+$1->incrementLabel);
+			writeASM($1->nextLabel+":");
+
+			delete $1;
 			delete $4;
-			delete $5;
-			delete $7;
+			delete $6;
+			delete $8;
+			delete $11;
 		}
 	  | if_expression %prec LESS_THAN_ELSE
 		{
@@ -851,7 +893,8 @@ statement : var_declaration
 			$$->text=$1->text;
 			logRule("statement : IF LPAREN expression RPAREN statement");
 			logPieceOfCode($$->text);
-			writeASM($1->nextLabel+":\n");
+			writeASM($1->nextLabel+":");
+			writeASM("");
 			
 			delete $1;
 
@@ -864,7 +907,8 @@ statement : var_declaration
 			$$->text+=$3->text;
 			logRule("statement :  IF LPAREN expression RPAREN statement ELSE statement");
 			logPieceOfCode($$->text);
-			writeASM($1->nextLabel+":\n");
+			writeASM($1->nextLabel+":");
+			writeASM("");
 			
 			delete $1;delete $3;
 
@@ -872,13 +916,16 @@ statement : var_declaration
 	  | WHILE {
 			string label=newLabel();
 			writeASM(label+": ");
+			writeASM("");
 			$1=new While();
 			$1->whileLabel=label;
 			$1->nextLabel=newLabel();
 
 	  } LPAREN expression RPAREN 
 	  {
-		writeASM("POP AX\n CMP AX,0\n JE "+$1->nextLabel);
+		writeASM("POP AX");
+		writeASM("CMP AX,0");
+		writeASM("JE "+$1->nextLabel);
 		--stackCount;
 	  }
 	  
@@ -899,7 +946,9 @@ statement : var_declaration
 					delete s;
 				}
 			}
-			writeASM("JMP "+$1->whileLabel+"\n"+$1->nextLabel+":");
+			writeASM("JMP "+$1->whileLabel);
+			writeASM($1->nextLabel+":");
+			writeASM("");
 			delete $1;
 			delete $4;delete $7;
 		}
@@ -1003,7 +1052,13 @@ expression_statement 	: SEMICOLON
 			$$->symbols=$1->symbols;
 			$$->forceInteger=$1->forceInteger;
 
-			writeASM("POP AX");
+			writeASM("POP BX"); /*expression statement's value is popped in bx.
+			this value is nedded for FOR loops' 2nd expression_statement.
+			 A bit tricky/risky since 
+			im storing this in a temporary registar instead of a reliable storage. However
+			since bx is not being accessed in the FOR loop when it is further needed, 
+			this should work.
+			*/
 			--stackCount;
 
 			delete $1;
@@ -1378,10 +1433,15 @@ simple_expression : term
 				yyerror("void-returning function cannot be part of expression");
 			}
 			if($2->getName()=="+"){
-				writeASM("POP AX \nPOP BX\nADD AX,BX \nPUSH AX");
-				
+				writeASM("POP AX");
+				writeASM("POP BX");
+				writeASM("ADD AX,BX");
+				writeASM("PUSH AX");				
 			}else{
-				writeASM("POP AX \nPOP BX\nSUB BX,AX \nPUSH BX");
+				writeASM("POP AX");
+				writeASM("POP BX");
+				writeASM("SUB BX,AX");
+				writeASM("PUSH BX");
 			}
 			$$->stackEntry=--stackCount;
 			
@@ -1427,7 +1487,10 @@ term :	unary_expression
 				yyerror("void-returning function cannot be part of expression");
 			}
 			if($2->getName()=="*"){
-				writeASM("POP AX \nPOP BX \nMUL BX \nPUSH AX");
+				writeASM("POP AX");
+				writeASM("POP BX");
+				writeASM("MUL BX");
+				writeASM("PUSH AX");
 				$$->stackEntry=--stackCount;
 			}else if($2->getName()=="/"){
 				writeASM("POP BX"); //bx has divisor
@@ -1461,7 +1524,9 @@ unary_expression : ADDOP unary_expression
 			$$->symbols=$2->symbols;
 			$$->forceInteger=$2->forceInteger;
 			if($1->getName()=="-"){
-				writeASM("POP AX \n NEG AX \n PUSH AX");
+				writeASM("POP AX");
+				writeASM("NEG AX");
+				writeASM("PUSH AX");
 			}
 			$$->stackEntry=$2->stackEntry;
 
@@ -1523,21 +1588,32 @@ factor	: variable
 				$$->symbols.push_back($1->symbol);
 				if($1->symbol->variableInfo->global==false){
 					if($1->symbol->variableInfo->arrayInfo!=NULL){
-						writeASM("POP AX \nMOV BX,2 \nMUL BX");
+						writeASM("POP AX");
+						writeASM("MOV BX,2");
+						writeASM("MUL BX");
 						--stackCount;
 						writeASM("ADD AX,"+stkPos($1->
-						symbol->variableInfo->stackEntry)+"\nMOV BP,SP\nADD BP,AX\n"+
-						"MOV AX,[BP]\nPUSH AX");
+						symbol->variableInfo->stackEntry));
+						writeASM("MOV BP,SP");
+						writeASM("ADD BP,AX");
+						writeASM("MOV AX,[BP]");
+						writeASM("PUSH AX");
 						$$->stackEntry=++stackCount;
 					}else{
-						writeASM("MOV BP,SP\nMOV AX,[BP+"+stkPos($1->symbol->variableInfo->stackEntry)
-						+"]\nPUSH AX");
+						writeASM("MOV BP,SP");
+						writeASM("MOV AX,[BP+"+stkPos($1->symbol->variableInfo->stackEntry)+"]");
+						writeASM("PUSH AX");
 						$$->stackEntry=++stackCount;
 					}
 				}else{
 					if($1->symbol->variableInfo->arrayInfo!=NULL){
-						writeASM("POP AX \nMOV BX,2 \nMUL BX \nLEA SI,"+
-						$1->symbol->variableInfo->tempName+" \nADD SI,AX \nMOV AX,[SI] \nPUSH AX");
+						writeASM("POP AX ");
+						writeASM("MOV BX,2 ");
+						writeASM("MUL BX");
+						writeASM("LEA SI,"+$1->symbol->variableInfo->tempName);
+						writeASM("ADD SI,AX"); 
+						writeASM("MOV AX,[SI]");
+						writeASM("PUSH AX");
 						$$->stackEntry=stackCount;
 					}else{
 						writeASM("PUSH "+$1->symbol->variableInfo->tempName);
@@ -1607,7 +1683,8 @@ factor	: variable
 			logRule("factor	: CONST_INT");
 			logPieceOfCode($$->text);
 			$$->symbols.push_back($1);
-			writeASM("MOV AX,"+$1->getName()+"\nPUSH AX");
+			writeASM("MOV AX,"+$1->getName());
+			writeASM("PUSH AX");
 			$$->stackEntry=++stackCount;
 		} 
 	| CONST_FLOAT
@@ -1631,26 +1708,44 @@ factor	: variable
 				$$->symbols.push_back($1->symbol);
 				if($1->symbol->variableInfo->global==false){
 					if($1->symbol->variableInfo->arrayInfo!=NULL){
-						writeASM("POP AX \nMOV BX,2 \nMUL BX");
+						writeASM("POP AX");
+						writeASM("MOV BX,2");
+						writeASM("MUL BX");
 						--stackCount;
 						writeASM("ADD AX,"+stkPos($1->
-						symbol->variableInfo->stackEntry)+"\nMOV BP,SP\nADD BP,AX\n"+
-						"MOV AX,[BP] \nINC AX \nMOV [BP],AX \nPUSH AX");
+						symbol->variableInfo->stackEntry));
+						writeASM("MOV BP,SP");
+						writeASM("ADD BP,AX");
+						writeASM("MOV AX,[BP]");
+						writeASM("MOV BX,AX");
+						writeASM("INC AX");
+						writeASM("MOV [BP],AX");
+						writeASM("PUSH BX"); // INC THE NUMBER BUT PUSH ORIGINAL VALUE
 						$$->stackEntry=++stackCount;
 					}else{
-						writeASM("MOV BP,SP\nMOV AX,[BP+"+stkPos($1->symbol->variableInfo->stackEntry)
-						+"]\n INC AX \nMOV [BP+"+stkPos($1->symbol->variableInfo->stackEntry)
-						+"],AX \nPUSH AX");
+						writeASM("MOV BP,SP");
+						writeASM("MOV AX,[BP+"+stkPos($1->symbol->variableInfo->stackEntry)+"]");
+						writeASM("MOV BX,AX");
+						writeASM("INC AX");
+						writeASM("MOV [BP+"+stkPos($1->symbol->variableInfo->stackEntry)+"],AX"); 
+						writeASM("PUSH BX");
 						$$->stackEntry=++stackCount;
 					}
 				}else{
 					if($1->symbol->variableInfo->arrayInfo!=NULL){
-						writeASM("POP AX \nMOV BX,2 \nMUL BX \nLEA SI,"+
-						$1->symbol->variableInfo->tempName+" \nADD SI,AX \n INC [SI] \nPUSH [SI]");
+						writeASM("POP AX");
+						writeASM("MOV BX,2");
+						writeASM("MUL BX");
+						writeASM("LEA SI,"+$1->symbol->variableInfo->tempName);
+						writeASM("ADD SI,AX");
+						writeASM("MOV AX,[SI]");
+						writeASM("INC [SI]");
+						writeASM("PUSH AX");
 						$$->stackEntry=stackCount;	
 					}else{
+						writeASM("MOV AX,"+$1->symbol->variableInfo->tempName);
 						writeASM("INC "+$1->symbol->variableInfo->tempName);
-						writeASM("PUSH "+$1->symbol->variableInfo->tempName);
+						writeASM("PUSH AX");
 						$$->stackEntry=++stackCount;
 					}
 
@@ -1669,26 +1764,44 @@ factor	: variable
 				$$->symbols.push_back($1->symbol);
 				if($1->symbol->variableInfo->global==false){
 					if($1->symbol->variableInfo->arrayInfo!=NULL){
-						writeASM("POP AX \nMOV BX,2 \nMUL BX");
+						writeASM("POP AX");
+						writeASM("MOV BX,2");
+						writeASM("MUL BX");
 						--stackCount;
 						writeASM("ADD AX,"+stkPos($1->
-						symbol->variableInfo->stackEntry)+"\nMOV BP,SP\nADD BP,AX\n"+
-						"MOV AX,[BP] \nDEC AX \nMOV [BP],AX \nPUSH AX");
+						symbol->variableInfo->stackEntry));
+						writeASM("MOV BP,SP");
+						writeASM("ADD BP,AX");
+						writeASM("MOV AX,[BP]");
+						writeASM("MOV BX,AX");
+						writeASM("DEC AX");
+						writeASM("MOV [BP],AX");
+						writeASM("PUSH BX");
 						$$->stackEntry=++stackCount;
 					}else{
-						writeASM("MOV BP,SP\nMOV AX,[BP+"+stkPos($1->symbol->variableInfo->stackEntry)
-						+"]\n DEC AX \nMOV [BP+"+stkPos($1->symbol->variableInfo->stackEntry)
-						+"],AX \nPUSH AX");
+						writeASM("MOV BP,SP");
+						writeASM("MOV AX,[BP+"+stkPos($1->symbol->variableInfo->stackEntry)+"]");
+						writeASM("MOV BX,AX"); 
+						writeASM("DEC AX");
+						writeASM("MOV [BP+"+stkPos($1->symbol->variableInfo->stackEntry)+"],AX"); 
+						writeASM("PUSH BX");
 						$$->stackEntry=++stackCount;
 					}
 				}else{
 					if($1->symbol->variableInfo->arrayInfo!=NULL){
-						writeASM("POP AX \nMOV BX,2 \nMUL BX \nLEA SI,"+
-						$1->symbol->variableInfo->tempName+" \nADD SI,AX \n DEC [SI] \nPUSH [SI]");
+						writeASM("POP AX");
+						writeASM("MOV BX,2");
+						writeASM("MUL BX");
+						writeASM("LEA SI,"+$1->symbol->variableInfo->tempName);
+						writeASM("ADD SI,AX");
+						writeASM("MOV AX,[SI]");
+						writeASM("DEC [SI]");
+						writeASM("PUSH AX");
 						$$->stackEntry=stackCount;	
 					}else{
+						writeASM("MOV AX,"+$1->symbol->variableInfo->tempName);
 						writeASM("DEC "+$1->symbol->variableInfo->tempName);
-						writeASM("PUSH "+$1->symbol->variableInfo->tempName);
+						writeASM("PUSH AX");
 						$$->stackEntry=++stackCount;
 					}
 

@@ -59,3 +59,11 @@ class If:public NonTerminal{
     string elseLabel;
     string nextLabel;
 };
+
+class For{
+    public:
+    string nextLabel;
+    string checkLabel;
+    string incrementLabel;
+    string statementLabel;
+};
