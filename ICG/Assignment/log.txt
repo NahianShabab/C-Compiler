@@ -1,2689 +1,619 @@
-Line 4: type_specifier	: INT
+Line 1: type_specifier	: INT
 
 int
 
-Line 4: declaration_list : ID LTHIRD CONST_INT RTHIRD
-
-m1[10]
-
-Line 4: var_declaration : type_specifier declaration_list SEMICOLON
-
-int m1[10];
-
-Line 4: unit : var_declaration
-
-int m1[10];
-
-Line 4: program : unit
-
-int m1[10];
-
-Line 6: type_specifier	: INT
+Line 2: type_specifier	: INT
 
 int
 
-Line 6: declaration_list : ID
+Line 2: declaration_list : ID
 
-count
+a
 
-Line 6: var_declaration : type_specifier declaration_list SEMICOLON
+Line 2: declaration_list : declaration_list COMMA ID
 
-int count;
+a,b
 
-Line 6: unit : var_declaration
+Line 2: declaration_list : declaration_list COMMA ID LTHIRD CONST_INT RTHIRD
 
-int count;
+a,b,c[3]
 
-Line 6: program : program unit
+Line 2: var_declaration : type_specifier declaration_list SEMICOLON
 
-int m1[10];
-int count;
+int a,b,c[3];
 
-Line 7: type_specifier	: INT
+Line 2: statement : var_declaration
 
-int
+int a,b,c[3];
 
-Line 8: variable : ID 
+Line 2: statements : statement
 
-count
+int a,b,c[3];
 
-Line 8: factor	: CONST_INT
+Line 3: variable : ID 
 
-10
+a
 
-Line 8: unary_expression : factor
+Line 3: factor	: CONST_INT
 
-10
+1
 
-Line 8: term :	unary_expression
+Line 3: unary_expression : factor
 
-10
+1
 
-Line 8: simple_expression : term 
+Line 3: term :	unary_expression
 
-10
+1
 
-Line 8: rel_expression	: simple_expression 
+Line 3: factor	: CONST_INT
 
-10
+2
 
-Line 8: logic_expression : rel_expression
+Line 3: unary_expression : factor
 
-10
+2
 
-Line 8: expression : variable ASSIGNOP logic_expression
+Line 3: term :	unary_expression
 
-count=10
+2
 
-Line 8: expression_statement : expression SEMICOLON 
+Line 3: simple_expression : term 
 
-count=10;
+2
 
-Line 8: statement : expression_statement
+Line 3: factor	: CONST_INT
 
-count=10;
+3
 
-Line 8: statements : statement
+Line 3: unary_expression : factor
 
-count=10;
+3
 
-Line 9: type_specifier	: INT
+Line 3: term :	unary_expression
 
-int
+3
 
-Line 9: declaration_list : ID LTHIRD CONST_INT RTHIRD
+Line 3: simple_expression : simple_expression ADDOP term
 
-m2[10]
+2+3
 
-Line 9: var_declaration : type_specifier declaration_list SEMICOLON
+Line 3: rel_expression	: simple_expression 
 
-int m2[10];
+2+3
 
-Line 9: statement : var_declaration
+Line 3: logic_expression : rel_expression
 
-int m2[10];
+2+3
+
+Line 3: expression : logic_expression	
+
+2+3
+
+Line 3: factor : LPAREN expression RPAREN
+
+(2+3)
+
+Line 3: unary_expression : factor
+
+(2+3)
+
+Line 3: term : term MULOP unary_expression
+
+1*(2+3)
+
+Line 3: factor	: CONST_INT
+
+3
+
+Line 3: unary_expression : factor
+
+3
+
+Line 3: term : term MULOP unary_expression
+
+1*(2+3)%3
+
+Line 3: simple_expression : term 
+
+1*(2+3)%3
+
+Line 3: rel_expression	: simple_expression 
+
+1*(2+3)%3
+
+Line 3: logic_expression : rel_expression
+
+1*(2+3)%3
+
+Line 3: expression : variable ASSIGNOP logic_expression
+
+a=1*(2+3)%3
+
+Line 3: expression_statement : expression SEMICOLON 
+
+a=1*(2+3)%3;
+
+Line 3: statement : expression_statement
+
+a=1*(2+3)%3;
+
+Line 3: statements : statements statement
+
+int a,b,c[3];
+a=1*(2+3)%3;
+
+Line 4: variable : ID 
+
+b
+
+Line 4: factor	: CONST_INT
+
+1
+
+Line 4: unary_expression : factor
+
+1
+
+Line 4: term :	unary_expression
+
+1
+
+Line 4: simple_expression : term 
+
+1
+
+Line 4: factor	: CONST_INT
+
+5
+
+Line 4: unary_expression : factor
+
+5
+
+Line 4: term :	unary_expression
+
+5
+
+Line 4: simple_expression : term 
+
+5
+
+Line 4: rel_expression	: simple_expression RELOP simple_expression	
+
+1<5
+
+Line 4: logic_expression : rel_expression
+
+1<5
+
+Line 4: expression : variable ASSIGNOP logic_expression
+
+b=1<5
+
+Line 4: expression_statement : expression SEMICOLON 
+
+b=1<5;
+
+Line 4: statement : expression_statement
+
+b=1<5;
+
+Line 4: statements : statements statement
+
+int a,b,c[3];
+a=1*(2+3)%3;
+b=1<5;
+
+Line 5: factor	: CONST_INT
+
+0
+
+Line 5: unary_expression : factor
+
+0
+
+Line 5: term :	unary_expression
+
+0
+
+Line 5: simple_expression : term 
+
+0
+
+Line 5: rel_expression	: simple_expression 
+
+0
+
+Line 5: logic_expression : rel_expression
+
+0
+
+Line 5: expression : logic_expression	
+
+0
+
+Line 5: variable : ID LTHIRD expression RTHIRD 
+
+c[0]
+
+Line 5: factor	: CONST_INT
+
+2
+
+Line 5: unary_expression : factor
+
+2
+
+Line 5: term :	unary_expression
+
+2
+
+Line 5: simple_expression : term 
+
+2
+
+Line 5: rel_expression	: simple_expression 
+
+2
+
+Line 5: logic_expression : rel_expression
+
+2
+
+Line 5: expression : variable ASSIGNOP logic_expression
+
+c[0]=2
+
+Line 5: expression_statement : expression SEMICOLON 
+
+c[0]=2;
+
+Line 5: statement : expression_statement
+
+c[0]=2;
+
+Line 5: statements : statements statement
+
+int a,b,c[3];
+a=1*(2+3)%3;
+b=1<5;
+c[0]=2;
+
+Line 6: variable : ID 
+
+a
+
+Line 6: factor	: variable 
+
+a
+
+Line 6: unary_expression : factor
+
+a
+
+Line 6: term :	unary_expression
+
+a
+
+Line 6: simple_expression : term 
+
+a
+
+Line 6: rel_expression	: simple_expression 
+
+a
+
+Line 6: variable : ID 
+
+b
+
+Line 6: factor	: variable 
+
+b
+
+Line 6: unary_expression : factor
+
+b
+
+Line 6: term :	unary_expression
+
+b
+
+Line 6: simple_expression : term 
+
+b
+
+Line 6: rel_expression	: simple_expression 
+
+b
+
+Line 6: logic_expression : rel_expression LOGICOP rel_expression
+
+a&&b
+
+Line 6: expression : logic_expression	
+
+a&&b
+
+Line 7: factor	: CONST_INT
+
+0
+
+Line 7: unary_expression : factor
+
+0
+
+Line 7: term :	unary_expression
+
+0
+
+Line 7: simple_expression : term 
+
+0
+
+Line 7: rel_expression	: simple_expression 
+
+0
+
+Line 7: logic_expression : rel_expression
+
+0
+
+Line 7: expression : logic_expression	
+
+0
+
+Line 7: variable : ID LTHIRD expression RTHIRD 
+
+c[0]
+
+Line 7: factor	: variable INCOP
+
+c[0]++
+
+Line 7: unary_expression : factor
+
+c[0]++
+
+Line 7: term :	unary_expression
+
+c[0]++
+
+Line 7: simple_expression : term 
+
+c[0]++
+
+Line 7: rel_expression	: simple_expression 
+
+c[0]++
+
+Line 7: logic_expression : rel_expression
+
+c[0]++
+
+Line 7: expression : logic_expression	
+
+c[0]++
+
+Line 7: expression_statement : expression SEMICOLON 
+
+c[0]++;
+
+Line 7: statement : expression_statement
+
+c[0]++;
+
+Line 9: factor	: CONST_INT
+
+1
+
+Line 9: unary_expression : factor
+
+1
+
+Line 9: term :	unary_expression
+
+1
+
+Line 9: simple_expression : term 
+
+1
+
+Line 9: rel_expression	: simple_expression 
+
+1
+
+Line 9: logic_expression : rel_expression
+
+1
+
+Line 9: expression : logic_expression	
+
+1
+
+Line 9: variable : ID LTHIRD expression RTHIRD 
+
+c[1]
+
+Line 9: factor	: CONST_INT
+
+0
+
+Line 9: unary_expression : factor
+
+0
+
+Line 9: term :	unary_expression
+
+0
+
+Line 9: simple_expression : term 
+
+0
+
+Line 9: rel_expression	: simple_expression 
+
+0
+
+Line 9: logic_expression : rel_expression
+
+0
+
+Line 9: expression : logic_expression	
+
+0
+
+Line 9: variable : ID LTHIRD expression RTHIRD 
+
+c[0]
+
+Line 9: factor	: variable 
+
+c[0]
+
+Line 9: unary_expression : factor
+
+c[0]
+
+Line 9: term :	unary_expression
+
+c[0]
+
+Line 9: simple_expression : term 
+
+c[0]
+
+Line 9: rel_expression	: simple_expression 
+
+c[0]
+
+Line 9: logic_expression : rel_expression
+
+c[0]
+
+Line 9: expression : variable ASSIGNOP logic_expression
+
+c[1]=c[0]
+
+Line 9: expression_statement : expression SEMICOLON 
+
+c[1]=c[0];
+
+Line 9: statement : expression_statement
+
+c[1]=c[0];
+
+Line 9: statement :  IF LPAREN expression RPAREN statement ELSE statement
+
+if(a&&b)
+c[0]++;else
+c[1]=c[0];
 
 Line 9: statements : statements statement
 
-count=10;
-int m2[10];
+int a,b,c[3];
+a=1*(2+3)%3;
+b=1<5;
+c[0]=2;
+if(a&&b)
+c[0]++;else
+c[1]=c[0];
 
-Line 10: factor	: CONST_INT
+Line 10: statement :  PRINTLN LPAREN ID RPAREN SEMICOLON
 
-0
-
-Line 10: unary_expression : factor
-
-0
-
-Line 10: term :	unary_expression
-
-0
-
-Line 10: simple_expression : term 
-
-0
-
-Line 10: rel_expression	: simple_expression 
-
-0
-
-Line 10: logic_expression : rel_expression
-
-0
-
-Line 10: expression : logic_expression	
-
-0
-
-Line 10: variable : ID LTHIRD expression RTHIRD 
-
-m1[0]
-
-Line 10: factor	: CONST_INT
-
-9
-
-Line 10: unary_expression : factor
-
-9
-
-Line 10: term :	unary_expression
-
-9
-
-Line 10: simple_expression : term 
-
-9
-
-Line 10: rel_expression	: simple_expression 
-
-9
-
-Line 10: logic_expression : rel_expression
-
-9
-
-Line 10: expression : variable ASSIGNOP logic_expression
-
-m1[0]=9
-
-Line 10: expression_statement : expression SEMICOLON 
-
-m1[0]=9;
-
-Line 10: statement : expression_statement
-
-m1[0]=9;
+printf(a);
 
 Line 10: statements : statements statement
 
-count=10;
-int m2[10];
-m1[0]=9;
+int a,b,c[3];
+a=1*(2+3)%3;
+b=1<5;
+c[0]=2;
+if(a&&b)
+c[0]++;else
+c[1]=c[0];
+printf(a);
 
-Line 11: factor	: CONST_INT
+Line 11: statement :  PRINTLN LPAREN ID RPAREN SEMICOLON
 
-1
-
-Line 11: unary_expression : factor
-
-1
-
-Line 11: term :	unary_expression
-
-1
-
-Line 11: simple_expression : term 
-
-1
-
-Line 11: rel_expression	: simple_expression 
-
-1
-
-Line 11: logic_expression : rel_expression
-
-1
-
-Line 11: expression : logic_expression	
-
-1
-
-Line 11: variable : ID LTHIRD expression RTHIRD 
-
-m1[1]
-
-Line 11: factor	: CONST_INT
-
-10
-
-Line 11: unary_expression : factor
-
-10
-
-Line 11: term :	unary_expression
-
-10
-
-Line 11: simple_expression : term 
-
-10
-
-Line 11: rel_expression	: simple_expression 
-
-10
-
-Line 11: logic_expression : rel_expression
-
-10
-
-Line 11: expression : variable ASSIGNOP logic_expression
-
-m1[1]=10
-
-Line 11: expression_statement : expression SEMICOLON 
-
-m1[1]=10;
-
-Line 11: statement : expression_statement
-
-m1[1]=10;
+printf(b);
 
 Line 11: statements : statements statement
 
-count=10;
-int m2[10];
-m1[0]=9;
-m1[1]=10;
-
-Line 12: factor	: CONST_INT
-
-2
-
-Line 12: unary_expression : factor
-
-2
-
-Line 12: term :	unary_expression
-
-2
-
-Line 12: simple_expression : term 
-
-2
-
-Line 12: rel_expression	: simple_expression 
-
-2
-
-Line 12: logic_expression : rel_expression
-
-2
-
-Line 12: expression : logic_expression	
-
-2
-
-Line 12: variable : ID LTHIRD expression RTHIRD 
-
-m1[2]
-
-Line 12: factor	: CONST_INT
-
-8
-
-Line 12: unary_expression : factor
-
-8
-
-Line 12: term :	unary_expression
-
-8
-
-Line 12: simple_expression : term 
-
-8
-
-Line 12: rel_expression	: simple_expression 
-
-8
-
-Line 12: logic_expression : rel_expression
-
-8
-
-Line 12: expression : variable ASSIGNOP logic_expression
-
-m1[2]=8
-
-Line 12: expression_statement : expression SEMICOLON 
-
-m1[2]=8;
-
-Line 12: statement : expression_statement
-
-m1[2]=8;
-
-Line 12: statements : statements statement
-
-count=10;
-int m2[10];
-m1[0]=9;
-m1[1]=10;
-m1[2]=8;
-
-Line 13: factor	: CONST_INT
-
-3
-
-Line 13: unary_expression : factor
-
-3
-
-Line 13: term :	unary_expression
-
-3
-
-Line 13: simple_expression : term 
-
-3
-
-Line 13: rel_expression	: simple_expression 
-
-3
-
-Line 13: logic_expression : rel_expression
-
-3
-
-Line 13: expression : logic_expression	
-
-3
-
-Line 13: variable : ID LTHIRD expression RTHIRD 
-
-m1[3]
-
-Line 13: factor	: CONST_INT
-
-7
-
-Line 13: unary_expression : factor
-
-7
-
-Line 13: term :	unary_expression
-
-7
-
-Line 13: simple_expression : term 
-
-7
-
-Line 13: rel_expression	: simple_expression 
-
-7
-
-Line 13: logic_expression : rel_expression
-
-7
-
-Line 13: expression : variable ASSIGNOP logic_expression
-
-m1[3]=7
-
-Line 13: expression_statement : expression SEMICOLON 
-
-m1[3]=7;
-
-Line 13: statement : expression_statement
-
-m1[3]=7;
-
-Line 13: statements : statements statement
-
-count=10;
-int m2[10];
-m1[0]=9;
-m1[1]=10;
-m1[2]=8;
-m1[3]=7;
-
-Line 14: factor	: CONST_INT
-
-4
-
-Line 14: unary_expression : factor
-
-4
-
-Line 14: term :	unary_expression
-
-4
-
-Line 14: simple_expression : term 
-
-4
-
-Line 14: rel_expression	: simple_expression 
-
-4
-
-Line 14: logic_expression : rel_expression
-
-4
-
-Line 14: expression : logic_expression	
-
-4
-
-Line 14: variable : ID LTHIRD expression RTHIRD 
-
-m1[4]
-
-Line 14: factor	: CONST_INT
-
-8
-
-Line 14: unary_expression : factor
-
-8
-
-Line 14: term :	unary_expression
-
-8
-
-Line 14: simple_expression : term 
-
-8
-
-Line 14: rel_expression	: simple_expression 
-
-8
-
-Line 14: logic_expression : rel_expression
-
-8
-
-Line 14: expression : variable ASSIGNOP logic_expression
-
-m1[4]=8
-
-Line 14: expression_statement : expression SEMICOLON 
-
-m1[4]=8;
-
-Line 14: statement : expression_statement
-
-m1[4]=8;
-
-Line 14: statements : statements statement
-
-count=10;
-int m2[10];
-m1[0]=9;
-m1[1]=10;
-m1[2]=8;
-m1[3]=7;
-m1[4]=8;
-
-Line 15: factor	: CONST_INT
-
-5
-
-Line 15: unary_expression : factor
-
-5
-
-Line 15: term :	unary_expression
-
-5
-
-Line 15: simple_expression : term 
-
-5
-
-Line 15: rel_expression	: simple_expression 
-
-5
-
-Line 15: logic_expression : rel_expression
-
-5
-
-Line 15: expression : logic_expression	
-
-5
-
-Line 15: variable : ID LTHIRD expression RTHIRD 
-
-m1[5]
-
-Line 15: factor	: CONST_INT
-
-6
-
-Line 15: unary_expression : factor
-
-6
-
-Line 15: term :	unary_expression
-
-6
-
-Line 15: simple_expression : term 
-
-6
-
-Line 15: rel_expression	: simple_expression 
-
-6
-
-Line 15: logic_expression : rel_expression
-
-6
-
-Line 15: expression : variable ASSIGNOP logic_expression
-
-m1[5]=6
-
-Line 15: expression_statement : expression SEMICOLON 
-
-m1[5]=6;
-
-Line 15: statement : expression_statement
-
-m1[5]=6;
-
-Line 15: statements : statements statement
-
-count=10;
-int m2[10];
-m1[0]=9;
-m1[1]=10;
-m1[2]=8;
-m1[3]=7;
-m1[4]=8;
-m1[5]=6;
-
-Line 16: factor	: CONST_INT
-
-6
-
-Line 16: unary_expression : factor
-
-6
-
-Line 16: term :	unary_expression
-
-6
-
-Line 16: simple_expression : term 
-
-6
-
-Line 16: rel_expression	: simple_expression 
-
-6
-
-Line 16: logic_expression : rel_expression
-
-6
-
-Line 16: expression : logic_expression	
-
-6
-
-Line 16: variable : ID LTHIRD expression RTHIRD 
-
-m1[6]
-
-Line 16: factor	: CONST_INT
-
-3
-
-Line 16: unary_expression : factor
-
-3
-
-Line 16: term :	unary_expression
-
-3
-
-Line 16: simple_expression : term 
-
-3
-
-Line 16: rel_expression	: simple_expression 
-
-3
-
-Line 16: logic_expression : rel_expression
-
-3
-
-Line 16: expression : variable ASSIGNOP logic_expression
-
-m1[6]=3
-
-Line 16: expression_statement : expression SEMICOLON 
-
-m1[6]=3;
-
-Line 16: statement : expression_statement
-
-m1[6]=3;
-
-Line 16: statements : statements statement
-
-count=10;
-int m2[10];
-m1[0]=9;
-m1[1]=10;
-m1[2]=8;
-m1[3]=7;
-m1[4]=8;
-m1[5]=6;
-m1[6]=3;
-
-Line 17: factor	: CONST_INT
-
-7
-
-Line 17: unary_expression : factor
-
-7
-
-Line 17: term :	unary_expression
-
-7
-
-Line 17: simple_expression : term 
-
-7
-
-Line 17: rel_expression	: simple_expression 
-
-7
-
-Line 17: logic_expression : rel_expression
-
-7
-
-Line 17: expression : logic_expression	
-
-7
-
-Line 17: variable : ID LTHIRD expression RTHIRD 
-
-m1[7]
-
-Line 17: factor	: CONST_INT
-
-9
-
-Line 17: unary_expression : factor
-
-9
-
-Line 17: term :	unary_expression
-
-9
-
-Line 17: simple_expression : term 
-
-9
-
-Line 17: rel_expression	: simple_expression 
-
-9
-
-Line 17: logic_expression : rel_expression
-
-9
-
-Line 17: expression : variable ASSIGNOP logic_expression
-
-m1[7]=9
-
-Line 17: expression_statement : expression SEMICOLON 
-
-m1[7]=9;
-
-Line 17: statement : expression_statement
-
-m1[7]=9;
-
-Line 17: statements : statements statement
-
-count=10;
-int m2[10];
-m1[0]=9;
-m1[1]=10;
-m1[2]=8;
-m1[3]=7;
-m1[4]=8;
-m1[5]=6;
-m1[6]=3;
-m1[7]=9;
-
-Line 18: factor	: CONST_INT
-
-8
-
-Line 18: unary_expression : factor
-
-8
-
-Line 18: term :	unary_expression
-
-8
-
-Line 18: simple_expression : term 
-
-8
-
-Line 18: rel_expression	: simple_expression 
-
-8
-
-Line 18: logic_expression : rel_expression
-
-8
-
-Line 18: expression : logic_expression	
-
-8
-
-Line 18: variable : ID LTHIRD expression RTHIRD 
-
-m1[8]
-
-Line 18: factor	: CONST_INT
-
-6
-
-Line 18: unary_expression : factor
-
-6
-
-Line 18: term :	unary_expression
-
-6
-
-Line 18: simple_expression : term 
-
-6
-
-Line 18: rel_expression	: simple_expression 
-
-6
-
-Line 18: logic_expression : rel_expression
-
-6
-
-Line 18: expression : variable ASSIGNOP logic_expression
-
-m1[8]=6
-
-Line 18: expression_statement : expression SEMICOLON 
-
-m1[8]=6;
-
-Line 18: statement : expression_statement
-
-m1[8]=6;
-
-Line 18: statements : statements statement
-
-count=10;
-int m2[10];
-m1[0]=9;
-m1[1]=10;
-m1[2]=8;
-m1[3]=7;
-m1[4]=8;
-m1[5]=6;
-m1[6]=3;
-m1[7]=9;
-m1[8]=6;
-
-Line 19: factor	: CONST_INT
-
-9
-
-Line 19: unary_expression : factor
-
-9
-
-Line 19: term :	unary_expression
-
-9
-
-Line 19: simple_expression : term 
-
-9
-
-Line 19: rel_expression	: simple_expression 
-
-9
-
-Line 19: logic_expression : rel_expression
-
-9
-
-Line 19: expression : logic_expression	
-
-9
-
-Line 19: variable : ID LTHIRD expression RTHIRD 
-
-m1[9]
-
-Line 19: factor	: CONST_INT
-
-5
-
-Line 19: unary_expression : factor
-
-5
-
-Line 19: term :	unary_expression
-
-5
-
-Line 19: simple_expression : term 
-
-5
-
-Line 19: rel_expression	: simple_expression 
-
-5
-
-Line 19: logic_expression : rel_expression
-
-5
-
-Line 19: expression : variable ASSIGNOP logic_expression
-
-m1[9]=5
-
-Line 19: expression_statement : expression SEMICOLON 
-
-m1[9]=5;
-
-Line 19: statement : expression_statement
-
-m1[9]=5;
-
-Line 19: statements : statements statement
-
-count=10;
-int m2[10];
-m1[0]=9;
-m1[1]=10;
-m1[2]=8;
-m1[3]=7;
-m1[4]=8;
-m1[5]=6;
-m1[6]=3;
-m1[7]=9;
-m1[8]=6;
-m1[9]=5;
-
-Line 21: factor	: CONST_INT
-
-0
-
-Line 21: unary_expression : factor
-
-0
-
-Line 21: term :	unary_expression
-
-0
-
-Line 21: simple_expression : term 
-
-0
-
-Line 21: rel_expression	: simple_expression 
-
-0
-
-Line 21: logic_expression : rel_expression
-
-0
-
-Line 21: expression : logic_expression	
-
-0
-
-Line 21: variable : ID LTHIRD expression RTHIRD 
-
-m2[0]
-
-Line 21: factor	: CONST_INT
-
-6
-
-Line 21: unary_expression : factor
-
-6
-
-Line 21: term :	unary_expression
-
-6
-
-Line 21: simple_expression : term 
-
-6
-
-Line 21: rel_expression	: simple_expression 
-
-6
-
-Line 21: logic_expression : rel_expression
-
-6
-
-Line 21: expression : variable ASSIGNOP logic_expression
-
-m2[0]=6
-
-Line 21: expression_statement : expression SEMICOLON 
-
-m2[0]=6;
-
-Line 21: statement : expression_statement
-
-m2[0]=6;
-
-Line 21: statements : statements statement
-
-count=10;
-int m2[10];
-m1[0]=9;
-m1[1]=10;
-m1[2]=8;
-m1[3]=7;
-m1[4]=8;
-m1[5]=6;
-m1[6]=3;
-m1[7]=9;
-m1[8]=6;
-m1[9]=5;
-m2[0]=6;
-
-Line 22: factor	: CONST_INT
-
-1
-
-Line 22: unary_expression : factor
-
-1
-
-Line 22: term :	unary_expression
-
-1
-
-Line 22: simple_expression : term 
-
-1
-
-Line 22: rel_expression	: simple_expression 
-
-1
-
-Line 22: logic_expression : rel_expression
-
-1
-
-Line 22: expression : logic_expression	
-
-1
-
-Line 22: variable : ID LTHIRD expression RTHIRD 
-
-m2[1]
-
-Line 22: factor	: CONST_INT
-
-7
-
-Line 22: unary_expression : factor
-
-7
-
-Line 22: term :	unary_expression
-
-7
-
-Line 22: simple_expression : term 
-
-7
-
-Line 22: rel_expression	: simple_expression 
-
-7
-
-Line 22: logic_expression : rel_expression
-
-7
-
-Line 22: expression : variable ASSIGNOP logic_expression
-
-m2[1]=7
-
-Line 22: expression_statement : expression SEMICOLON 
-
-m2[1]=7;
-
-Line 22: statement : expression_statement
-
-m2[1]=7;
-
-Line 22: statements : statements statement
-
-count=10;
-int m2[10];
-m1[0]=9;
-m1[1]=10;
-m1[2]=8;
-m1[3]=7;
-m1[4]=8;
-m1[5]=6;
-m1[6]=3;
-m1[7]=9;
-m1[8]=6;
-m1[9]=5;
-m2[0]=6;
-m2[1]=7;
-
-Line 23: factor	: CONST_INT
-
-2
-
-Line 23: unary_expression : factor
-
-2
-
-Line 23: term :	unary_expression
-
-2
-
-Line 23: simple_expression : term 
-
-2
-
-Line 23: rel_expression	: simple_expression 
-
-2
-
-Line 23: logic_expression : rel_expression
-
-2
-
-Line 23: expression : logic_expression	
-
-2
-
-Line 23: variable : ID LTHIRD expression RTHIRD 
-
-m2[2]
-
-Line 23: factor	: CONST_INT
-
-9
-
-Line 23: unary_expression : factor
-
-9
-
-Line 23: term :	unary_expression
-
-9
-
-Line 23: simple_expression : term 
-
-9
-
-Line 23: rel_expression	: simple_expression 
-
-9
-
-Line 23: logic_expression : rel_expression
-
-9
-
-Line 23: expression : variable ASSIGNOP logic_expression
-
-m2[2]=9
-
-Line 23: expression_statement : expression SEMICOLON 
-
-m2[2]=9;
-
-Line 23: statement : expression_statement
-
-m2[2]=9;
-
-Line 23: statements : statements statement
-
-count=10;
-int m2[10];
-m1[0]=9;
-m1[1]=10;
-m1[2]=8;
-m1[3]=7;
-m1[4]=8;
-m1[5]=6;
-m1[6]=3;
-m1[7]=9;
-m1[8]=6;
-m1[9]=5;
-m2[0]=6;
-m2[1]=7;
-m2[2]=9;
-
-Line 24: factor	: CONST_INT
-
-3
-
-Line 24: unary_expression : factor
-
-3
-
-Line 24: term :	unary_expression
-
-3
-
-Line 24: simple_expression : term 
-
-3
-
-Line 24: rel_expression	: simple_expression 
-
-3
-
-Line 24: logic_expression : rel_expression
-
-3
-
-Line 24: expression : logic_expression	
-
-3
-
-Line 24: variable : ID LTHIRD expression RTHIRD 
-
-m2[3]
-
-Line 24: factor	: CONST_INT
-
-5
-
-Line 24: unary_expression : factor
-
-5
-
-Line 24: term :	unary_expression
-
-5
-
-Line 24: simple_expression : term 
-
-5
-
-Line 24: rel_expression	: simple_expression 
-
-5
-
-Line 24: logic_expression : rel_expression
-
-5
-
-Line 24: expression : variable ASSIGNOP logic_expression
-
-m2[3]=5
-
-Line 24: expression_statement : expression SEMICOLON 
-
-m2[3]=5;
-
-Line 24: statement : expression_statement
-
-m2[3]=5;
-
-Line 24: statements : statements statement
-
-count=10;
-int m2[10];
-m1[0]=9;
-m1[1]=10;
-m1[2]=8;
-m1[3]=7;
-m1[4]=8;
-m1[5]=6;
-m1[6]=3;
-m1[7]=9;
-m1[8]=6;
-m1[9]=5;
-m2[0]=6;
-m2[1]=7;
-m2[2]=9;
-m2[3]=5;
-
-Line 25: factor	: CONST_INT
-
-4
-
-Line 25: unary_expression : factor
-
-4
-
-Line 25: term :	unary_expression
-
-4
-
-Line 25: simple_expression : term 
-
-4
-
-Line 25: rel_expression	: simple_expression 
-
-4
-
-Line 25: logic_expression : rel_expression
-
-4
-
-Line 25: expression : logic_expression	
-
-4
-
-Line 25: variable : ID LTHIRD expression RTHIRD 
-
-m2[4]
-
-Line 25: factor	: CONST_INT
-
-6
-
-Line 25: unary_expression : factor
-
-6
-
-Line 25: term :	unary_expression
-
-6
-
-Line 25: simple_expression : term 
-
-6
-
-Line 25: rel_expression	: simple_expression 
-
-6
-
-Line 25: logic_expression : rel_expression
-
-6
-
-Line 25: expression : variable ASSIGNOP logic_expression
-
-m2[4]=6
-
-Line 25: expression_statement : expression SEMICOLON 
-
-m2[4]=6;
-
-Line 25: statement : expression_statement
-
-m2[4]=6;
-
-Line 25: statements : statements statement
-
-count=10;
-int m2[10];
-m1[0]=9;
-m1[1]=10;
-m1[2]=8;
-m1[3]=7;
-m1[4]=8;
-m1[5]=6;
-m1[6]=3;
-m1[7]=9;
-m1[8]=6;
-m1[9]=5;
-m2[0]=6;
-m2[1]=7;
-m2[2]=9;
-m2[3]=5;
-m2[4]=6;
-
-Line 26: factor	: CONST_INT
-
-5
-
-Line 26: unary_expression : factor
-
-5
-
-Line 26: term :	unary_expression
-
-5
-
-Line 26: simple_expression : term 
-
-5
-
-Line 26: rel_expression	: simple_expression 
-
-5
-
-Line 26: logic_expression : rel_expression
-
-5
-
-Line 26: expression : logic_expression	
-
-5
-
-Line 26: variable : ID LTHIRD expression RTHIRD 
-
-m2[5]
-
-Line 26: factor	: CONST_INT
-
-8
-
-Line 26: unary_expression : factor
-
-8
-
-Line 26: term :	unary_expression
-
-8
-
-Line 26: simple_expression : term 
-
-8
-
-Line 26: rel_expression	: simple_expression 
-
-8
-
-Line 26: logic_expression : rel_expression
-
-8
-
-Line 26: expression : variable ASSIGNOP logic_expression
-
-m2[5]=8
-
-Line 26: expression_statement : expression SEMICOLON 
-
-m2[5]=8;
-
-Line 26: statement : expression_statement
-
-m2[5]=8;
-
-Line 26: statements : statements statement
-
-count=10;
-int m2[10];
-m1[0]=9;
-m1[1]=10;
-m1[2]=8;
-m1[3]=7;
-m1[4]=8;
-m1[5]=6;
-m1[6]=3;
-m1[7]=9;
-m1[8]=6;
-m1[9]=5;
-m2[0]=6;
-m2[1]=7;
-m2[2]=9;
-m2[3]=5;
-m2[4]=6;
-m2[5]=8;
-
-Line 27: factor	: CONST_INT
-
-6
-
-Line 27: unary_expression : factor
-
-6
-
-Line 27: term :	unary_expression
-
-6
-
-Line 27: simple_expression : term 
-
-6
-
-Line 27: rel_expression	: simple_expression 
-
-6
-
-Line 27: logic_expression : rel_expression
-
-6
-
-Line 27: expression : logic_expression	
-
-6
-
-Line 27: variable : ID LTHIRD expression RTHIRD 
-
-m2[6]
-
-Line 27: factor	: CONST_INT
-
-4
-
-Line 27: unary_expression : factor
-
-4
-
-Line 27: term :	unary_expression
-
-4
-
-Line 27: simple_expression : term 
-
-4
-
-Line 27: rel_expression	: simple_expression 
-
-4
-
-Line 27: logic_expression : rel_expression
-
-4
-
-Line 27: expression : variable ASSIGNOP logic_expression
-
-m2[6]=4
-
-Line 27: expression_statement : expression SEMICOLON 
-
-m2[6]=4;
-
-Line 27: statement : expression_statement
-
-m2[6]=4;
-
-Line 27: statements : statements statement
-
-count=10;
-int m2[10];
-m1[0]=9;
-m1[1]=10;
-m1[2]=8;
-m1[3]=7;
-m1[4]=8;
-m1[5]=6;
-m1[6]=3;
-m1[7]=9;
-m1[8]=6;
-m1[9]=5;
-m2[0]=6;
-m2[1]=7;
-m2[2]=9;
-m2[3]=5;
-m2[4]=6;
-m2[5]=8;
-m2[6]=4;
-
-Line 28: factor	: CONST_INT
-
-7
-
-Line 28: unary_expression : factor
-
-7
-
-Line 28: term :	unary_expression
-
-7
-
-Line 28: simple_expression : term 
-
-7
-
-Line 28: rel_expression	: simple_expression 
-
-7
-
-Line 28: logic_expression : rel_expression
-
-7
-
-Line 28: expression : logic_expression	
-
-7
-
-Line 28: variable : ID LTHIRD expression RTHIRD 
-
-m2[7]
-
-Line 28: factor	: CONST_INT
-
-1
-
-Line 28: unary_expression : factor
-
-1
-
-Line 28: term :	unary_expression
-
-1
-
-Line 28: simple_expression : term 
-
-1
-
-Line 28: rel_expression	: simple_expression 
-
-1
-
-Line 28: logic_expression : rel_expression
-
-1
-
-Line 28: expression : variable ASSIGNOP logic_expression
-
-m2[7]=1
-
-Line 28: expression_statement : expression SEMICOLON 
-
-m2[7]=1;
-
-Line 28: statement : expression_statement
-
-m2[7]=1;
-
-Line 28: statements : statements statement
-
-count=10;
-int m2[10];
-m1[0]=9;
-m1[1]=10;
-m1[2]=8;
-m1[3]=7;
-m1[4]=8;
-m1[5]=6;
-m1[6]=3;
-m1[7]=9;
-m1[8]=6;
-m1[9]=5;
-m2[0]=6;
-m2[1]=7;
-m2[2]=9;
-m2[3]=5;
-m2[4]=6;
-m2[5]=8;
-m2[6]=4;
-m2[7]=1;
-
-Line 29: factor	: CONST_INT
-
-8
-
-Line 29: unary_expression : factor
-
-8
-
-Line 29: term :	unary_expression
-
-8
-
-Line 29: simple_expression : term 
-
-8
-
-Line 29: rel_expression	: simple_expression 
-
-8
-
-Line 29: logic_expression : rel_expression
-
-8
-
-Line 29: expression : logic_expression	
-
-8
-
-Line 29: variable : ID LTHIRD expression RTHIRD 
-
-m2[8]
-
-Line 29: factor	: CONST_INT
-
-0
-
-Line 29: unary_expression : factor
-
-0
-
-Line 29: term :	unary_expression
-
-0
-
-Line 29: simple_expression : term 
-
-0
-
-Line 29: rel_expression	: simple_expression 
-
-0
-
-Line 29: logic_expression : rel_expression
-
-0
-
-Line 29: expression : variable ASSIGNOP logic_expression
-
-m2[8]=0
-
-Line 29: expression_statement : expression SEMICOLON 
-
-m2[8]=0;
-
-Line 29: statement : expression_statement
-
-m2[8]=0;
-
-Line 29: statements : statements statement
-
-count=10;
-int m2[10];
-m1[0]=9;
-m1[1]=10;
-m1[2]=8;
-m1[3]=7;
-m1[4]=8;
-m1[5]=6;
-m1[6]=3;
-m1[7]=9;
-m1[8]=6;
-m1[9]=5;
-m2[0]=6;
-m2[1]=7;
-m2[2]=9;
-m2[3]=5;
-m2[4]=6;
-m2[5]=8;
-m2[6]=4;
-m2[7]=1;
-m2[8]=0;
-
-Line 30: factor	: CONST_INT
-
-9
-
-Line 30: unary_expression : factor
-
-9
-
-Line 30: term :	unary_expression
-
-9
-
-Line 30: simple_expression : term 
-
-9
-
-Line 30: rel_expression	: simple_expression 
-
-9
-
-Line 30: logic_expression : rel_expression
-
-9
-
-Line 30: expression : logic_expression	
-
-9
-
-Line 30: variable : ID LTHIRD expression RTHIRD 
-
-m2[9]
-
-Line 30: factor	: CONST_INT
-
-7
-
-Line 30: unary_expression : factor
-
-7
-
-Line 30: term :	unary_expression
-
-7
-
-Line 30: simple_expression : term 
-
-7
-
-Line 30: rel_expression	: simple_expression 
-
-7
-
-Line 30: logic_expression : rel_expression
-
-7
-
-Line 30: expression : variable ASSIGNOP logic_expression
-
-m2[9]=7
-
-Line 30: expression_statement : expression SEMICOLON 
-
-m2[9]=7;
-
-Line 30: statement : expression_statement
-
-m2[9]=7;
-
-Line 30: statements : statements statement
-
-count=10;
-int m2[10];
-m1[0]=9;
-m1[1]=10;
-m1[2]=8;
-m1[3]=7;
-m1[4]=8;
-m1[5]=6;
-m1[6]=3;
-m1[7]=9;
-m1[8]=6;
-m1[9]=5;
-m2[0]=6;
-m2[1]=7;
-m2[2]=9;
-m2[3]=5;
-m2[4]=6;
-m2[5]=8;
-m2[6]=4;
-m2[7]=1;
-m2[8]=0;
-m2[9]=7;
-
-Line 31: type_specifier	: INT
-
-int
-
-Line 31: declaration_list : ID LTHIRD CONST_INT RTHIRD
-
-weighted_sum[10]
-
-Line 31: var_declaration : type_specifier declaration_list SEMICOLON
-
-int weighted_sum[10];
-
-Line 31: statement : var_declaration
-
-int weighted_sum[10];
-
-Line 31: statements : statements statement
-
-count=10;
-int m2[10];
-m1[0]=9;
-m1[1]=10;
-m1[2]=8;
-m1[3]=7;
-m1[4]=8;
-m1[5]=6;
-m1[6]=3;
-m1[7]=9;
-m1[8]=6;
-m1[9]=5;
-m2[0]=6;
-m2[1]=7;
-m2[2]=9;
-m2[3]=5;
-m2[4]=6;
-m2[5]=8;
-m2[6]=4;
-m2[7]=1;
-m2[8]=0;
-m2[9]=7;
-int weighted_sum[10];
-
-Line 32: variable : ID 
-
-count
-
-Line 32: factor	: variable 
-
-count
-
-Line 32: unary_expression : factor
-
-count
-
-Line 32: term :	unary_expression
-
-count
-
-Line 32: simple_expression : term 
-
-count
-
-Line 32: rel_expression	: simple_expression 
-
-count
-
-Line 32: logic_expression : rel_expression
-
-count
-
-Line 32: expression : logic_expression	
-
-count
-
-Line 33: variable : ID 
-
-count
-
-Line 33: variable : ID 
-
-count
-
-Line 33: factor	: variable 
-
-count
-
-Line 33: unary_expression : factor
-
-count
-
-Line 33: term :	unary_expression
-
-count
-
-Line 33: simple_expression : term 
-
-count
-
-Line 33: factor	: CONST_INT
-
-1
-
-Line 33: unary_expression : factor
-
-1
-
-Line 33: term :	unary_expression
-
-1
-
-Line 33: simple_expression : simple_expression ADDOP term
-
-count-1
-
-Line 33: rel_expression	: simple_expression 
-
-count-1
-
-Line 33: logic_expression : rel_expression
-
-count-1
-
-Line 33: expression : variable ASSIGNOP logic_expression
-
-count=count-1
-
-Line 33: expression_statement : expression SEMICOLON 
-
-count=count-1;
-
-Line 33: statement : expression_statement
-
-count=count-1;
-
-Line 33: statements : statement
-
-count=count-1;
-
-Line 34: variable : ID 
-
-count
-
-Line 34: factor	: variable 
-
-count
-
-Line 34: unary_expression : factor
-
-count
-
-Line 34: term :	unary_expression
-
-count
-
-Line 34: simple_expression : term 
-
-count
-
-Line 34: rel_expression	: simple_expression 
-
-count
-
-Line 34: logic_expression : rel_expression
-
-count
-
-Line 34: expression : logic_expression	
-
-count
-
-Line 34: variable : ID LTHIRD expression RTHIRD 
-
-weighted_sum[count]
-
-Line 34: variable : ID 
-
-count
-
-Line 34: factor	: variable 
-
-count
-
-Line 34: unary_expression : factor
-
-count
-
-Line 34: term :	unary_expression
-
-count
-
-Line 34: simple_expression : term 
-
-count
-
-Line 34: rel_expression	: simple_expression 
-
-count
-
-Line 34: logic_expression : rel_expression
-
-count
-
-Line 34: expression : logic_expression	
-
-count
-
-Line 34: variable : ID LTHIRD expression RTHIRD 
-
-m1[count]
-
-Line 34: factor	: variable 
-
-m1[count]
-
-Line 34: unary_expression : factor
-
-m1[count]
-
-Line 34: term :	unary_expression
-
-m1[count]
-
-Line 34: factor	: CONST_INT
-
-4
-
-Line 34: unary_expression : factor
-
-4
-
-Line 34: term : term MULOP unary_expression
-
-m1[count]*4
-
-Line 34: simple_expression : term 
-
-m1[count]*4
-
-Line 34: variable : ID 
-
-count
-
-Line 34: factor	: variable 
-
-count
-
-Line 34: unary_expression : factor
-
-count
-
-Line 34: term :	unary_expression
-
-count
-
-Line 34: simple_expression : term 
-
-count
-
-Line 34: rel_expression	: simple_expression 
-
-count
-
-Line 34: logic_expression : rel_expression
-
-count
-
-Line 34: expression : logic_expression	
-
-count
-
-Line 34: variable : ID LTHIRD expression RTHIRD 
-
-m2[count]
-
-Line 34: factor	: variable 
-
-m2[count]
-
-Line 34: unary_expression : factor
-
-m2[count]
-
-Line 34: term :	unary_expression
-
-m2[count]
-
-Line 34: factor	: CONST_INT
-
-6
-
-Line 34: unary_expression : factor
-
-6
-
-Line 34: term : term MULOP unary_expression
-
-m2[count]*6
-
-Line 34: simple_expression : simple_expression ADDOP term
-
-m1[count]*4+m2[count]*6
-
-Line 34: rel_expression	: simple_expression 
-
-m1[count]*4+m2[count]*6
-
-Line 34: logic_expression : rel_expression
-
-m1[count]*4+m2[count]*6
-
-Line 34: expression : variable ASSIGNOP logic_expression
-
-weighted_sum[count]=m1[count]*4+m2[count]*6
-
-Line 34: expression_statement : expression SEMICOLON 
-
-weighted_sum[count]=m1[count]*4+m2[count]*6;
-
-Line 34: statement : expression_statement
-
-weighted_sum[count]=m1[count]*4+m2[count]*6;
-
-Line 34: statements : statements statement
-
-count=count-1;
-weighted_sum[count]=m1[count]*4+m2[count]*6;
-
-Line 35: compound_statement : LCURL statements RCURL
-
-{
-count=count-1;
-weighted_sum[count]=m1[count]*4+m2[count]*6;
-}
-
-Line 35: statement : compound_statement
-
-{
-count=count-1;
-weighted_sum[count]=m1[count]*4+m2[count]*6;
-}
-
-Line 35: statement :  WHILE LPAREN expression RPAREN statement
-
-while(count)
-{
-count=count-1;
-weighted_sum[count]=m1[count]*4+m2[count]*6;
-}
-
-Line 35: statements : statements statement
-
-count=10;
-int m2[10];
-m1[0]=9;
-m1[1]=10;
-m1[2]=8;
-m1[3]=7;
-m1[4]=8;
-m1[5]=6;
-m1[6]=3;
-m1[7]=9;
-m1[8]=6;
-m1[9]=5;
-m2[0]=6;
-m2[1]=7;
-m2[2]=9;
-m2[3]=5;
-m2[4]=6;
-m2[5]=8;
-m2[6]=4;
-m2[7]=1;
-m2[8]=0;
-m2[9]=7;
-int weighted_sum[10];
-while(count)
-{
-count=count-1;
-weighted_sum[count]=m1[count]*4+m2[count]*6;
-}
-
-Line 36: variable : ID 
-
-count
-
-Line 36: factor	: CONST_INT
-
-10
-
-Line 36: unary_expression : factor
-
-10
-
-Line 36: term :	unary_expression
-
-10
-
-Line 36: simple_expression : term 
-
-10
-
-Line 36: rel_expression	: simple_expression 
-
-10
-
-Line 36: logic_expression : rel_expression
-
-10
-
-Line 36: expression : variable ASSIGNOP logic_expression
-
-count=10
-
-Line 36: expression_statement : expression SEMICOLON 
-
-count=10;
-
-Line 36: statement : expression_statement
-
-count=10;
-
-Line 36: statements : statements statement
-
-count=10;
-int m2[10];
-m1[0]=9;
-m1[1]=10;
-m1[2]=8;
-m1[3]=7;
-m1[4]=8;
-m1[5]=6;
-m1[6]=3;
-m1[7]=9;
-m1[8]=6;
-m1[9]=5;
-m2[0]=6;
-m2[1]=7;
-m2[2]=9;
-m2[3]=5;
-m2[4]=6;
-m2[5]=8;
-m2[6]=4;
-m2[7]=1;
-m2[8]=0;
-m2[9]=7;
-int weighted_sum[10];
-while(count)
-{
-count=count-1;
-weighted_sum[count]=m1[count]*4+m2[count]*6;
-}
-count=10;
-
-Line 37: type_specifier	: INT
-
-int
-
-Line 37: declaration_list : ID
-
-a
-
-Line 37: var_declaration : type_specifier declaration_list SEMICOLON
-
-int a;
-
-Line 37: statement : var_declaration
-
-int a;
-
-Line 37: statements : statements statement
-
-count=10;
-int m2[10];
-m1[0]=9;
-m1[1]=10;
-m1[2]=8;
-m1[3]=7;
-m1[4]=8;
-m1[5]=6;
-m1[6]=3;
-m1[7]=9;
-m1[8]=6;
-m1[9]=5;
-m2[0]=6;
-m2[1]=7;
-m2[2]=9;
-m2[3]=5;
-m2[4]=6;
-m2[5]=8;
-m2[6]=4;
-m2[7]=1;
-m2[8]=0;
-m2[9]=7;
-int weighted_sum[10];
-while(count)
-{
-count=count-1;
-weighted_sum[count]=m1[count]*4+m2[count]*6;
-}
-count=10;
-int a;
-
-Line 38: variable : ID 
-
-count
-
-Line 38: factor	: variable 
-
-count
-
-Line 38: unary_expression : factor
-
-count
-
-Line 38: term :	unary_expression
-
-count
-
-Line 38: simple_expression : term 
-
-count
-
-Line 38: rel_expression	: simple_expression 
-
-count
-
-Line 38: logic_expression : rel_expression
-
-count
-
-Line 38: expression : logic_expression	
-
-count
-
-Line 39: variable : ID 
-
-count
-
-Line 39: factor	: variable DECOP
-
-count--
-
-Line 39: unary_expression : factor
-
-count--
-
-Line 39: term :	unary_expression
-
-count--
-
-Line 39: simple_expression : term 
-
-count--
-
-Line 39: rel_expression	: simple_expression 
-
-count--
-
-Line 39: logic_expression : rel_expression
-
-count--
-
-Line 39: expression : logic_expression	
-
-count--
-
-Line 39: expression_statement : expression SEMICOLON 
-
-count--;
-
-Line 39: statement : expression_statement
-
-count--;
-
-Line 39: statements : statement
-
-count--;
-
-Line 40: variable : ID 
-
-a
-
-Line 40: variable : ID 
-
-count
-
-Line 40: factor	: variable 
-
-count
-
-Line 40: unary_expression : factor
-
-count
-
-Line 40: term :	unary_expression
-
-count
-
-Line 40: simple_expression : term 
-
-count
-
-Line 40: rel_expression	: simple_expression 
-
-count
-
-Line 40: logic_expression : rel_expression
-
-count
-
-Line 40: expression : logic_expression	
-
-count
-
-Line 40: variable : ID LTHIRD expression RTHIRD 
-
-weighted_sum[count]
-
-Line 40: factor	: variable 
-
-weighted_sum[count]
-
-Line 40: unary_expression : factor
-
-weighted_sum[count]
-
-Line 40: term :	unary_expression
-
-weighted_sum[count]
-
-Line 40: simple_expression : term 
-
-weighted_sum[count]
-
-Line 40: rel_expression	: simple_expression 
-
-weighted_sum[count]
-
-Line 40: logic_expression : rel_expression
-
-weighted_sum[count]
-
-Line 40: expression : variable ASSIGNOP logic_expression
-
-a=weighted_sum[count]
-
-Line 40: expression_statement : expression SEMICOLON 
-
-a=weighted_sum[count];
-
-Line 40: statement : expression_statement
-
-a=weighted_sum[count];
-
-Line 40: statements : statements statement
-
-count--;
-a=weighted_sum[count];
-
-Line 41: statement :  PRINTLN LPAREN ID RPAREN SEMICOLON
-
+int a,b,c[3];
+a=1*(2+3)%3;
+b=1<5;
+c[0]=2;
+if(a&&b)
+c[0]++;else
+c[1]=c[0];
 printf(a);
+printf(b);
 
-Line 41: statements : statements statement
+Line 12: compound_statement : LCURL statements RCURL
 
-count--;
-a=weighted_sum[count];
+{
+int a,b,c[3];
+a=1*(2+3)%3;
+b=1<5;
+c[0]=2;
+if(a&&b)
+c[0]++;else
+c[1]=c[0];
 printf(a);
-
-Line 42: compound_statement : LCURL statements RCURL
-
-{
-count--;
-a=weighted_sum[count];
-printf(a);
+printf(b);
 }
 
-Line 42: statement : compound_statement
-
-{
-count--;
-a=weighted_sum[count];
-printf(a);
-}
-
-Line 42: statement :  WHILE LPAREN expression RPAREN statement
-
-while(count)
-{
-count--;
-a=weighted_sum[count];
-printf(a);
-}
-
-Line 42: statements : statements statement
-
-count=10;
-int m2[10];
-m1[0]=9;
-m1[1]=10;
-m1[2]=8;
-m1[3]=7;
-m1[4]=8;
-m1[5]=6;
-m1[6]=3;
-m1[7]=9;
-m1[8]=6;
-m1[9]=5;
-m2[0]=6;
-m2[1]=7;
-m2[2]=9;
-m2[3]=5;
-m2[4]=6;
-m2[5]=8;
-m2[6]=4;
-m2[7]=1;
-m2[8]=0;
-m2[9]=7;
-int weighted_sum[10];
-while(count)
-{
-count=count-1;
-weighted_sum[count]=m1[count]*4+m2[count]*6;
-}
-count=10;
-int a;
-while(count)
-{
-count--;
-a=weighted_sum[count];
-printf(a);
-}
-
-Line 43: compound_statement : LCURL statements RCURL
-
-{
-count=10;
-int m2[10];
-m1[0]=9;
-m1[1]=10;
-m1[2]=8;
-m1[3]=7;
-m1[4]=8;
-m1[5]=6;
-m1[6]=3;
-m1[7]=9;
-m1[8]=6;
-m1[9]=5;
-m2[0]=6;
-m2[1]=7;
-m2[2]=9;
-m2[3]=5;
-m2[4]=6;
-m2[5]=8;
-m2[6]=4;
-m2[7]=1;
-m2[8]=0;
-m2[9]=7;
-int weighted_sum[10];
-while(count)
-{
-count=count-1;
-weighted_sum[count]=m1[count]*4+m2[count]*6;
-}
-count=10;
-int a;
-while(count)
-{
-count--;
-a=weighted_sum[count];
-printf(a);
-}
-}
-
-Line 43: func_definition : type_specifier ID LPAREN parameter_list RPAREN compound_statement
+Line 12: func_definition : type_specifier ID LPAREN parameter_list RPAREN compound_statement
 
 int main(){
-count=10;
-int m2[10];
-m1[0]=9;
-m1[1]=10;
-m1[2]=8;
-m1[3]=7;
-m1[4]=8;
-m1[5]=6;
-m1[6]=3;
-m1[7]=9;
-m1[8]=6;
-m1[9]=5;
-m2[0]=6;
-m2[1]=7;
-m2[2]=9;
-m2[3]=5;
-m2[4]=6;
-m2[5]=8;
-m2[6]=4;
-m2[7]=1;
-m2[8]=0;
-m2[9]=7;
-int weighted_sum[10];
-while(count)
-{
-count=count-1;
-weighted_sum[count]=m1[count]*4+m2[count]*6;
-}
-count=10;
-int a;
-while(count)
-{
-count--;
-a=weighted_sum[count];
+int a,b,c[3];
+a=1*(2+3)%3;
+b=1<5;
+c[0]=2;
+if(a&&b)
+c[0]++;else
+c[1]=c[0];
 printf(a);
-}
+printf(b);
 }
 
 ScopeTable # 1.1
-2 -->  [m2 : VARIABLE,intint ARRAY, StackEntry: 10]
-4 -->  [weighted_sum : VARIABLE,intint ARRAY, StackEntry: 20]
-6 -->  [a : VARIABLE,int, StackEntry: 21]
+0 -->  [b : VARIABLE,int, StackEntry: 2]
+1 -->  [c : VARIABLE,intint ARRAY, StackEntry: 5]
+6 -->  [a : VARIABLE,int, StackEntry: 1]
 
-Line 43: unit : func_definition
+Line 12: unit : func_definition
 
 int main(){
-count=10;
-int m2[10];
-m1[0]=9;
-m1[1]=10;
-m1[2]=8;
-m1[3]=7;
-m1[4]=8;
-m1[5]=6;
-m1[6]=3;
-m1[7]=9;
-m1[8]=6;
-m1[9]=5;
-m2[0]=6;
-m2[1]=7;
-m2[2]=9;
-m2[3]=5;
-m2[4]=6;
-m2[5]=8;
-m2[6]=4;
-m2[7]=1;
-m2[8]=0;
-m2[9]=7;
-int weighted_sum[10];
-while(count)
-{
-count=count-1;
-weighted_sum[count]=m1[count]*4+m2[count]*6;
-}
-count=10;
-int a;
-while(count)
-{
-count--;
-a=weighted_sum[count];
+int a,b,c[3];
+a=1*(2+3)%3;
+b=1<5;
+c[0]=2;
+if(a&&b)
+c[0]++;else
+c[1]=c[0];
 printf(a);
-}
+printf(b);
 }
 
-Line 43: program : program unit
+Line 12: program : unit
 
-int m1[10];
-int count;
 int main(){
-count=10;
-int m2[10];
-m1[0]=9;
-m1[1]=10;
-m1[2]=8;
-m1[3]=7;
-m1[4]=8;
-m1[5]=6;
-m1[6]=3;
-m1[7]=9;
-m1[8]=6;
-m1[9]=5;
-m2[0]=6;
-m2[1]=7;
-m2[2]=9;
-m2[3]=5;
-m2[4]=6;
-m2[5]=8;
-m2[6]=4;
-m2[7]=1;
-m2[8]=0;
-m2[9]=7;
-int weighted_sum[10];
-while(count)
-{
-count=count-1;
-weighted_sum[count]=m1[count]*4+m2[count]*6;
-}
-count=10;
-int a;
-while(count)
-{
-count--;
-a=weighted_sum[count];
+int a,b,c[3];
+a=1*(2+3)%3;
+b=1<5;
+c[0]=2;
+if(a&&b)
+c[0]++;else
+c[1]=c[0];
 printf(a);
-}
+printf(b);
 }
 
 ScopeTable # 1
-1 -->  [m1 : VARIABLE,intint ARRAY, TempName: T1]
-5 -->  [main : FUNCTION,RETURNS int]  [count : VARIABLE,int, TempName: T2]
+5 -->  [main : FUNCTION,RETURNS int] 
 
-Total Lines : 43
+Total Lines : 13
 Total Errors : 0

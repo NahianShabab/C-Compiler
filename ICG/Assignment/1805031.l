@@ -49,6 +49,7 @@ else {return ELSE;}
 while {return WHILE;}
 return {return RETURN;}
 println {return PRINTLN;}
+printchar {return PRINTCHAR;}
 
 {Identifier} {
         yylval.symbol=new SymbolInfo(yytext,"ID");

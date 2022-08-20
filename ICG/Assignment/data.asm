@@ -1,3 +1,1 @@
 .DATA
-T1 DW 10 DUP (?)
-T2 DW ?

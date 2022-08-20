@@ -191,7 +191,7 @@ void writeASM(string s){
 
 %token LPAREN RPAREN SEMICOLON COMMA LCURL RCURL INT FLOAT 
 %token VOID LTHIRD RTHIRD FOR RETURN NOT INCOP DECOP
-%token <symbol> ID CONST_INT PRINTLN ASSIGNOP LOGICOP RELOP ADDOP MULOP CONST_FLOAT
+%token <symbol> ID CONST_INT PRINTLN ASSIGNOP LOGICOP RELOP ADDOP MULOP CONST_FLOAT PRINTCHAR
 %token <whileControl> WHILE
 %token <ifControl> IF
 
@@ -807,6 +807,7 @@ statement : var_declaration
 			
 			delete $1;
 		}
+		//YOURE NEXT 
 	  | FOR LPAREN expression_statement expression_statement expression RPAREN statement
 		{
 			$$=new NonTerminal();
@@ -927,6 +928,35 @@ statement : var_declaration
 					writeASM("MOV AX,[BP+"+stkPos(s->variableInfo->stackEntry)+"]");
 					writeASM("PUSH AX");
 					writeASM("CALL PRINTLN");
+				}
+			}
+			delete $3;
+		}
+	  |PRINTCHAR LPAREN ID RPAREN SEMICOLON
+		{
+			
+			$$=new NonTerminal();
+			$$->text+="printf(";
+			$$->text+=$3->getName();
+			$$->text+=");";
+			logRule("statement :  PRINTCHAR LPAREN ID RPAREN SEMICOLON");
+			logPieceOfCode($$->text);
+			SymbolInfo * s=table->lookup($3->getName());
+			if(s==NULL){
+				yyerror("Undeclared Variable "+$3->getName());
+			}else if(s->variableInfo==NULL){
+				yyerror(s->getName()+" is not a variable");
+			}else if(s->variableInfo->arrayInfo!=NULL){
+				yyerror(s->getName()+" is an array, cannot print array");
+			}else{
+				if(s->variableInfo->global){
+					writeASM("PUSH "+s->variableInfo->tempName);
+					writeASM("CALL PRINTCHAR");
+				}else{
+					writeASM("MOV BP,SP");
+					writeASM("MOV AX,[BP+"+stkPos(s->variableInfo->stackEntry)+"]");
+					writeASM("PUSH AX");
+					writeASM("CALL PRINTCHAR");
 				}
 			}
 			delete $3;
@@ -1162,6 +1192,37 @@ logic_expression : rel_expression
 			if(expHasVoidFunc($1) ||expHasVoidFunc($3) ){
 				yyerror("void-returning function cannot be part of expression");
 			}
+			if($2->getName()=="&&"){
+				writeASM("POP BX");
+				writeASM("POP AX");
+				string nextLabel=newLabel();
+				string falseLabel=newLabel();
+				writeASM("CMP AX,0");
+				writeASM("JE "+falseLabel);
+				writeASM("CMP BX,0");
+				writeASM("JE "+falseLabel);
+				writeASM("PUSH 1");
+				writeASM("JMP "+nextLabel);
+				writeASM(falseLabel+": ");
+				writeASM("PUSH 0");
+				writeASM(nextLabel+": ");
+				$$->stackEntry=--stackCount;
+			}else if($2->getName()=="||"){
+				writeASM("POP BX");
+				writeASM("POP AX");
+				string nextLabel=newLabel();
+				string trueLabel=newLabel();
+				writeASM("CMP AX,0");
+				writeASM("JNE "+trueLabel);
+				writeASM("CMP BX,0");
+				writeASM("JNE "+trueLabel);
+				writeASM("PUSH 1");
+				writeASM("JMP "+nextLabel);
+				writeASM(trueLabel+": ");
+				writeASM("PUSH 0");
+				writeASM(nextLabel+": ");
+				$$->stackEntry=--stackCount;
+			}
 			
 			delete $1;
 			delete $3;
@@ -1199,7 +1260,86 @@ rel_expression	: simple_expression
 			if(expHasVoidFunc($1) ||expHasVoidFunc($3) ){
 				yyerror("void-returning function cannot be part of expression");
 			}
-			
+			if($2->getName()=="=="){
+				string nextLabel=newLabel();
+				string unequalLabel=newLabel();
+				writeASM("POP AX"); //AX HAS RIGHT OP
+				writeASM("POP BX"); //BX HAS LEFT OP
+				writeASM("CMP AX,BX");
+				writeASM("JNE "+unequalLabel);
+				writeASM("PUSH 1");
+				writeASM("JMP "+nextLabel);
+				writeASM(unequalLabel+": ");
+				writeASM("PUSH 0");
+				writeASM(nextLabel+": ");
+				$$->stackEntry=--stackCount;
+			}else if($2->getName()=="!="){
+				string nextLabel=newLabel();
+				string equalLabel=newLabel();
+				writeASM("POP AX"); //AX HAS RIGHT OP
+				writeASM("POP BX"); //BX HAS LEFT OP
+				writeASM("CMP AX,BX");
+				writeASM("JE "+equalLabel);
+				writeASM("PUSH 1");
+				writeASM("JMP "+nextLabel);
+				writeASM(equalLabel+": ");
+				writeASM("PUSH 0");
+				writeASM(nextLabel+": ");
+				$$->stackEntry=--stackCount;
+			}else if($2->getName()=="<="){
+				string nextLabel=newLabel();
+				string greaterLabel=newLabel();
+				writeASM("POP AX"); //AX HAS RIGHT OP
+				writeASM("POP BX"); //BX HAS LEFT OP
+				writeASM("CMP BX,AX");
+				writeASM("JG "+greaterLabel);
+				writeASM("PUSH 1");
+				writeASM("JMP "+nextLabel);
+				writeASM(greaterLabel+": ");
+				writeASM("PUSH 0");
+				writeASM(nextLabel+": ");
+				$$->stackEntry=--stackCount;
+			}
+			else if($2->getName()==">="){
+				string nextLabel=newLabel();
+				string lesserLabel=newLabel();
+				writeASM("POP AX"); //AX HAS RIGHT OP
+				writeASM("POP BX"); //BX HAS LEFT OP
+				writeASM("CMP BX,AX");
+				writeASM("JL "+lesserLabel);
+				writeASM("PUSH 1");
+				writeASM("JMP "+nextLabel);
+				writeASM(lesserLabel+": ");
+				writeASM("PUSH 0");
+				writeASM(nextLabel+": ");
+				$$->stackEntry=--stackCount;
+			}else if($2->getName()==">"){
+				string nextLabel=newLabel();
+				string notGreaterLabel=newLabel();
+				writeASM("POP AX"); //AX HAS RIGHT OP
+				writeASM("POP BX"); //BX HAS LEFT OP
+				writeASM("CMP BX,AX");
+				writeASM("JLE "+notGreaterLabel);
+				writeASM("PUSH 1");
+				writeASM("JMP "+nextLabel);
+				writeASM(notGreaterLabel+": ");
+				writeASM("PUSH 0");
+				writeASM(nextLabel+": ");
+				$$->stackEntry=--stackCount;
+			}else if($2->getName()=="<"){
+				string nextLabel=newLabel();
+				string notLesserLabel=newLabel();
+				writeASM("POP AX"); //AX HAS RIGHT OP
+				writeASM("POP BX"); //BX HAS LEFT OP
+				writeASM("CMP BX,AX");
+				writeASM("JGE "+notLesserLabel);
+				writeASM("PUSH 1");
+				writeASM("JMP "+nextLabel);
+				writeASM(notLesserLabel+": ");
+				writeASM("PUSH 0");
+				writeASM(nextLabel+": ");
+				$$->stackEntry=--stackCount;
+			}
 			delete $1;delete $3;
 
 			//symbol delete 
@@ -1289,8 +1429,21 @@ term :	unary_expression
 			if($2->getName()=="*"){
 				writeASM("POP AX \nPOP BX \nMUL BX \nPUSH AX");
 				$$->stackEntry=--stackCount;
-			}// finish div and modulus
-
+			}else if($2->getName()=="/"){
+				writeASM("POP BX"); //bx has divisor
+				writeASM("POP AX"); //ax has dividend
+				writeASM("XOR DX,DX");
+				writeASM("IDIV BX");
+				writeASM("PUSH AX");
+				$$->stackEntry=--stackCount;
+			}else if($2->getName()=="%"){
+				writeASM("POP BX"); //bx has divisor
+				writeASM("POP AX"); //ax has dividend
+				writeASM("XOR DX,DX");
+				writeASM("IDIV BX");
+				writeASM("PUSH DX");
+				$$->stackEntry=--stackCount;
+			}
 			delete $1;
 			delete $3;
 			delete $2;
