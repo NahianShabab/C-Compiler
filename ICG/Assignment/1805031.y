@@ -1040,6 +1040,7 @@ expression_statement 	: SEMICOLON
 			$$->text+=";";
 			logRule("expression_statement : SEMICOLON	");
 			logPieceOfCode($$->text);
+			writeASM("MOV BX,1"); // For for loops with empty second expressions
 
 		}		
 			| expression SEMICOLON 
