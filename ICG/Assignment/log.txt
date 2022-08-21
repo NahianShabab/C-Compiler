@@ -2,6 +2,20 @@ Line 1: type_specifier	: INT
 
 int
 
+Line 1: type_specifier	: INT
+
+int
+
+Line 1: parameter_list  : type_specifier ID
+
+int a
+
+ScopeTable # 1.1
+6 -->  [a : VARIABLE,int, StackEntry: -1]
+
+ScopeTable # 1
+6 -->  [foo : FUNCTION,RETURNS int] 
+
 Line 2: type_specifier	: INT
 
 int
@@ -24,59 +38,23 @@ int i;
 
 Line 3: variable : ID 
 
-i
-
-Line 3: factor	: CONST_INT
-
-20
-
-Line 3: unary_expression : factor
-
-20
-
-Line 3: term :	unary_expression
-
-20
-
-Line 3: simple_expression : term 
-
-20
-
-Line 3: rel_expression	: simple_expression 
-
-20
-
-Line 3: logic_expression : rel_expression
-
-20
-
-Line 3: expression : variable ASSIGNOP logic_expression
-
-i=20
-
-Line 3: expression_statement : expression SEMICOLON 
-
-i=20;
-
-Line 3: variable : ID 
-
-i
+a
 
 Line 3: factor	: variable 
 
-i
+a
 
 Line 3: unary_expression : factor
 
-i
+a
 
 Line 3: term :	unary_expression
 
-i
+a
 
 Line 3: simple_expression : term 
 
-i
+a
 
 Line 3: factor	: CONST_INT
 
@@ -96,132 +74,499 @@ Line 3: simple_expression : term
 
 Line 3: rel_expression	: simple_expression RELOP simple_expression	
 
-i>=0
+a==0
 
 Line 3: logic_expression : rel_expression
 
-i>=0
+a==0
 
 Line 3: expression : logic_expression	
 
-i>=0
+a==0
 
-Line 3: expression_statement : expression SEMICOLON 
+Line 4: factor	: CONST_INT
 
-i>=0;
+1
 
-Line 3: variable : ID 
+Line 4: unary_expression : factor
 
-i
+1
 
-Line 3: factor	: variable DECOP
+Line 4: term :	unary_expression
 
-i--
+1
 
-Line 3: unary_expression : factor
+Line 4: simple_expression : term 
 
-i--
+1
 
-Line 3: term :	unary_expression
+Line 4: rel_expression	: simple_expression 
 
-i--
+1
 
-Line 3: simple_expression : term 
+Line 4: logic_expression : rel_expression
 
-i--
+1
 
-Line 3: rel_expression	: simple_expression 
+Line 4: expression : logic_expression	
 
-i--
+1
 
-Line 3: logic_expression : rel_expression
+Line 4: statement : RETURN expression SEMICOLON
 
-i--
-
-Line 3: expression : logic_expression	
-
-i--
-
-Line 4: statement :  PRINTLN LPAREN ID RPAREN SEMICOLON
-
-printf(i);
+return 1;
 
 Line 4: statements : statement
 
-printf(i);
+return 1;
 
 Line 5: compound_statement : LCURL statements RCURL
 
 {
-printf(i);
+return 1;
 }
 
 Line 5: statement : compound_statement
 
 {
-printf(i);
+return 1;
 }
 
-Line 5: statement : FOR LPAREN expression_statement expression_statement expression RPAREN statement
+Line 5: statement : IF LPAREN expression RPAREN statement
 
-for(i=20;i>=0;i--)
+if(a==0)
 {
-printf(i);
+return 1;
 }
 
 Line 5: statements : statements statement
 
 int i;
-for(i=20;i>=0;i--)
+if(a==0)
 {
-printf(i);
+return 1;
 }
 
-Line 6: compound_statement : LCURL statements RCURL
+Line 5: variable : ID 
+
+i
+
+Line 5: variable : ID 
+
+a
+
+Line 5: factor	: variable 
+
+a
+
+Line 5: unary_expression : factor
+
+a
+
+Line 5: term :	unary_expression
+
+a
+
+Line 5: simple_expression : term 
+
+a
+
+Line 5: rel_expression	: simple_expression 
+
+a
+
+Line 5: logic_expression : rel_expression
+
+a
+
+Line 5: expression : variable ASSIGNOP logic_expression
+
+i=a
+
+Line 5: expression_statement : expression SEMICOLON 
+
+i=a;
+
+Line 5: statement : expression_statement
+
+i=a;
+
+Line 5: statements : statements statement
+
+int i;
+if(a==0)
+{
+return 1;
+}
+i=a;
+
+Line 6: variable : ID 
+
+a
+
+Line 6: factor	: variable 
+
+a
+
+Line 6: unary_expression : factor
+
+a
+
+Line 6: term :	unary_expression
+
+a
+
+Line 6: simple_expression : term 
+
+a
+
+Line 6: factor	: CONST_INT
+
+1
+
+Line 6: unary_expression : factor
+
+1
+
+Line 6: term :	unary_expression
+
+1
+
+Line 6: simple_expression : simple_expression ADDOP term
+
+a-1
+
+Line 6: rel_expression	: simple_expression 
+
+a-1
+
+Line 6: logic_expression : rel_expression
+
+a-1
+
+Line 6: arguments : logic_expression
+
+a-1
+
+Line 6: argument_list : arguments
+
+a-1
+
+Line 6: factor : ID LPAREN argument_list RPAREN
+
+foo(a-1)
+
+Line 6: unary_expression : factor
+
+foo(a-1)
+
+Line 6: term :	unary_expression
+
+foo(a-1)
+
+Line 6: simple_expression : term 
+
+foo(a-1)
+
+Line 6: variable : ID 
+
+i
+
+Line 6: factor	: variable 
+
+i
+
+Line 6: unary_expression : factor
+
+i
+
+Line 6: term :	unary_expression
+
+i
+
+Line 6: simple_expression : simple_expression ADDOP term
+
+foo(a-1)+i
+
+Line 6: rel_expression	: simple_expression 
+
+foo(a-1)+i
+
+Line 6: logic_expression : rel_expression
+
+foo(a-1)+i
+
+Line 6: expression : logic_expression	
+
+foo(a-1)+i
+
+Line 6: statement : RETURN expression SEMICOLON
+
+return foo(a-1)+i;
+
+Line 6: statements : statements statement
+
+int i;
+if(a==0)
+{
+return 1;
+}
+i=a;
+return foo(a-1)+i;
+
+Line 7: compound_statement : LCURL statements RCURL
 
 {
 int i;
-for(i=20;i>=0;i--)
+if(a==0)
 {
-printf(i);
+return 1;
 }
+i=a;
+return foo(a-1)+i;
 }
 
-Line 6: func_definition : type_specifier ID LPAREN parameter_list RPAREN compound_statement
+Line 7: func_definition : type_specifier ID LPAREN parameter_list RPAREN compound_statement
 
-int main(){
+int foo(int a){
 int i;
-for(i=20;i>=0;i--)
+if(a==0)
 {
-printf(i);
+return 1;
 }
+i=a;
+return foo(a-1)+i;
 }
 
 ScopeTable # 1.1
 0 -->  [i : VARIABLE,int, StackEntry: 1]
+6 -->  [a : VARIABLE,int, StackEntry: -1]
 
-Line 6: unit : func_definition
+Line 7: unit : func_definition
+
+int foo(int a){
+int i;
+if(a==0)
+{
+return 1;
+}
+i=a;
+return foo(a-1)+i;
+}
+
+Line 7: program : unit
+
+int foo(int a){
+int i;
+if(a==0)
+{
+return 1;
+}
+i=a;
+return foo(a-1)+i;
+}
+
+Line 9: type_specifier	: INT
+
+int
+
+Line 10: type_specifier	: INT
+
+int
+
+Line 10: declaration_list : ID
+
+i
+
+Line 10: var_declaration : type_specifier declaration_list SEMICOLON
+
+int i;
+
+Line 10: statement : var_declaration
+
+int i;
+
+Line 10: statements : statement
+
+int i;
+
+Line 12: variable : ID 
+
+i
+
+Line 12: factor	: CONST_INT
+
+7
+
+Line 12: unary_expression : factor
+
+7
+
+Line 12: term :	unary_expression
+
+7
+
+Line 12: simple_expression : term 
+
+7
+
+Line 12: rel_expression	: simple_expression 
+
+7
+
+Line 12: logic_expression : rel_expression
+
+7
+
+Line 12: arguments : logic_expression
+
+7
+
+Line 12: argument_list : arguments
+
+7
+
+Line 12: factor : ID LPAREN argument_list RPAREN
+
+foo(7)
+
+Line 12: unary_expression : factor
+
+foo(7)
+
+Line 12: term :	unary_expression
+
+foo(7)
+
+Line 12: simple_expression : term 
+
+foo(7)
+
+Line 12: rel_expression	: simple_expression 
+
+foo(7)
+
+Line 12: logic_expression : rel_expression
+
+foo(7)
+
+Line 12: expression : variable ASSIGNOP logic_expression
+
+i=foo(7)
+
+Line 12: expression_statement : expression SEMICOLON 
+
+i=foo(7);
+
+Line 12: statement : expression_statement
+
+i=foo(7);
+
+Line 12: statements : statements statement
+
+int i;
+i=foo(7);
+
+Line 13: statement :  PRINTLN LPAREN ID RPAREN SEMICOLON
+
+printf(i);
+
+Line 13: statements : statements statement
+
+int i;
+i=foo(7);
+printf(i);
+
+Line 15: factor	: CONST_INT
+
+0
+
+Line 15: unary_expression : factor
+
+0
+
+Line 15: term :	unary_expression
+
+0
+
+Line 15: simple_expression : term 
+
+0
+
+Line 15: rel_expression	: simple_expression 
+
+0
+
+Line 15: logic_expression : rel_expression
+
+0
+
+Line 15: expression : logic_expression	
+
+0
+
+Line 15: statement : RETURN expression SEMICOLON
+
+return 0;
+
+Line 15: statements : statements statement
+
+int i;
+i=foo(7);
+printf(i);
+return 0;
+
+Line 16: compound_statement : LCURL statements RCURL
+
+{
+int i;
+i=foo(7);
+printf(i);
+return 0;
+}
+
+Line 16: func_definition : type_specifier ID LPAREN parameter_list RPAREN compound_statement
 
 int main(){
 int i;
-for(i=20;i>=0;i--)
-{
+i=foo(7);
 printf(i);
-}
+return 0;
 }
 
-Line 6: program : unit
+ScopeTable # 1.2
+0 -->  [i : VARIABLE,int, StackEntry: 2]
+
+Line 16: unit : func_definition
 
 int main(){
 int i;
-for(i=20;i>=0;i--)
-{
+i=foo(7);
 printf(i);
+return 0;
 }
+
+Line 16: program : program unit
+
+int foo(int a){
+int i;
+if(a==0)
+{
+return 1;
+}
+i=a;
+return foo(a-1)+i;
+}
+int main(){
+int i;
+i=foo(7);
+printf(i);
+return 0;
 }
 
 ScopeTable # 1
 5 -->  [main : FUNCTION,RETURNS int] 
+6 -->  [foo : FUNCTION,RETURNS int] 
 
-Total Lines : 7
+Total Lines : 17
 Total Errors : 0

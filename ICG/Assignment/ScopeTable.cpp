@@ -133,23 +133,64 @@ void ScopeTable::print(ofstream & fout){
     fout<<endl;
 }
 
+void ScopeTable::deleteAllTemporaryVariable(){
+    for(int i=0;i<size;i++){
+        SymbolInfo * current=table[i];
+        while (current!=NULL){
+            SymbolInfo * temp=current->next;
+            // cout<<"scope here a\n";
+            if(current->variableInfo!=NULL && current->variableInfo->global==false){
+                // cout<<"scope here b\n";
+                if(current->variableInfo->arrayInfo!=NULL){
+                    // cout<<"scope here c\n";
+                    for(int i=1;i<=current->variableInfo->arrayInfo->size;i++){
+                        // cout<<"scope here d\n";
+                        writeASM("POP AX");
+                        --stackCount;
+                    }
+                    // cout<<"scope here e\n";
+                }
+                else{
+                    // cout<<"scope here f\n";
+                    if(current->variableInfo->isParameter==false){
+                        // cout<<"scope here g\n";
+                        --stackCount;
+                        writeASM("POP AX");
+                    }
+                    // cout<<"scope here h\n";
+                }
+                // cout<<"scope here i\n";
+            }
+            // cout<<"scope here j\n";
+            // delete current;
+            // cout<<"scope here k\n";
+            current=temp;
+            // cout<<"scope here l\n";
+        }
+        // cout<<"scope here m\n";
+    }
+    // cout<<"scope here n\n";
+}
+
 ScopeTable::~ScopeTable(){
     for(int i=0;i<size;i++){
         SymbolInfo * current=table[i];
         while (current!=NULL){
             SymbolInfo * temp=current->next;
-            if(current->variableInfo!=NULL && current->variableInfo->global==false){
-                if(current->variableInfo->arrayInfo!=NULL){
-                    for(int i=1;i<=current->variableInfo->arrayInfo->size;i++){
-                        writeASM("POP AX");
-                        --stackCount;
-                    }
-                }
-                else{
-                    --stackCount;
-                    writeASM("POP AX");
-                }
-            }
+            // if(current->variableInfo!=NULL && current->variableInfo->global==false){
+            //     if(current->variableInfo->arrayInfo!=NULL){
+            //         for(int i=1;i<=current->variableInfo->arrayInfo->size;i++){
+            //             writeASM("POP AX");
+            //             --stackCount;
+            //         }
+            //     }
+            //     else{
+            //         if(current->variableInfo->isParameter==false){
+            //             --stackCount;
+            //             writeASM("POP AX");
+            //         }
+            //     }
+            // }
             delete current;
             current=temp;
         }

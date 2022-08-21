@@ -23,6 +23,8 @@ int stackCount=0;
 int labelCount=0;
 int tempCount=0;
 int asmLineCount=0;
+bool isMainFunction=false; // is the current function being analyzed the main function?
+// useful to skip "return" statement in main function
 
 ofstream fLog("log.txt");
 ofstream fError("error.txt");
@@ -333,14 +335,28 @@ func_declaration : type_specifier ID LPAREN  parameter_list RPAREN SEMICOLON
 		;
 		 
 func_definition : type_specifier ID LPAREN parameter_list RPAREN
-{
+{	
+	$2->functionInfo=new FunctionInfo($1->text,true,$4->dataTypes);
+	SymbolInfo * oldSymbol=table->lookup($2->getName());
+	if(oldSymbol==NULL)
+		table->insert($2);
+	else if(oldSymbol->functionInfo==NULL){
+		yyerror("function "+$2->getName()+" conflicts with prevoius non-function symbol");
+		delete $2;
+	}
+	else
+		compareFunction($2,oldSymbol);
+
 	writeASM($2->getName()+" PROC");writeASM("");
 	if($2->getName()=="main"){
 		writeASM("MOV AX,@DATA");
 		writeASM("MOV DS,AX");
+		isMainFunction=true;
+	}else{
+		isMainFunction=false;
 	}
 	table->enterScope();
-        if(currentParameterList!=NULL){
+        if(currentParameterList!=NULL && $2->getName()!="main"){
             //insert parameters here
             for(int i=0;i<currentParameterList->dataTypes.size();i++){
                 if(currentParameterList->dataTypes.at(i)=="void"){
@@ -355,8 +371,8 @@ func_definition : type_specifier ID LPAREN parameter_list RPAREN
                 if(table->insert(s)==false){
                         yyerror("Multiple Declaration of "+s->getName());
                 }else{
-					s->variableInfo->stackEntry=++stackCount;
-					writeASM("PUSH AX");
+					s->variableInfo->stackEntry=stackCount-1-(currentParameterList->dataTypes.size()-i-1);
+					s->variableInfo->isParameter=true;
 				}
             }
         }
@@ -381,6 +397,16 @@ compound_statement
                 table->printCurrentScopeTable(fLog);
                 table->exitScope();
         	}
+
+			if($2->getName()=="main"){
+				writeASM("MOV AX,4CH");
+				writeASM("INT 21H");
+			}else{
+				if($1->text=="void"){
+					table->deleteAllTemporaryVariable();
+					writeASM("RET");
+				}
+			}
 			writeASM("");
 			writeASM($2->getName()+" ENDP");
 			writeASM("");
@@ -388,7 +414,25 @@ compound_statement
 				writeASM("END main");
 			}
 
-			$2->functionInfo=new FunctionInfo($1->text,true,$4->dataTypes);
+			// $2->functionInfo=new FunctionInfo($1->text,true,$4->dataTypes);
+			// SymbolInfo * oldSymbol=table->lookup($2->getName());
+			// if(oldSymbol==NULL)
+			// 	table->insert($2);
+			// else if(oldSymbol->functionInfo==NULL){
+			// 	yyerror("function "+$2->getName()+" conflicts with prevoius non-function symbol");
+			// 	delete $2;
+			// }
+			// else
+			// 	compareFunction($2,oldSymbol);
+			
+			delete $1;
+			delete $4;
+			delete $7;
+		}
+		| type_specifier ID LPAREN RPAREN
+		
+		{
+		    $2->functionInfo=new FunctionInfo($1->text,true);
 			SymbolInfo * oldSymbol=table->lookup($2->getName());
 			if(oldSymbol==NULL)
 				table->insert($2);
@@ -398,19 +442,14 @@ compound_statement
 			}
 			else
 				compareFunction($2,oldSymbol);
-			
-			delete $1;
-			delete $4;
-			delete $7;
-		}
-		| type_specifier ID LPAREN RPAREN
-		
-		{
 		writeASM($2->getName()+" PROC");
 		writeASM("");
 		if($2->getName()=="main"){
-		writeASM("MOV AX,@DATA");
-		writeASM("MOV DS,AX");
+			writeASM("MOV AX,@DATA");
+			writeASM("MOV DS,AX");
+			isMainFunction=true;
+		}else{
+			isMainFunction=false;
 		}
 		table->enterScope();
 		}
@@ -437,6 +476,10 @@ compound_statement
 			if($2->getName()=="main"){
 				writeASM("MOV AX,4CH");
 				writeASM("INT 21H");
+			}else{
+				if($1->text=="void"){
+					writeASM("RET");
+				}
 			}
 			writeASM("");
 			writeASM($2->getName()+" ENDP");
@@ -445,16 +488,16 @@ compound_statement
 				writeASM("END main");
 			}
 			
-			$2->functionInfo=new FunctionInfo($1->text,true);
-			SymbolInfo * oldSymbol=table->lookup($2->getName());
-			if(oldSymbol==NULL)
-				table->insert($2);
-			else if(oldSymbol->functionInfo==NULL){
-				yyerror("function "+$2->getName()+" conflicts with prevoius non-function symbol");
-				delete $2;
-			}
-			else
-				compareFunction($2,oldSymbol);
+			// $2->functionInfo=new FunctionInfo($1->text,true);
+			// SymbolInfo * oldSymbol=table->lookup($2->getName());
+			// if(oldSymbol==NULL)
+			// 	table->insert($2);
+			// else if(oldSymbol->functionInfo==NULL){
+			// 	yyerror("function "+$2->getName()+" conflicts with prevoius non-function symbol");
+			// 	delete $2;
+			// }
+			// else
+			// 	compareFunction($2,oldSymbol);
 			
 			delete $1;
 			delete $6;
@@ -1027,7 +1070,18 @@ statement : var_declaration
 					delete s;
 				}
 			}
-			
+			if(isMainFunction==false){
+				writeASM("POP BX"); //BX HAS EXPRESSION
+				--stackCount;
+				table->deleteAllTemporaryVariable();
+				writeASM("POP AX"); //AX HAS IP //FALSE
+				--stackCount;
+				writeASM("PUSH BX");
+				++stackCount;
+				writeASM("PUSH AX"); // Switching IP and EXPRESSION
+				++stackCount;
+				writeASM("RET");
+			}
 			delete $2;
 		}
 	  ;
@@ -1272,10 +1326,10 @@ logic_expression : rel_expression
 				writeASM("JNE "+trueLabel);
 				writeASM("CMP BX,0");
 				writeASM("JNE "+trueLabel);
-				writeASM("PUSH 1");
+				writeASM("PUSH 0");
 				writeASM("JMP "+nextLabel);
 				writeASM(trueLabel+": ");
-				writeASM("PUSH 0");
+				writeASM("PUSH 1");
 				writeASM(nextLabel+": ");
 				$$->stackEntry=--stackCount;
 			}
@@ -1660,6 +1714,32 @@ factor	: variable
 				}
 				$$->symbols.push_back(symbol);
 			}
+			++stackCount; // increment due to IP being inserted in stack
+			writeASM("CALL "+$1->getName());
+			if(symbol->functionInfo->returnType=="void"){ //because non-void has 
+			 --stackCount;
+			}
+			if(symbol->functionInfo->returnType=="int"){
+			//after return from call, stackCount should be unchanged,because IP is popped but
+			//return value is stored in stack top
+				writeASM("POP BX"); //save the return value
+				--stackCount;
+			}
+			// now pop all the arguments in the stack
+			for(int i=1;i<=$3->dataTypes.size();i++){
+				writeASM("POP AX");
+				--stackCount;
+			}
+			//push the return value
+			if(symbol->functionInfo->returnType=="int"){
+				writeASM("PUSH BX");
+				++stackCount;
+			}else{ //push a garbage value for void function, I KNOW I KNOW, SAME STUFF IN BOTH 
+			// IF & ELSE BLOCKS!!! BUT I KINDOF LIKE TO SEPARATE THIS... 
+				writeASM("PUSH BX");
+				++stackCount;
+			}
+			$$->stackEntry=stackCount;
 			delete $3;
 			delete $1;
 		}

@@ -1,6 +1,16 @@
+int foo(int a){
+	int i;
+	if(a== 0){
+		return 1;
+	}i=a;
+	return foo(a-1)+i;
+}
+
 int main(){
-    int i;
-    for(i=20;i>=0;i--){
-        println(i);
-    }
+	int i;
+ 
+	i = foo(7);
+	println(i);
+ 
+	return 0;
 }

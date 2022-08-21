@@ -19,5 +19,6 @@ class SymbolTable{
         void printCurrentScopeTable(ofstream & fout);
         void printAllScopeTable(ofstream & fout);
         bool isRootScope();
+        void deleteAllTemporaryVariable();
         ~SymbolTable();
 };

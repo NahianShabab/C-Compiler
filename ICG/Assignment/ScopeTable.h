@@ -26,5 +26,6 @@ class ScopeTable{
         void incrementChildrenCount();
         int getChildrenCount();
         ScopeTable * getParent();
+        void deleteAllTemporaryVariable();
         ~ScopeTable();
 };

@@ -29,6 +29,15 @@ void SymbolTable::enterScope(){
 bool SymbolTable::isRootScope(){
     return currentScope==NULL?false:currentScope->getParent()==NULL;
 }
+void SymbolTable::deleteAllTemporaryVariable(){
+    try{
+    if(currentScope!=NULL){
+        currentScope->deleteAllTemporaryVariable();
+    }
+    }catch(std::length_error e){
+        cout<<e.what();
+    }
+}
 
 bool SymbolTable::exitScope(){
     if(isRootScope()){
