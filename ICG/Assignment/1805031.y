@@ -8,6 +8,7 @@
 #include"SymbolInfo.h"
 #include"NonTerminal.h"
 #include"SymbolTable.h"
+#include"writeOptimized.h"
 using namespace std;
 
 
@@ -31,6 +32,7 @@ ofstream fError("error.txt");
 ofstream fCode("code.asm");
 ofstream fASM("ASM.asm");
 ofstream fData("data.asm"); // for storing global data
+// ofstream fOptimized("optimized_code.asm");
 
 void yyerror(const char *s)
 {
@@ -76,14 +78,6 @@ void addGlobal(string name,int arrSize=-1){ //if arrSize negative then it's just
 	else
 		fData<<name<<" DW "<<arrSize<<" DUP (?)"<<endl;
 }
-
-// //temp function
-// void printParameterList(Parameter * p,string fName){
-// 	fLog<<"Parameters of "<<fName<<" are :"<<endl;
-// 	for(int i=0;i<p->dataTypes.size();i++){
-// 		fLog<<p->names.at(i)<<" : "<<p->dataTypes.at(i)<<endl;
-// 	}
-// }
 
 void compareFunction(SymbolInfo * newFunction,SymbolInfo * oldFunction){
 	if(newFunction->functionInfo->isDefined && oldFunction->functionInfo->isDefined){
@@ -177,6 +171,11 @@ void writeASM(string s){
 	fASM<<s<<endl;
 	asmLineCount++;
 }
+void asmComment(string s){
+	fASM<<";"<<s<<endl;
+	asmLineCount++;
+}
+
 
 
 %}
@@ -413,17 +412,6 @@ compound_statement
 			if($2->getName()=="main"){
 				writeASM("END main");
 			}
-
-			// $2->functionInfo=new FunctionInfo($1->text,true,$4->dataTypes);
-			// SymbolInfo * oldSymbol=table->lookup($2->getName());
-			// if(oldSymbol==NULL)
-			// 	table->insert($2);
-			// else if(oldSymbol->functionInfo==NULL){
-			// 	yyerror("function "+$2->getName()+" conflicts with prevoius non-function symbol");
-			// 	delete $2;
-			// }
-			// else
-			// 	compareFunction($2,oldSymbol);
 			
 			delete $1;
 			delete $4;
@@ -487,17 +475,7 @@ compound_statement
 			if($2->getName()=="main"){
 				writeASM("END main");
 			}
-			
-			// $2->functionInfo=new FunctionInfo($1->text,true);
-			// SymbolInfo * oldSymbol=table->lookup($2->getName());
-			// if(oldSymbol==NULL)
-			// 	table->insert($2);
-			// else if(oldSymbol->functionInfo==NULL){
-			// 	yyerror("function "+$2->getName()+" conflicts with prevoius non-function symbol");
-			// 	delete $2;
-			// }
-			// else
-			// 	compareFunction($2,oldSymbol);
+		
 			
 			delete $1;
 			delete $6;
@@ -615,7 +593,7 @@ compound_statement : LCURL statements RCURL
  		;
  		    
 var_declaration : type_specifier declaration_list SEMICOLON
-		{
+		{	
 			$$=new NonTerminal();
 			$$->text+=$1->text;
 			$$->text+=" ";
@@ -623,7 +601,7 @@ var_declaration : type_specifier declaration_list SEMICOLON
 			$$->text+=";";
 			logRule("var_declaration : type_specifier declaration_list SEMICOLON");
 			logPieceOfCode($$->text);
-			
+			asmComment($$->text);
 			// insert declared variables in symbol table
 			if($1->text=="void"){
 				yyerror("Variable type cannot be void");
@@ -805,6 +783,7 @@ if_expression: IF  LPAREN expression RPAREN
 	$1->nextLabel=newLabel();
 	writeASM("POP AX");writeASM("CMP AX,0");
 	writeASM("JE "+$1->elseLabel);
+	asmComment("if");
 	--stackCount;
 }
 statement
@@ -871,22 +850,26 @@ statement : var_declaration
 		$1->incrementLabel=newLabel();
 		$1->statementLabel=newLabel();
 		// writeASM(forLabel+": ");
+		// writeASM("for");
 	  } 
 	   LPAREN expression_statement{
-		writeASM($1->checkLabel+":");
+		// writeASM(";condition block of for loop");
+		writeASM($1->checkLabel+":");		
 	   } expression_statement
 	   {	
-			//this expression statement's value was popped in bx.
-			// writeASM("CMP BX,0");
+			//this expression statement's value was popped in ax.
+			// writeASM("CMP AX,0");
 			// writeASM("JE "+$1->nextLabel);
-			writeASM("CMP BX,0");
+			writeASM("CMP AX,0");
 			writeASM("JE "+$1->nextLabel);
 			writeASM("JMP "+$1->statementLabel);
+			// writeASM(";increment block of for loop");
 			writeASM($1->incrementLabel+":");
 	   } expression{
 		writeASM("POP AX");
 		--stackCount;
 		writeASM("JMP "+$1->checkLabel);
+		// writeASM(";statement block of for loop");
 		writeASM($1->statementLabel+":");
 	   }RPAREN statement
 	  {
@@ -942,18 +925,20 @@ statement : var_declaration
 			delete $1;
 
 		}
-	  | if_expression ELSE statement 
+	  | if_expression ELSE {
+		asmComment("else");
+	  } statement 
 		{
 			$$=new NonTerminal();
 			$$->text=$1->text;
 			$$->text+="else\n";
-			$$->text+=$3->text;
+			$$->text+=$4->text;
 			logRule("statement :  IF LPAREN expression RPAREN statement ELSE statement");
 			logPieceOfCode($$->text);
 			writeASM($1->nextLabel+":");
 			writeASM("");
 			
-			delete $1;delete $3;
+			delete $1;delete $4;
 
 		}
 	  | WHILE {
@@ -962,6 +947,7 @@ statement : var_declaration
 			writeASM("");
 			$1=new While();
 			$1->whileLabel=label;
+			asmComment("while");
 			$1->nextLabel=newLabel();
 
 	  } LPAREN expression RPAREN 
@@ -999,9 +985,11 @@ statement : var_declaration
 		{
 			
 			$$=new NonTerminal();
-			$$->text+="printf(";
+			$$->text+="println(";
 			$$->text+=$3->getName();
-			$$->text+=");";
+			$$->text+=")";
+			asmComment($$->text);
+			$$->text+=";";
 			logRule("statement :  PRINTLN LPAREN ID RPAREN SEMICOLON");
 			logPieceOfCode($$->text);
 			SymbolInfo * s=table->lookup($3->getName());
@@ -1028,9 +1016,11 @@ statement : var_declaration
 		{
 			
 			$$=new NonTerminal();
-			$$->text+="printf(";
+			$$->text+="princhar(";
 			$$->text+=$3->getName();
-			$$->text+=");";
+			$$->text+=")";
+			asmComment($$->text);
+			$$->text+=";";
 			logRule("statement :  PRINTCHAR LPAREN ID RPAREN SEMICOLON");
 			logPieceOfCode($$->text);
 			SymbolInfo * s=table->lookup($3->getName());
@@ -1058,6 +1048,7 @@ statement : var_declaration
 			$$=new NonTerminal();
 			$$->text+="return ";
 			$$->text+=$2->text;
+			asmComment($$->text);
 			$$->text+=";";
 			logRule("statement : RETURN expression SEMICOLON");
 			logPieceOfCode($$->text);
@@ -1107,11 +1098,11 @@ expression_statement 	: SEMICOLON
 			$$->symbols=$1->symbols;
 			$$->forceInteger=$1->forceInteger;
 
-			writeASM("POP BX"); /*expression statement's value is popped in bx.
+			writeASM("POP AX"); /*expression statement's value is popped in ax.
 			this value is nedded for FOR loops' 2nd expression_statement.
 			 A bit tricky/risky since 
 			im storing this in a temporary registar instead of a reliable storage. However
-			since bx is not being accessed in the FOR loop when it is further needed, 
+			since ax is not being accessed in the FOR loop when it is further needed, 
 			this should work.
 			*/
 			--stackCount;
@@ -1203,6 +1194,7 @@ variable : ID
 			$$->text+=$1->text;
 			$$->text+="=";
 			$$->text+=$3->text;
+			asmComment($$->text);
 			logRule("expression : variable ASSIGNOP logic_expression");
 			logPieceOfCode($$->text);
 
@@ -1292,6 +1284,7 @@ logic_expression : rel_expression
 			$$->text+=$1->text;
 			$$->text+=$2->getName();
 			$$->text+=$3->text;
+			asmComment($$->text);
 			logRule("logic_expression : rel_expression LOGICOP rel_expression");
 			logPieceOfCode($$->text);
 			$$->symbols=$1->symbols;
@@ -1360,6 +1353,7 @@ rel_expression	: simple_expression
 			$$->text+=$1->text;
 			$$->text+=$2->getName();
 			$$->text+=$3->text;
+			asmComment($$->text);
 			logRule("rel_expression	: simple_expression RELOP simple_expression	");
 			logPieceOfCode($$->text);
 			$$->symbols=$1->symbols;
@@ -1476,6 +1470,7 @@ simple_expression : term
 			$$->text+=$1->text;
 			$$->text+=$2->getName();
 			$$->text+=$3->text;
+			asmComment($$->text);
 			logRule("simple_expression : simple_expression ADDOP term");
 			logPieceOfCode($$->text);
 			$$->symbols=$1->symbols;
@@ -1523,6 +1518,7 @@ term :	unary_expression
 			$$->text+=$1->text;
 			$$->text+=$2->getName();
 			$$->text+=$3->text;
+			asmComment($$->text);
 			logRule("term : term MULOP unary_expression");
 			logPieceOfCode($$->text);
 			if($2->getName()=="%" &&(getTypeOfExpression($1)!="int" || 
@@ -1573,6 +1569,7 @@ unary_expression : ADDOP unary_expression
 			$$=new Expression();
 			$$->text+=$1->getName();
 			$$->text+=$2->text;
+			asmComment($$->text);
 			logRule("unary_expression : ADDOP unary_expression ");
 			logPieceOfCode($$->text);
 
@@ -1597,6 +1594,7 @@ unary_expression : ADDOP unary_expression
 			$$=new Expression();
 			$$->text+="!";
 			$$->text+=$2->text;
+			asmComment($$->text);
 			logRule("unary_expression : NOT unary_expression ");
 			logPieceOfCode($$->text);
 			$$->symbols=$2->symbols;
@@ -1634,7 +1632,8 @@ unary_expression : ADDOP unary_expression
 		 ;
 	
 factor	: variable 
-		{
+		{	
+			asmComment($$->text);
 			$$=new Expression();
 			$$->text+=$1->text;
 			logRule("factor	: variable ");
@@ -1692,6 +1691,7 @@ factor	: variable
 			$$->text+="(";
 			$$->text+=$3->text;
 			$$->text+=")";
+			asmComment($$->text);
 			logRule("factor : ID LPAREN argument_list RPAREN");
 			logPieceOfCode($$->text);
 			SymbolInfo * symbol=table->lookup($1->getName());
@@ -1761,6 +1761,7 @@ factor	: variable
 		{
 			$$=new Expression();
 			$$->text+=$1->getName();
+			asmComment($$->text);
 			logRule("factor	: CONST_INT");
 			logPieceOfCode($$->text);
 			$$->symbols.push_back($1);
@@ -1772,6 +1773,7 @@ factor	: variable
 		{
 			$$=new Expression();
 			$$->text+=$1->getName();
+			asmComment($$->text);
 			logRule("factor	: CONST_FLOAT");
 			logPieceOfCode($$->text);
 			$$->symbols.push_back($1);
@@ -1783,6 +1785,7 @@ factor	: variable
 			$$=new Expression();
 			$$->text+=$1->text;
 			$$->text+="++";
+			asmComment($$->text);
 			logRule("factor	: variable INCOP");
 			logPieceOfCode($$->text);
 			if($1->symbol!=NULL){
@@ -1839,6 +1842,7 @@ factor	: variable
 			$$=new Expression();
 			$$->text+=$1->text;
 			$$->text+="--";
+			asmComment($$->text);
 			logRule("factor	: variable DECOP");
 			logPieceOfCode($$->text);
 			if($1->symbol!=NULL){
@@ -1999,11 +2003,19 @@ int main(int argc,char *argv[])
 		fCode<<c;
 	}
 	fASMIn.close();
-
 	fCode.close();
+
+	if(errorCount>0){
+		//delete the code
+		fCode.open("code.asm");
+		fCode.close();
+		ifstream fOptimized("optimized_code.asm");
+		fOptimized.close();
+	}else{
+		writeOptimizedCode();
+	}
 	
 	fclose(fp);
-
 	return 0;
 }
 
