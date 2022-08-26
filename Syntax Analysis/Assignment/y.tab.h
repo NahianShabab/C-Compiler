@@ -54,35 +54,35 @@ extern int yydebug;
     YYEOF = 0,                     /* "end of file"  */
     YYerror = 256,                 /* error  */
     YYUNDEF = 257,                 /* "invalid token"  */
-    ID = 258,                      /* ID  */
-    LPAREN = 259,                  /* LPAREN  */
-    RPAREN = 260,                  /* RPAREN  */
-    SEMICOLON = 261,               /* SEMICOLON  */
-    COMMA = 262,                   /* COMMA  */
-    LCURL = 263,                   /* LCURL  */
-    RCURL = 264,                   /* RCURL  */
-    INT = 265,                     /* INT  */
-    FLOAT = 266,                   /* FLOAT  */
-    VOID = 267,                    /* VOID  */
-    LTHIRD = 268,                  /* LTHIRD  */
-    CONST_INT = 269,               /* CONST_INT  */
-    RTHIRD = 270,                  /* RTHIRD  */
-    FOR = 271,                     /* FOR  */
-    IF = 272,                      /* IF  */
-    ELSE = 273,                    /* ELSE  */
-    WHILE = 274,                   /* WHILE  */
-    PRINTLN = 275,                 /* PRINTLN  */
-    RETURN = 276,                  /* RETURN  */
-    ASSIGNOP = 277,                /* ASSIGNOP  */
-    LOGICOP = 278,                 /* LOGICOP  */
-    RELOP = 279,                   /* RELOP  */
-    ADDOP = 280,                   /* ADDOP  */
-    MULOP = 281,                   /* MULOP  */
-    NOT = 282,                     /* NOT  */
-    CONST_FLOAT = 283,             /* CONST_FLOAT  */
-    INCOP = 284,                   /* INCOP  */
-    DECOP = 285,                   /* DECOP  */
-    S_IF = 286                     /* S_IF  */
+    LPAREN = 258,                  /* LPAREN  */
+    RPAREN = 259,                  /* RPAREN  */
+    SEMICOLON = 260,               /* SEMICOLON  */
+    COMMA = 261,                   /* COMMA  */
+    LCURL = 262,                   /* LCURL  */
+    RCURL = 263,                   /* RCURL  */
+    INT = 264,                     /* INT  */
+    FLOAT = 265,                   /* FLOAT  */
+    VOID = 266,                    /* VOID  */
+    LTHIRD = 267,                  /* LTHIRD  */
+    RTHIRD = 268,                  /* RTHIRD  */
+    FOR = 269,                     /* FOR  */
+    IF = 270,                      /* IF  */
+    WHILE = 271,                   /* WHILE  */
+    RETURN = 272,                  /* RETURN  */
+    NOT = 273,                     /* NOT  */
+    INCOP = 274,                   /* INCOP  */
+    DECOP = 275,                   /* DECOP  */
+    ID = 276,                      /* ID  */
+    CONST_INT = 277,               /* CONST_INT  */
+    PRINTLN = 278,                 /* PRINTLN  */
+    ASSIGNOP = 279,                /* ASSIGNOP  */
+    LOGICOP = 280,                 /* LOGICOP  */
+    RELOP = 281,                   /* RELOP  */
+    ADDOP = 282,                   /* ADDOP  */
+    MULOP = 283,                   /* MULOP  */
+    CONST_FLOAT = 284,             /* CONST_FLOAT  */
+    S_IF = 285,                    /* S_IF  */
+    ELSE = 286                     /* ELSE  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -91,39 +91,54 @@ extern int yydebug;
 #define YYEOF 0
 #define YYerror 256
 #define YYUNDEF 257
-#define ID 258
-#define LPAREN 259
-#define RPAREN 260
-#define SEMICOLON 261
-#define COMMA 262
-#define LCURL 263
-#define RCURL 264
-#define INT 265
-#define FLOAT 266
-#define VOID 267
-#define LTHIRD 268
-#define CONST_INT 269
-#define RTHIRD 270
-#define FOR 271
-#define IF 272
-#define ELSE 273
-#define WHILE 274
-#define PRINTLN 275
-#define RETURN 276
-#define ASSIGNOP 277
-#define LOGICOP 278
-#define RELOP 279
-#define ADDOP 280
-#define MULOP 281
-#define NOT 282
-#define CONST_FLOAT 283
-#define INCOP 284
-#define DECOP 285
-#define S_IF 286
+#define LPAREN 258
+#define RPAREN 259
+#define SEMICOLON 260
+#define COMMA 261
+#define LCURL 262
+#define RCURL 263
+#define INT 264
+#define FLOAT 265
+#define VOID 266
+#define LTHIRD 267
+#define RTHIRD 268
+#define FOR 269
+#define IF 270
+#define WHILE 271
+#define RETURN 272
+#define NOT 273
+#define INCOP 274
+#define DECOP 275
+#define ID 276
+#define CONST_INT 277
+#define PRINTLN 278
+#define ASSIGNOP 279
+#define LOGICOP 280
+#define RELOP 281
+#define ADDOP 282
+#define MULOP 283
+#define CONST_FLOAT 284
+#define S_IF 285
+#define ELSE 286
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-typedef int YYSTYPE;
+union YYSTYPE
+{
+#line 104 "1805031.y"
+
+	SymbolInfo * symbol;
+	NonTerminal * nonTerminal;
+	ParameterList * parameterList;
+	DeclarationList * declarationList;
+	Expression * expression;
+	Argument * argument;
+	Variable * variable;
+
+#line 139 "y.tab.h"
+
+};
+typedef union YYSTYPE YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1
 #endif

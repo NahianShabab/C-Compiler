@@ -1,0 +1,75 @@
+At firstLine 1: type_specifier	: INT
+
+int
+
+ScopeTable # 1.1
+
+ScopeTable # 1
+
+Line 2: factor	: CONST_INT
+
+0
+
+Line 2: unary_expression : factor
+
+0
+
+Line 2: term :	unary_expression
+
+0
+
+Line 2: simple_expression : term 
+
+0
+
+Line 2: rel_expression	: simple_expression 
+
+0
+
+Line 2: logic_expression : rel_expression
+
+0
+
+Line 2: expression : logic_expression	
+
+0
+
+Line 2: statement : RETURN expression SEMICOLON
+
+return 0;
+
+Line 2: statements : statement
+
+return 0;
+
+ScopeTable # 1.1
+
+Line 3: compound_statement : LCURL statements RCURL
+
+{
+return 0;
+}
+
+Line 3: func_definition : type_specifier ID LPAREN RPAREN compound_statement
+
+int main(){
+return 0;
+}
+
+Line 3: unit : func_definition
+
+int main(){
+return 0;
+}
+
+Line 3: program : unit
+
+int main(){
+return 0;
+}
+
+ScopeTable # 1
+5 -->  [main : FUNCTION,RETURNS int] 
+
+Total Lines : 4
+Total Errors : 0
