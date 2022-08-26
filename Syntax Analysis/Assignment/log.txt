@@ -1,59 +1,139 @@
-Line 1: type_specifier : INT
+Line 2: type_specifier : INT
 
 int
 
-Line 3: compound_statement : LCURL RCURL
+Line 3: factor : CONST_INT
+
+1
+
+Line 3: unary_expression : factor
+
+1
+
+Line 3: term :	unary_expression
+
+1
+
+Line 3: simple_expression : term
+
+1
+
+Line 3: rel_expression	: simple_expression
+
+1
+
+Line 3: factor : CONST_INT
+
+2
+
+Line 3: unary_expression : factor
+
+2
+
+Line 3: term :	unary_expression
+
+2
+
+Line 3: simple_expression : term
+
+2
+
+Line 3: rel_expression	: simple_expression
+
+2
+
+Line 3: logic_expression : rel_expression LOGICOP rel_expression
+
+1||2
+
+Error at line 3 : Logical Expression Must Evaluate to Integer
+Line 3: expression : logic_expression
+
+1||2
+
+Line 3: expression_statement : expression SEMICOLON
+
+1||2;
+
+Line 3: statement : expression_statement
+
+1||2;
+
+Line 3: statements : statement
+
+1||2;
+
+Line 4: factor : CONST_INT
+
+0
+
+Line 4: unary_expression : factor
+
+0
+
+Line 4: term :	unary_expression
+
+0
+
+Line 4: simple_expression : term
+
+0
+
+Line 4: rel_expression	: simple_expression
+
+0
+
+Line 4: logic_expression : rel_expression
+
+0
+
+Line 4: expression : logic_expression
+
+0
+
+Line 4: statement : RETURN expression SEMICOLON
+
+return 0;
+
+Line 4: statements : statements statement
+
+1||2;
+return 0;
+
+Error at line 5 : Invalid Scope
+Line 5: compound_statement : LCURL statements RCURL
 
 {
+1||2;
+return 0;
 }
 
-Line 3: func_definition : type_specifier ID LPAREN RPAREN compound_statement
+Line 5: func_definition : type_specifier ID LPAREN RPAREN compound_statement
 
 int main(){
+1||2;
+return 0;
 }
 
-Line 3: unit : func_definition
+Line 5: unit : func_definition
 
 int main(){
+1||2;
+return 0;
 }
 
-Line 3: program : unit
+Line 5: program : unit
 
 int main(){
+1||2;
+return 0;
 }
 
-Line 4: type_specifier : INT
-
-int
-
-Line 6: compound_statement : LCURL RCURL
-
-{
-}
-
-Line 6: func_definition : type_specifier ID LPAREN RPAREN compound_statement
-
-int main(){
-}
-
-Error at line 6 : Function "main" already defined
-Line 6: unit : func_definition
-
-int main(){
-}
-
-Line 6: program : program unit
-
-int main(){
-}
-int main(){
-}
-
-Line 7: start: program
+Line 6: start: program
 
 ScopeTable # 1
-5 --> < main : ID : FUNCTION : 0 >
+5 --> < main : ID >
 
 
-Total Lines : 7
-Total Errors : 1
+Total Lines : 6
+Total Errors : 2

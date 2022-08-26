@@ -1,0 +1,2 @@
+--regex for single printable character
+https://stackoverflow.com/a/14526817

@@ -1,2 +1,4 @@
-Error at line 6 : Function "main" already defined
+Error at line 3 : Logical Expression Must Evaluate to Integer
+
+Error at line 5 : Invalid Scope
 

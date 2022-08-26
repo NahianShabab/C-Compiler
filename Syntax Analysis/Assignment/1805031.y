@@ -21,23 +21,23 @@ ofstream fError("error.txt");
 
 void yyerror(const char *s)
 {
-	fLog<<"Error at line "<<yylineno<<" : "<<s<<'\n';
-	fError<<"Error at line "<<yylineno<<" : "<<s<<"\n\n";
+	fLog<<"Error at line "<<yylineno<<" : "<<s<<endl;
+	fError<<"Error at line "<<yylineno<<" : "<<s<<endl<<endl;
 	errorCount++;
 }
 void yyerror(string s){
 	yyerror(s.c_str());
 }
 void logNewLine(){
-	fLog<<'\n';
+	fLog<<endl;
 }
 void logGrammer(const char * s){
-	fLog<<"Line "<<yylineno<<": "<<s<<'\n';
+	fLog<<"Line "<<yylineno<<": "<<s<<endl;
 }
 
 void logPiece(string s){ /*logs a rule instance i.e. piece of code */
 	logNewLine();
-	fLog<<s<<'\n';
+	fLog<<s<<endl;
 	logNewLine();
 }
 void log(const char * s){
@@ -69,12 +69,46 @@ bool compareFunctions(SymbolInfo * s1,SymbolInfo * s2){
 	return true;
 }
 
+bool checkExpressionType(Expression * e,string type){
+	for(SymbolInfo * s:e->symbols){
+		if(s->functionInfo!=NULL && s->functionInfo->returnType!=type){
+			return false;
+		}else if(s->variableInfo!=NULL && s->variableInfo->dataType!=type){
+			return false;
+		}else if(type=="int" && s->getType()!="CONST_INT"){
+			return false;
+		}else if(type=="float" && s->getType()!="CONST_FLOAT"){
+			return false;
+		}
+	}
+	return true;
+}
+ParameterList * currentParameterList=NULL;
+void insertVarialblesInScope(){
+	if(currentParameterList==NULL)
+		return;
+	vector<string> pDataTypes=currentParameterList->dataTypes;
+	vector<string> pNames=currentParameterList->names;
+	for(int i=0;i<pDataTypes.size();i++){
+		if(i>=pNames.size()|| pNames.at(i)=="")
+			continue;
+		SymbolInfo * s=new SymbolInfo(pNames.at(i),"ID");
+		s->variableInfo=new VariableInfo(pDataTypes.at(i));
+		table->insert(s);
+	}
+	currentParameterList=NULL;
+}
+
 %}
 
 %union{
 	SymbolInfo * symbol;
 	NonTerminal * nonTerminal;
 	ParameterList * parameterList;
+	DeclarationList * declarationList;
+	Expression * expression;
+	Argument * argument;
+	Variable * variable;
 }
 
 %token LPAREN RPAREN SEMICOLON COMMA LCURL RCURL INT FLOAT VOID LTHIRD RTHIRD FOR IF WHILE RETURN NOT INCOP DECOP
@@ -85,10 +119,13 @@ bool compareFunctions(SymbolInfo * s1,SymbolInfo * s2){
 %nonassoc ELSE
 
 %type <nonTerminal> start program unit var_declaration func_declaration func_definition type_specifier 
-%type <nonTerminal> compound_statement statements statement declaration_list expression_statement expression 
-%type <nonTerminal> variable logic_expression rel_expression simple_expression term unary_expression factor
-%type <nonTerminal> argument_list arguments
+%type <nonTerminal> compound_statement statements statement expression_statement  
+%type <variable> variable 
+%type <argument> argument_list arguments
 %type<parameterList> parameter_list
+%type<declarationList> declaration_list 
+%type<expression> expression logic_expression rel_expression simple_expression unary_expression  term  factor
+
 
 %%
 start : program
@@ -341,6 +378,7 @@ parameter_list  : parameter_list COMMA type_specifier ID
 
 			$$->dataTypes.push_back($3->text);
 			$$->names.push_back($4->getName());
+			currentParameterList=$$;
 
 			delete $1;
 			deleteNonTerminal($3);
@@ -358,6 +396,7 @@ parameter_list  : parameter_list COMMA type_specifier ID
 
 			$$->dataTypes.push_back($3->text);
 			$$->names.push_back("");
+			currentParameterList=$$;
 
 			delete $1;
 			deleteNonTerminal($3);
@@ -371,7 +410,7 @@ parameter_list  : parameter_list COMMA type_specifier ID
 			
 			$$->dataTypes.push_back($1->text);
 			$$->names.push_back($2->getName());
-
+			currentParameterList=$$;
 			delete $1;
 		}
 		| type_specifier
@@ -383,7 +422,7 @@ parameter_list  : parameter_list COMMA type_specifier ID
 
 			$$->dataTypes.push_back($1->text);
 			$$->names.push_back("");
-
+			currentParameterList=$$;
 			deleteNonTerminal($1);
 		}
  		;
@@ -412,8 +451,21 @@ var_declaration : type_specifier declaration_list SEMICOLON
 			$$=new NonTerminal();
 			$$->text=$1->text+" "+$2->text+";";
 			logPiece($$->text);
+			
+
+			for(int i=0;i<$2->symbols.size();i++){
+				SymbolInfo * s=$2->symbols.at(i);
+				if(table->lookup(s->getName())!=NULL){
+					yyerror("Multiple declaration of "+s->getName());
+					delete s;
+				}else{
+					s->variableInfo->dataType=$1->text;
+					table->insert(s);
+				}
+			}
+
+			delete $2;
 			deleteNonTerminal($1);
-			deleteNonTerminal($2);
 		}
  		 ;
  		 
@@ -443,38 +495,53 @@ type_specifier : INT
 declaration_list : declaration_list COMMA ID
 		{
 			logGrammer("declaration_list : declaration_list COMMA ID");
-			$$=new NonTerminal();
+			$$=new DeclarationList();
 			$$->text=$1->text+","+$3->getName();
-			table->insert($3);
 			logPiece($$->text);
-			deleteNonTerminal($1);
+			
+			$$->symbols=$1->symbols;
+			$3->variableInfo=new VariableInfo("int");
+			$$->symbols.push_back($3);
+
+			delete $1;
+
 		}
  		  | declaration_list COMMA ID LTHIRD CONST_INT RTHIRD
 		{
 			logGrammer("declaration_list : declaration_list COMMA ID LTHIRD CONST_INT RTHIRD");
-			$$=new NonTerminal();
+			$$=new DeclarationList();
 			$$->text=$1->text+","+$3->getName()+"["+$5->getName()+"]";
-			table->insert($3);
-			table->insert($5);
 			logPiece($$->text);
-			deleteNonTerminal($1);
+
+			$$->symbols=$1->symbols;
+			$3->variableInfo=new VariableInfo("int",new ArrayInfo(std::stoi($5->getName())));
+			$$->symbols.push_back($3);
+
+			delete $1;
+			delete $5;
 		}
  		  | ID
 		{
 			logGrammer("declaration_list : ID");
-			$$=new NonTerminal();
+			$$=new DeclarationList();
 			$$->text=$1->getName();
-			table->insert($1);
 			logPiece($$->text);
+
+			$1->variableInfo=new VariableInfo("int");
+			$$->symbols.push_back($1);
 		}
  		  | ID LTHIRD CONST_INT RTHIRD
 		{
 			logGrammer("declaration_list : ID LTHIRD CONST_INT RTHIRD");
-			$$=new NonTerminal();
+			$$=new DeclarationList();
 			$$->text=$1->getName()+"["+$3->getName()+"]";
-			table->insert($1);
-			table->insert($3);
 			logPiece($$->text);
+
+			$1->variableInfo=new VariableInfo("int",new ArrayInfo(std::stoi($3->getName())));
+			$$->symbols.push_back($1);
+
+			delete $3;
+
 		}
  		  ;
  		  
@@ -604,60 +671,111 @@ expression_statement : SEMICOLON
 	  
 variable : ID 		
 		{
-			/*DEBUG_LATER SYMBOL_TABLE*/
 			logGrammer("variable : ID");
-			$$=new NonTerminal();
+			$$=new Variable();
 			$$->text=$1->getName();
 			logPiece($$->text);
+			SymbolInfo * v=table->lookup($1->getName());
+			if(v==NULL){
+				yyerror("Undeclared Variable "+$1->getName());
+			}else if (v->variableInfo==NULL){
+				yyerror(v->getName()+" is not a variable");
+			}else{
+				$$->name=v->getName();
+			}
 			delete $1;
 		}
 	 | ID LTHIRD expression RTHIRD 
-		{
+		{	
+			// cout<<"here\n";
 			logGrammer("variable : ID LTHIRD expression RTHIRD");
 			/*DEBUG_LATER SYMBOL_TABLE*/
-			$$=new NonTerminal();
+			$$=new Variable();
 			$$->text=$1->getName()+"["+$3->text+"]";
 			logPiece($$->text);
+
+			SymbolInfo * v=table->lookup($1->getName());
+			if(v==NULL){
+				yyerror("Undeclared Variable "+$1->getName());
+			}else if (v->variableInfo==NULL){
+				yyerror(v->getName()+" is not a variable");
+			}else if(v->variableInfo->arrayInfo==NULL){
+				yyerror(v->getName()+" is not an array");
+			}else{
+				if(checkExpressionType($3,"int")==false){
+					yyerror("Expression inside third brackets not an integer");	
+				}
+				$$->name=v->getName();
+			}
 			delete $1;
-			deleteNonTerminal($3);
+			delete $3;
+			// cout<<"here again\n";
 		}
 	 ;
 	 
  expression : logic_expression	
 		{
 			logGrammer("expression : logic_expression");
-			$$=new NonTerminal();
+			$$=new Expression();
 			$$->text=$1->text;
 			logPiece($$->text);
-			deleteNonTerminal($1);
+
+			$$->symbols=$1->symbols;
+
+			delete $1;
 		}
 	   | variable ASSIGNOP logic_expression
 		{
 			logGrammer("expression : variable ASSIGNOP logic_expression");
-			$$=new NonTerminal();
+			$$=new Expression();
 			$$->text=$1->text+"="+$3->text;
 			logPiece($$->text);
+			$$->symbols=$3->symbols;
+
+			SymbolInfo * v=table->lookup($1->text);
+			if(v==NULL)
+				yyerror("Undeclared Variable in expression "+$1->text);
+			else if(v->variableInfo==NULL){
+				yyerror("Assignment to non-variable identifier");
+			}
+			else{
+				if(checkExpressionType($3,v->variableInfo->dataType)){
+					$$->symbols.push_back(v);
+				}else{
+					yyerror("Type Mismatch");
+				}
+			}
+
 			deleteNonTerminal($1);
-			deleteNonTerminal($3);
+			delete $3;
 		}
 	   ;
 			
 logic_expression : rel_expression 	
 		{
 			logGrammer("logic_expression : rel_expression");
-			$$=new NonTerminal();
+			$$=new Expression();
 			$$->text=$1->text;
 			logPiece($$->text);
-			deleteNonTerminal($1);
+
+			$$->symbols=$1->symbols;
+
+			delete $1;
 		}
 		 | rel_expression LOGICOP rel_expression 
 		{
 			/*DEBUG_LATER SYMBOL_TABLE*/
 			logGrammer("logic_expression : rel_expression LOGICOP rel_expression");
-			$$=new NonTerminal();
+			$$=new Expression();
 			$$->text=$1->text+$2->getName()+$3->text;
 			logPiece($$->text);
-			deleteNonTerminal($1);deleteNonTerminal($3);
+
+			$$->symbols=$1->symbols;
+			$$->symbols.insert($$->symbols.end(),$3->symbols.begin(),$3->symbols.end());
+			if(!checkExpressionType($1,"int") || !checkExpressionType($3,"int")){
+				yyerror("Logical Expression Must Evaluate to Integer");
+			}
+			delete $1;delete $3;
 			delete $2;
 		}	
 		 ;
@@ -665,19 +783,33 @@ logic_expression : rel_expression
 rel_expression	: simple_expression 
 		{
 			logGrammer("rel_expression	: simple_expression");
-			$$=new NonTerminal();
+			$$=new Expression();
 			$$->text=$1->text;
 			logPiece($$->text);
-			deleteNonTerminal($1);
+
+			$$->symbols=$1->symbols;
+			// if(checkExpressionType($1,"int")==false){
+			// 	yyerror("Relational Expression Must Evaluate to Integer");
+			// }
+			delete $1;
 		}
 		| simple_expression RELOP simple_expression	
 		{
 			/*DEBUG_LATER SYMBOL_TABLE*/
 			logGrammer("rel_expression	: simple_expression RELOP simple_expression");
-			$$=new NonTerminal();
+			$$=new Expression();
 			$$->text=$1->text+$2->getName()+$3->text;
 			logPiece($$->text);
-			deleteNonTerminal($1);deleteNonTerminal($3);
+
+			$$->symbols=$1->symbols;
+			$$->symbols.insert($$->symbols.end(),$3->symbols.begin(),$3->symbols.end());
+			if(checkExpressionType($1,"int")==false){
+				yyerror("Relational Expression Must Evaluate to Integer");
+			}
+			if(checkExpressionType($3,"int")==false){
+				yyerror("Relational Expression Must Evaluate to Integer");
+			}
+			delete $1;delete $3;
 			delete $2;
 		}
 		;
@@ -685,20 +817,23 @@ rel_expression	: simple_expression
 simple_expression : term 
 		{
 			logGrammer("simple_expression : term");
-			$$=new NonTerminal();
+			$$=new Expression();
 			$$->text=$1->text;
 			logPiece($$->text);
-			deleteNonTerminal($1);
+			$$->symbols=$1->symbols;
+			delete($1);
 		}
 		  | simple_expression ADDOP term 
 		{
 			/*DEBUG_LATER SYMBOL_TABLE*/
 			logGrammer("simple_expression : simple_expression ADDOP term");
-			$$=new NonTerminal();
+			$$=new Expression();
 			$$->text=$1->text+$2->getName()+$3->text;
 			logPiece($$->text);
-			deleteNonTerminal($1);
-			deleteNonTerminal($3);
+			$$->symbols=$1->symbols;
+			$$->symbols.insert($$->symbols.end(),$3->symbols.begin(),$3->symbols.end());
+			delete $1;
+			delete $3 ;
 			delete $2;
 		}
 		  ;
@@ -706,20 +841,23 @@ simple_expression : term
 term :	unary_expression
 		{
 			logGrammer("term :	unary_expression");
-			$$=new NonTerminal();
+			$$=new Expression();
 			$$->text=$1->text;
 			logPiece($$->text);
-			deleteNonTerminal($1);
+			$$->symbols=$1->symbols;
+			delete $1;
 		}
      |  term MULOP unary_expression
 		{
 			/*DEBUG_LATER SYMBOL_TABLE*/
 			logGrammer("term :	term MULOP unary_expression");
-			$$=new NonTerminal();
+			$$=new Expression();
 			$$->text=$1->text+$2->getName()+$3->text;
 			logPiece($$->text);
-			deleteNonTerminal($1);
-			deleteNonTerminal($3);
+			$$->symbols=$1->symbols;
+			$$->symbols.insert($$->symbols.end(),$3->symbols.begin(),$3->symbols.end());
+			delete $1;
+			delete $3;
 			delete $2;
 		}
      ;
@@ -728,105 +866,157 @@ unary_expression : ADDOP unary_expression
 		{
 			/*DEBUG_LATER SYMBOL_TABLE*/
 			logGrammer("unary_expression : ADDOP unary_expression");
-			$$=new NonTerminal();
+			$$=new Expression();
 			$$->text=$1->getName()+$2->text;
 			logPiece($$->text);
-			deleteNonTerminal($2);
+			$$->symbols=$2->symbols;
+			delete $2;
 			delete $1;
 		}
 		 | NOT unary_expression 
 		{
 			/*DEBUG_LATER SYMBOL_TABLE*/
 			logGrammer("unary_expression : NOT unary_expression");
-			$$=new NonTerminal();
+			$$=new Expression();
 			$$->text="!"+$2->text;
 			logPiece($$->text);
-			deleteNonTerminal($2);
+			$$->symbols=$2->symbols;
+			delete $2;
 		}
 		 | factor 
 		{
 			logGrammer("unary_expression : factor");
-			$$=new NonTerminal();
+			$$=new Expression();
 			$$->text=$1->text;
 			logPiece($$->text);
-			deleteNonTerminal($1);
+			$$->symbols=$1->symbols;
+			delete $1;
 		}
 		 ;
 	
 factor : variable 
 		{
 			logGrammer("factor : variable");
-			$$=new NonTerminal();
+			$$=new Expression();
 			$$->text=$1->text;
 			logPiece($$->text);
-			deleteNonTerminal($1);
+			SymbolInfo * v=table->lookup($1->name);
+			if(v==NULL){
+				yyerror("Undeclared variable "+v->getName());
+			}else if(v->variableInfo==NULL){
+				yyerror(v->getName()+" is not a variable");
+			}else{
+				$$->symbols.push_back(v);
+			}
+			delete $1;
 		}
 	| ID LPAREN argument_list RPAREN
 		{
 			/*DEBUG_LATER SYMBOL_TABLE*/
 			logGrammer("factor : ID LPAREN argument_list RPAREN");
-			$$=new NonTerminal();
+			$$=new Expression();
 			$$->text=$1->getName()+"("+$3->text+")";
 			logPiece($$->text);
-			deleteNonTerminal($3);
+			SymbolInfo * f=table->lookup($1->getName());
+			if(f==NULL){
+				yyerror("Undeclared or Undefined Function "+$1->getName());
+			}else if(f->functionInfo==NULL){
+				yyerror($1->getName()+" is not a function");
+			}else{
+				if($3->dataTypes.size()<f->functionInfo->dataTypes.size()){
+					yyerror("Too few Arguments for function "+f->getName());
+				}else if($3->dataTypes.size()>f->functionInfo->dataTypes.size()){
+					yyerror("Too Many Arguments for function "+f->getName());
+				}else{
+					for(int i=0;i<$3->dataTypes.size();i++){
+						if($3->dataTypes.at(i)!=f->functionInfo->dataTypes.at(i)){
+							yyerror(i+"th Argument mismatch of function "+$3->text);
+						}
+					}
+					$$->symbols.push_back(f);
+				}
+			}
+			delete $3;
 			delete $1;
 			
 		}
 	| LPAREN expression RPAREN
 		{
 			logGrammer("factor : LPAREN expression RPAREN");
-			$$=new NonTerminal();
+			$$=new Expression();
 			$$->text="("+$2->text+")";
 			logPiece($$->text);
-			deleteNonTerminal($2);
+			$$->symbols=$2->symbols;
+			delete $2;
 		}
 	| CONST_INT
 		{
 			/*DEBUG_LATER SYMBOL_TABLE*/
 			logGrammer("factor : CONST_INT");
-			$$=new NonTerminal();
+			$$=new Expression();
 			$$->text=$1->getName();
 			logPiece($$->text);
-			delete $1;
+			$$->symbols.push_back($1);
 		}
 	| CONST_FLOAT
 		{
 			/*DEBUG_LATER SYMBOL_TABLE*/
 			logGrammer("factor : CONST_FLOAT");
-			$$=new NonTerminal();
+			$$=new Expression();
 			$$->text=$1->getName();
 			logPiece($$->text);
-			delete $1;
+			$$->symbols.push_back($1);
 		}
 	| variable INCOP 
 		{
 			logGrammer("factor : variable INCOP");
-			$$=new NonTerminal();
+			$$=new Expression();
 			$$->text=$1->text+"++";
 			logPiece($$->text);
-			deleteNonTerminal($1);
+			SymbolInfo * v=table->lookup($1->name);
+			if(v==NULL){
+				yyerror("Undeclared Variable "+$1->name);
+			}else{
+				if(v->variableInfo==NULL){
+					yyerror(v->getName()+" is not a variable");
+				}else{
+					$$->symbols.push_back(v);
+				}
+			}
+			delete $1;
 		}
 	| variable DECOP
 		{
 			logGrammer("factor : variable DECOP");
 			$$->text=$1->text+"--";
 			logPiece($$->text);
-			deleteNonTerminal($1);
+			SymbolInfo * v=table->lookup($1->name);
+			if(v==NULL){
+				yyerror("Undeclared Variable "+$1->name);
+			}else{
+				if(v->variableInfo==NULL){
+					yyerror(v->getName()+" is not a variable");
+				}else{
+					$$->symbols.push_back(v);
+				}
+			}
+			delete($1);
 		}
 	;
 	
 argument_list : arguments
 		{
 			logGrammer("argument_list : arguments");
-			$$=new NonTerminal();
+			$$=new Argument();
 			$$->text=$1->text;
 			logPiece($$->text);
-			deleteNonTerminal($1);
+			$$->dataTypes=$1->dataTypes;
+			delete($1);
 		}
 		|
 		{
 			logGrammer("argument_list : empty");
-			$$=new NonTerminal();
+			$$=new Argument();
 			$$->text="";
 		}
 		;
@@ -834,19 +1024,50 @@ argument_list : arguments
 arguments : arguments COMMA logic_expression
 		{
 			logGrammer("arguments : arguments COMMA logic_expression");
-			$$=new NonTerminal();
+			$$=new Argument();
 			$$->text=$1->text+","+$3->text;
 			logPiece($$->text);
-			deleteNonTerminal($1);
-			deleteNonTerminal($3);
+			$$->dataTypes=$1->dataTypes;
+			string dataType="int";
+			for(SymbolInfo * s:$3->symbols){
+				if(s->functionInfo!=NULL){
+					if(s->functionInfo->returnType=="float"){
+						dataType="float";
+					}
+				}else if(s->variableInfo!=NULL){
+					if(s->variableInfo->dataType=="float"){
+						dataType="float";
+					}
+				}else if(s->getType()=="CONST_FLOAT"){
+					dataType="float";
+				}
+			}
+			$$->dataTypes.push_back(dataType);
+			delete($1);
+			delete($3);
 		}
 	      | logic_expression
 		{
 			logGrammer("arguments : logic_expression");
-			$$=new NonTerminal();
+			$$=new Argument();
 			$$->text=$1->text;
 			logPiece($$->text);
-			deleteNonTerminal($1);
+			string dataType="int";
+			for(SymbolInfo * s:$1->symbols){
+				if(s->functionInfo!=NULL){
+					if(s->functionInfo->returnType=="float"){
+						dataType="float";
+					}
+				}else if(s->variableInfo!=NULL){
+					if(s->variableInfo->dataType=="float"){
+						dataType="float";
+					}
+				}else if(s->getType()=="CONST_FLOAT"){
+					dataType="float";
+				}
+			}
+			$$->dataTypes.push_back(dataType);
+			delete($1);
 		}
 	      ;
  
